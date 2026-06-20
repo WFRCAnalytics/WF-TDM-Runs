@@ -317,8 +317,4 @@ If the TDM repo is private, add a deploy key or PAT for the `validate-config.yml
 workflow that checks out the submodule.
 
 **8. Present and get pilot approval.**
-Slides are at `_dev/tdm-run-management-framework-proposal.qmd`.
-
-**9. Apply battery → run_set rename in `docs/architecture/` ADRs.**
-The six ADR files still reference "battery" in their text. Low priority — no
-code depends on them.
+Presentation deck has been removed from the repo (_dev/ deleted).

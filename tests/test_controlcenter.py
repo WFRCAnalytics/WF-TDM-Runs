@@ -17,15 +17,15 @@ def test_validate_overrides_allows_known_key():
 
 def test_render_precedence():
     baseline = {"A": 1, "B": 2, "C": 3, "D": 4, "ScenarioName": "baseline-name"}
-    battery_overrides = {"B": 20}
+    run_set_overrides = {"B": 20}
     scenario_overrides = {"C": 30}
     local_layer = {"D": 40}
     identity_fields = {"ScenarioName": "S01"}
     merged = cc.render(
-        baseline, battery_overrides, scenario_overrides, local_layer, identity_fields
+        baseline, run_set_overrides, scenario_overrides, local_layer, identity_fields
     )
     assert merged["A"] == 1  # untouched baseline value
-    assert merged["B"] == 20  # battery override applied
+    assert merged["B"] == 20  # run set override applied
     assert merged["C"] == 30  # scenario override applied
     assert merged["D"] == 40  # local/machine value applied
     assert merged["ScenarioName"] == "S01"  # identity field always wins

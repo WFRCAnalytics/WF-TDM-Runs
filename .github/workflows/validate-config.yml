@@ -1,12 +1,12 @@
 name: Validate config
 
-# Validates battery/scenario config on every PR. Does not check out the TDM
+# Validates run_set/scenario config on every PR. Does not check out the TDM
 # submodule's full history or run any model -- just enough of the submodule
-# to read the Scenarios/_defaults/ baseline files referenced by battery.yaml.
+# to read the Scenarios/_default/ baseline files referenced by run_set.yaml.
 on:
   pull_request:
     paths:
-      - "batteries/**"
+      - "run_sets/**"
       - "config/**"
       - "src/**"
 

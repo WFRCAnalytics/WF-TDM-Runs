@@ -8,8 +8,8 @@ class tdmrunsError(Exception):
 
 
 class ConfigValidationError(tdmrunsError):
-    """Raised when a battery.yaml / scenario.yaml / framework.yaml fails schema
-    validation, or references something (a battery, scenario, or baseline file)
+    """Raised when a run_set.yaml / scenario.yaml / framework.yaml fails schema
+    validation, or references something (a run set, scenario, or baseline file)
     that does not exist."""
 
 
@@ -20,7 +20,7 @@ class VersionResolutionError(tdmrunsError):
 
 class ControlCenterError(tdmrunsError):
     """Raised when a Control Center baseline file cannot be read, or when a
-    scenario/battery override key does not exist in the chosen baseline."""
+    scenario/run set override key does not exist in the chosen baseline."""
 
 
 class ExecutionError(tdmrunsError):

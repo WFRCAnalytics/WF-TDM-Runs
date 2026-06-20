@@ -3,7 +3,7 @@
 #
 # Copy this file to config/local.yaml and fill in values for your own machine.
 # config/local.yaml is gitignored -- it holds values that vary by who is running
-# the framework and where, not anything about a scenario or battery.
+# the framework and where, not anything about a scenario or run set.
 #
 # These values are merged into every rendered Control Center file, so they only
 # need to be set once per machine, not once per scenario.

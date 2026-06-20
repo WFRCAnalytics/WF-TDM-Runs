@@ -11,9 +11,9 @@ blob storage or a network share) referenced by path from run metadata.
 
 Every output the model produces is inventoried (path, size, checksum) in
 run metadata regardless of whether it's kept. A declared, glob-based
-selection (`outputs.include` in battery/scenario config) determines which
+selection (`outputs.include` in run_set/scenario config) determines which
 files are actually copied into this repo, under
-`runs/{battery}/{scenario}/{run_id}/outputs/`. Every selected file is
+`runs/{run_set}/{scenario}/{run_id}/outputs/`. Every selected file is
 checked against a hard size ceiling (`config/framework.yaml`
 `outputs.max_file_size_mb`, default 100 MB) before the copy happens, and
 again by CI on every PR as a backstop against a manual `git add` of

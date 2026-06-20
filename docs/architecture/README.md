@@ -8,7 +8,7 @@ Control Center defaults) and may not generalize the way it looks like it
 should.
 
 - [0001 - In-place sequential submodule checkout, not git worktrees](0001-submodule-execution-model.md)
-- [0002 - Battery/scenario override layers, not manual Control Center editing](0002-override-model.md)
+- [0002 - Run set/scenario override layers, not manual Control Center editing](0002-override-model.md)
 - [0003 - Curated output copies with a hard size ceiling, not external storage](0003-output-management.md)
 - [0004 - Flat, schema-versioned JSON files as the source of truth, not a database](0004-run-metadata-storage.md)
 - [0005 - GitHub Actions for validation and reporting only, never model execution](0005-ci-scope.md)

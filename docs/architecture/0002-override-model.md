@@ -1,4 +1,4 @@
-# 0002: Battery/scenario override layers, not manual Control Center editing
+# 0002: Run set/scenario override layers, not manual Control Center editing
 
 ## Context
 
@@ -17,9 +17,9 @@ keys in the same flat document -- `WFRC_SEFile` (an input selection) and
 ## Decision
 
 There is exactly one override mechanism: a sparse `overrides` map in
-`battery.yaml` (shared across every scenario in the battery) and another in
+`run_set.yaml` (shared across every scenario in the run set) and another in
 each `scenario.yaml` (specific to that one test). The orchestrator renders
-the final `_ControlCenter.yaml` automatically: baseline default -> battery
+the final `_ControlCenter.yaml` automatically: baseline default -> run set
 overrides -> scenario overrides -> machine-local values -> orchestrator-
 computed identity/path fields (which always win, regardless of what any
 override layer set). Every override key is validated against the chosen

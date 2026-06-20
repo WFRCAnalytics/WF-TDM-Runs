@@ -3,7 +3,7 @@
 The TDM's Scenarios/_defaults/ library holds known-good, fully-populated
 Control Center templates (one per scenario group/year) that an analyst would
 normally copy and hand-edit. This module automates exactly that step: load
-the chosen default, layer battery and scenario overrides on top, force in the
+the chosen default, layer run set and scenario overrides on top, force in the
 orchestrator-computed identity/path fields, layer in machine-local values,
 and write the result out as the live _ControlCenter.yaml the TDM batch entry
 point expects.
@@ -49,17 +49,17 @@ def validate_overrides(baseline: dict, overrides: dict, source_label: str):
 
 def render(
     baseline: dict,
-    battery_overrides: dict,
+    run_set_overrides: dict,
     scenario_overrides: dict,
     local_layer: dict,
     identity_fields: dict,
 ) -> dict:
-    """Layer order, each layer winning over the last: baseline -> battery
+    """Layer order, each layer winning over the last: baseline -> run set
     overrides -> scenario overrides -> local/machine values -> orchestrator-
     computed identity fields (which always win, to guarantee folder/path
     consistency regardless of what any override layer set)."""
     merged = dict(baseline)
-    merged.update(battery_overrides)
+    merged.update(run_set_overrides)
     merged.update(scenario_overrides)
     merged.update(local_layer)
     merged.update(identity_fields)

@@ -18,15 +18,15 @@ change -- `run_scenario()` is already a self-contained unit of work that
 doesn't share mutable state with any other run except the TDM checkout
 itself.
 
-**Scheduled/automated reruns.** `tdmruns run-battery` is already a single
+**Scheduled/automated reruns.** `tdmruns run-set` is already a single
 idempotent command (skips successful runs, re-runs failures) safe to invoke
 repeatedly. A scheduler just needs somewhere to invoke it from with TDM
 access -- which is also the blocker for running it in hosted CI (ADR 0005).
 
 **Cross-version comparison reporting.** Run metadata already records the
 exact resolved TDM version per run. A comparison view is a new Quarto page
-querying `report_data.py` data across scenarios/batteries by TDM version
-rather than by battery -- no change to how metadata is produced.
+querying `report_data.py` data across scenarios/run sets by TDM version
+rather than by run set -- no change to how metadata is produced.
 
 **Long-term archive of full raw outputs.** Deliberately out of scope (ADR
 0003). Adding it later means writing the full inventory (already recorded)
