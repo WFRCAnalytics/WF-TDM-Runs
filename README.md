@@ -78,6 +78,26 @@ tdmruns status
 (`Voyager_EXE` path, `UserName`, etc.) that never belong in a scenario
 definition.
 
+### CLI reference
+
+```bash
+# Validate config (all run sets, or one)
+tdmruns validate-config
+tdmruns validate-config --run-set <run_set_id>
+
+# Run all scenarios in a run set
+tdmruns run-set --run-set <run_set_id>
+
+# Run a single scenario
+tdmruns run-scenario --run-set <run_set_id> --scenario <scenario_id>
+
+# Re-run even if the scenario already completed successfully
+tdmruns run-scenario --run-set <run_set_id> --scenario <scenario_id> --force
+
+# Show latest result per scenario across all run sets
+tdmruns status
+```
+
 ### Adding a new run set
 
 Create `run_sets/<run_set_id>/run_set.yaml` declaring `tdm_ref`,
