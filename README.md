@@ -98,6 +98,11 @@ tdmruns run-scenario --run-set <run_set_id> --scenario <scenario_id> --force
 tdmruns status
 ```
 
+Each run is assigned a unique `run_id`, so re-running a scenario creates a new
+folder under `runs/<run_set_id>/<scenario_id>/` rather than overwriting the
+previous result. The full run history is preserved; `tdmruns status` and the
+reporting site show the most recent run per scenario.
+
 ### Adding a new run set
 
 Create `run_sets/<run_set_id>/run_set.yaml` declaring `tdm_ref`,
