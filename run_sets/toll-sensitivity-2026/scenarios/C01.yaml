@@ -1,9 +1,0 @@
-#========================================================================================
-# batteries/toll-sensitivity-2026/scenarios/C01.yaml
-#========================================================================================
-scenario_id: C01
-description: "Express lane minimum toll raised from $0.25 to $0.50"
-
-overrides:
-  RunDescription: "C01 - express lane minimum toll sensitivity"
-  HOT_Toll_Min: 50
