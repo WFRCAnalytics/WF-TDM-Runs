@@ -1,0 +1,9 @@
+scenario_id: S01
+description: "HH x2 — small district scope"
+
+input_files:
+  WFRC_SEFile: "inputs/SE_S01.csv"
+  MAG_SEFile: "inputs/SE_S01.csv"
+
+overrides:
+  RunDescription: "S01 - localized HH x2"

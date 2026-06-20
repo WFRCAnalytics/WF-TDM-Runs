@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "run_metadata.schema.json",
+  "title": "Run metadata",
+  "type": "object",
+  "required": [
+    "schema_version", "run_set_id", "scenario_id", "run_id", "status",
+    "started_at", "tdm", "control_center", "framework_commit"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "run_set_id": { "type": "string" },
+    "scenario_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["pending", "running", "success", "failed"] },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": ["string", "null"], "format": "date-time" },
+    "framework_commit": {
+      "type": "string",
+      "description": "Git commit SHA of this orchestration repo itself at the time of the run."
+    },
+    "tdm": {
+      "type": "object",
+      "required": ["requested_ref", "resolved_commit", "dirty"],
+      "properties": {
+        "requested_ref": { "type": "string" },
+        "resolved_commit": { "type": "string" },
+        "resolved_tag": { "type": ["string", "null"] },
+        "branch": { "type": ["string", "null"] },
+        "detached_head": { "type": "boolean" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "control_center": {
+      "type": "object",
+      "required": ["baseline_file", "run_set_overrides", "scenario_overrides"],
+      "properties": {
+        "baseline_file": { "type": "string" },
+        "run_set_overrides": { "type": "object" },
+        "scenario_overrides": { "type": "object" },
+        "rendered_path": { "type": "string" }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "command": { "type": "array", "items": { "type": "string" } },
+        "exit_code": { "type": ["integer", "null"] },
+        "log_path": { "type": ["string", "null"] }
+      }
+    },
+    "scenario_folder": { "type": "string" },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "inventory_count": { "type": "integer" },
+        "inventory_total_bytes": { "type": "integer" },
+        "curated": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "relative_path": { "type": "string" },
+              "size_bytes": { "type": "integer" },
+              "sha256": { "type": "string" },
+              "repo_path": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "error": { "type": ["string", "null"] }
+  }
+}

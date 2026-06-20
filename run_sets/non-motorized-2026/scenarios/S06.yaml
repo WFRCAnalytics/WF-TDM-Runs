@@ -1,0 +1,9 @@
+scenario_id: S06
+description: "EMP x12 — small district + specific TAZ scope"
+
+input_files:
+  WFRC_SEFile: "inputs/SE_S06.csv"
+  MAG_SEFile: "inputs/SE_S06.csv"
+
+overrides:
+  RunDescription: "S06 - localized EMP x12"

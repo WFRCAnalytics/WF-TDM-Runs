@@ -1,0 +1,43 @@
+---
+title: "TDM Run Results"
+---
+
+```{python}
+#| echo: false
+import sys
+sys.path.insert(0, ".")
+import report_data as rd
+import pandas as pd
+from IPython.display import Markdown, display
+
+run_set_ids = rd.discover_run_set_ids()
+```
+
+Generated from committed run metadata under `runs/`. A new run set appears
+here automatically once it has at least one committed run.
+
+```{python}
+#| echo: false
+#| output: asis
+if not run_set_ids:
+    print("No run sets have any committed runs yet.")
+
+for rs_id in run_set_ids:
+    description = rd.run_set_description(rs_id)
+    display(Markdown(f"## [{rs_id}](run_sets/{rs_id}.qmd)\n\n{description}\n"))
+
+    runs = rd.latest_run_per_scenario(rs_id)
+    if not runs:
+        display(Markdown("_No runs recorded yet._\n"))
+        continue
+
+    rows = []
+    for run in runs:
+        rows.append({
+            "Scenario": run["scenario_id"],
+            "Status": run["status"],
+            "Run": run["run_id"],
+            "TDM version": run["tdm"].get("resolved_tag") or run["tdm"]["resolved_commit"][:8],
+        })
+    display(pd.DataFrame(rows))
+```

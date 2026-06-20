@@ -1,0 +1,55 @@
+name: Publish report
+
+# Builds the Quarto reporting site from committed run metadata and deploys it
+# to GitHub Pages on every push to main. Never touches the TDM submodule or
+# runs any model -- this is purely a read of runs/**/run_metadata.json plus
+# curated outputs.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "runs/**"
+      - "reports/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: "1.5.57"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install pyyaml pandas jupyter
+
+      - name: Render
+        run: quarto render reports --output-dir _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

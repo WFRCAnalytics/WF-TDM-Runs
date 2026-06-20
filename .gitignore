@@ -1,0 +1,16 @@
+# Machine-specific config -- copy config/local.example.yaml to create this.
+config/local.yaml
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.venv/
+
+# Quarto build output (published via CI, not committed)
+reports/_site/
+reports/.quarto/
+
+# Editors / OS
+.DS_Store

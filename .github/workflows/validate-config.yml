@@ -1,0 +1,34 @@
+name: Validate config
+
+# Validates battery/scenario config on every PR. Does not check out the TDM
+# submodule's full history or run any model -- just enough of the submodule
+# to read the Scenarios/_defaults/ baseline files referenced by battery.yaml.
+on:
+  pull_request:
+    paths:
+      - "batteries/**"
+      - "config/**"
+      - "src/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # NOTE: the TDM submodule is a separate, likely private repository.
+          # Checking it out in CI requires either a deploy key or a PAT with
+          # read access, configured as a repo secret and passed here as
+          # `token:`. See docs/architecture/ for details.
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -e .
+
+      - run: tdmruns validate-config
+
+      - name: Enforce repo-wide file size ceiling
+        run: python scripts/check_file_sizes.py

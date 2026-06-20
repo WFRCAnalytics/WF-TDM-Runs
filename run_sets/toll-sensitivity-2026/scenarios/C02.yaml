@@ -1,0 +1,9 @@
+#========================================================================================
+# batteries/toll-sensitivity-2026/scenarios/C02.yaml
+#========================================================================================
+scenario_id: C02
+description: "Express lane maximum toll lowered from $2.00 to $1.50"
+
+overrides:
+  RunDescription: "C02 - express lane maximum toll sensitivity"
+  HOT_Toll_Max: 150

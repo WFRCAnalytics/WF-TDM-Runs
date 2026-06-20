@@ -1,0 +1,21 @@
+#========================================================================================
+# config/local.example.yaml
+#
+# Copy this file to config/local.yaml and fill in values for your own machine.
+# config/local.yaml is gitignored -- it holds values that vary by who is running
+# the framework and where, not anything about a scenario or battery.
+#
+# These values are merged into every rendered Control Center file, so they only
+# need to be set once per machine, not once per scenario.
+#========================================================================================
+
+UserName: ""
+UserCompany: ""
+
+# Absolute path to the Cube Voyager executable installed on this machine.
+Voyager_EXE: "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe"
+
+# Absolute path to the separate documentation repo, if Run_Documentation is
+# ever enabled for a scenario on this machine. Most sensitivity scenarios leave
+# Run_Documentation: 0 (the framework default) and never use this.
+DocumentationDir: "M:\\GitHub\\WF-TDM-Documentation\\"

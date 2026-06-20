@@ -1,0 +1,137 @@
+/* ============================================================
+   WFRC brand colors
+   navy:       #1B3A5C  (wordmark, headings)
+   teal:       #1A8FAA  (UI elements, accents)
+   amber:      #F5A623  (highlight accent)
+   light_teal: #E8F4F8  (background tints)
+   ============================================================ */
+
+/* --- Base font scale ---------------------------------------- */
+.reveal .slides {
+  font-size: 80%;
+}
+
+.reveal .slides ul li,
+.reveal .slides ol li {
+  font-size: 65%;
+}
+
+/* --- Title slide -------------------------------------------- */
+.reveal .title {
+  font-size: 1.6em;
+  color: #1B3A5C;
+}
+.reveal .subtitle {
+  font-size: 1em;
+  color: #1A8FAA;
+}
+.reveal .author,
+.reveal .date {
+  color: #1B3A5C;
+  opacity: 0.75;
+}
+
+/* --- Slide headings ----------------------------------------- */
+.reveal h2 {
+  color: #1B3A5C;
+  border-bottom: 3px solid #F5A623;
+  padding-bottom: 0.15em;
+}
+
+.reveal h3 {
+  color: #1A8FAA;
+}
+
+/* --- Body text --------------------------------------------- */
+.reveal .slides section {
+  color: #1B3A5C;
+}
+
+/* --- Bold text gets the teal accent ------------------------- */
+.reveal .slides strong {
+  color: #1A8FAA;
+}
+
+/* --- Blockquote (used on the opening pain-point slide) ------ */
+.reveal blockquote {
+  border-left: 4px solid #F5A623;
+  background-color: #E8F4F8;
+  color: #1B3A5C;
+  padding: 0.6em 1em;
+  font-style: italic;
+}
+
+/* --- Code blocks ------------------------------------------- */
+.reveal pre {
+  border-left: 4px solid #1A8FAA;
+  background-color: #f4f8fb;
+}
+
+.reveal pre code {
+  font-size: 0.85em;
+  line-height: 1.4;
+  color: #1B3A5C;
+}
+
+/* Inline code */
+.reveal code {
+  color: #1A8FAA;
+  background-color: #E8F4F8;
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+}
+
+/* --- Tables ------------------------------------------------- */
+.reveal table thead tr {
+  background-color: #1B3A5C;
+  color: #FFFFFF;
+}
+
+.reveal table tbody tr:nth-child(even) {
+  background-color: #E8F4F8;
+}
+
+.reveal table tbody tr:hover {
+  background-color: #d0eaf2;
+}
+
+/* --- Callout boxes ----------------------------------------- */
+.reveal .callout {
+  font-size: 0.95em;
+}
+
+.reveal .callout-note {
+  border-left-color: #1A8FAA;
+  background-color: #E8F4F8;
+}
+
+.reveal .callout-important {
+  border-left-color: #F5A623;
+  background-color: #fef9ee;
+}
+
+/* --- Footer and slide number ------------------------------- */
+.reveal .footer {
+  color: #1A8FAA;
+  font-size: 0.7em;
+}
+
+.reveal .slide-number {
+  color: #1B3A5C;
+  background-color: transparent;
+}
+
+/* --- Progress bar ------------------------------------------ */
+.reveal .progress span {
+  background-color: #F5A623;
+}
+
+/* --- Incremental list reveal ------------------------------- */
+.reveal .slides .fragment {
+  color: #1B3A5C;
+}
+
+/* --- Background color utility used on problem slides ------- */
+.reveal section[data-background-color="#f5f5f5"] h2 {
+  color: #1B3A5C;
+}

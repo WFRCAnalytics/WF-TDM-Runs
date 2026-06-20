@@ -1,0 +1,21 @@
+#========================================================================================
+# run_sets/toll-sensitivity-2026/run_set.yaml
+#========================================================================================
+run_set_id: toll-sensitivity-2026
+description: >
+  Sensitivity tests on express lane (HOT) toll thresholds and CAV market
+  penetration, run against the Base Year 2023 baseline unless a scenario
+  specifies otherwise.
+
+tdm_ref: "v1.1.0"
+baseline_control_center: "1ControlCenter - BY_2023.block"
+
+overrides:
+  # Sensitivity runs should not write into the separate documentation repo.
+  Run_Documentation: 0
+
+outputs:
+  include:
+    - "reports/*.csv"
+    - "logs/RunModel.log"
+  max_file_size_mb: 25

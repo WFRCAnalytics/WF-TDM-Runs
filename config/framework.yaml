@@ -1,0 +1,43 @@
+#========================================================================================
+# config/framework.yaml
+#
+# Global, repo-wide settings. Battery- and scenario-specific values never belong
+# here -- this file should change rarely (new TDM version conventions, a new
+# default size limit), not per sensitivity test.
+#========================================================================================
+
+# Path to the TDM git submodule, relative to the repository root.
+tdm_submodule_path: "tdm"
+
+# Path to the Control Center defaults library, relative to the submodule root.
+# battery.yaml / scenario.yaml `baseline_control_center` values are filenames
+# resolved against this directory.
+control_center_defaults_dir: "Scenarios/_default"
+
+# Convention for where a run's working folder is created, relative to the
+# submodule root. Available placeholders: {resolved_version}, {scenario_id}, {run_id}.
+scenario_folder_template: "Scenarios/{resolved_version}/{scenario_id}__{run_id}"
+
+# The fixed batch entry point and how the orchestrator invokes it. Kept as
+# config (not hardcoded) since the calling convention is a property of the TDM
+# version, not of this framework. {control_center_path} and {scenario_folder}
+# are filled in by the orchestrator for each run.
+#
+# NOTE: this currently points at RunModel_stub.py, a stand-in entry point
+# bundled in the mock tdm/ submodule used for local development and testing,
+# since Cube Voyager itself can't run in most CI/sandbox environments. Once
+# tdm/ is pointed at the real TDM repository (see README), change this to
+# the real batch file, e.g. "RunModel.bat".
+execution:
+  entry_point: "RunModel.bat"
+  args: ["{control_center_path}", "{scenario_folder}"]
+  timeout_seconds: 86400
+
+# Output curation. Individual battery/scenario configs may override
+# max_file_size_mb, but never above this hard ceiling.
+outputs:
+  max_file_size_mb: 100
+
+# Run metadata schema version this version of the framework writes. Bump this,
+# and add a migration note in docs/architecture/, if the metadata shape changes.
+run_metadata_schema_version: 1

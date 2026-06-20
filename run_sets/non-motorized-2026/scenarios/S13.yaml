@@ -1,0 +1,9 @@
+scenario_id: S13
+description: "Region Future Today Centerized — SE_2050 transit corridors, region-wide"
+
+input_files:
+  WFRC_SEFile: "inputs/SE_S13.csv"
+  MAG_SEFile: "inputs/SE_S13.csv"
+
+overrides:
+  RunDescription: "S13 - Region Future Today Centerized SE_2050_transit_corridors (region)"

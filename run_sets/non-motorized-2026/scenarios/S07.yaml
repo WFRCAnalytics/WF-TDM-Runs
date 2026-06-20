@@ -1,0 +1,9 @@
+scenario_id: S07
+description: "HH x2 and EMP x2 — small district scope"
+
+input_files:
+  WFRC_SEFile: "inputs/SE_S07.csv"
+  MAG_SEFile: "inputs/SE_S07.csv"
+
+overrides:
+  RunDescription: "S07 - localized HH x2 + EMP x2 (smldst)"

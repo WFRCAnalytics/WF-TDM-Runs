@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "scenario.schema.json",
+  "title": "Sensitivity test scenario",
+  "type": "object",
+  "required": ["scenario_id"],
+  "additionalProperties": false,
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+      "description": "Unique, stable identifier within the run set. Also used as Control Center ScenarioName unless overridden. Never reuse after retiring a scenario."
+    },
+    "description": {
+      "type": "string"
+    },
+    "tdm_ref": {
+      "type": "string",
+      "description": "Overrides the run set's tdm_ref for this scenario only."
+    },
+    "baseline_control_center": {
+      "type": "string",
+      "description": "Overrides the run set's baseline_control_center for this scenario only."
+    },
+    "input_files": {
+      "type": "object",
+      "description": "Input file paths for this scenario, relative to the run_set directory. Resolved to absolute paths by the framework before writing the Control Center — keeps scenario YAMLs machine-independent.",
+      "additionalProperties": { "type": "string" }
+    },
+    "overrides": {
+      "type": "object",
+      "description": "Control Center key/value overrides specific to this scenario, applied on top of the run set's shared overrides.",
+      "additionalProperties": true
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include": { "type": "array", "items": { "type": "string" } },
+        "max_file_size_mb": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

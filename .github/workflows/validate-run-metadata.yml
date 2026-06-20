@@ -1,0 +1,26 @@
+name: Validate run metadata
+
+# Runs whenever a PR adds or changes anything under runs/ -- i.e. whenever
+# someone is committing the results of a completed sensitivity run. Confirms
+# every run_metadata.json is schema-valid and that curated output checksums
+# still match what's on disk, and re-enforces the size ceiling.
+on:
+  pull_request:
+    paths:
+      - "runs/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -e .
+
+      - run: python scripts/validate_run_metadata.py
+
+      - run: python scripts/check_file_sizes.py

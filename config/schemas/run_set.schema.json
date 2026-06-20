@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "run_set.schema.json",
+  "title": "Run set",
+  "type": "object",
+  "required": ["run_set_id", "tdm_ref", "baseline_control_center"],
+  "additionalProperties": false,
+  "properties": {
+    "run_set_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Unique, stable slug for this run set. Never reuse after retiring a run set."
+    },
+    "description": {
+      "type": "string"
+    },
+    "tdm_ref": {
+      "type": "string",
+      "description": "Git tag, branch, or commit SHA in the TDM submodule that scenarios in this run set run against, unless a scenario overrides it."
+    },
+    "baseline_control_center": {
+      "type": "string",
+      "description": "Filename of the default Control Center template in the TDM's Scenarios/_defaults/ library that this run set's scenarios diff against, unless a scenario overrides it."
+    },
+    "input_files": {
+      "type": "object",
+      "description": "Input file paths shared by all scenarios in this run set, relative to the run_set directory. Resolved to absolute paths by the framework before writing the Control Center.",
+      "additionalProperties": { "type": "string" }
+    },
+    "overrides": {
+      "type": "object",
+      "description": "Control Center key/value overrides shared by every scenario in this run set, applied before any scenario-specific overrides.",
+      "additionalProperties": true
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include": { "type": "array", "items": { "type": "string" } },
+        "max_file_size_mb": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

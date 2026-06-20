@@ -1,0 +1,419 @@
+---
+title: "TDM Run Management Framework"
+subtitle: "A proposal for reproducible, traceable, and publishable model runs"
+author: "WFRC/MAG Analytics"
+date: today
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    progress: true
+    logo: ""
+    footer: "WFRC/MAG — TDM Run Management Framework"
+    transition: slide
+    incremental: false
+    toc: false
+    highlight-style: github
+    css: styles.css
+---
+
+## Where we are today {background-color="#f5f5f5"}
+
+> *"We just completed a 14-scenario non-motorized sensitivity study.  
+> It took over a month."*
+
+::: {.columns}
+::: {.column width="50%"}
+**What that month looked like:**
+
+- Manually configuring each Control Center file
+- Coordinating SE data inputs across runs
+- Tracking which version of the model ran which scenario
+- Hunting down outputs scattered across folders
+- Assembling results by hand for summarization
+:::
+::: {.column width="50%"}
+**What it should have looked like:**
+
+- Define 14 scenarios in 14 config files
+- Run one command
+- Review committed results
+- Publish a report
+:::
+:::
+
+::: {.notes}
+This is the hook. The room has either lived this or watched someone else live it. Don't rush past it.
+:::
+
+---
+
+## This isn't a process problem {background-color="#f5f5f5"}
+
+It's a tooling gap.
+
+Our analysts are doing the right work — rigorous sensitivity testing, careful scenario design, thoughtful interpretation. The problem is that **none of the supporting infrastructure is designed for what we actually do.**
+
+::: {.incremental}
+- We run **many independent model runs** against a shared codebase — but we have no structured way to manage that.
+- We need results to be **reproducible** — but we have no record of exactly what version ran with what inputs.
+- We need results to be **discoverable** — but outputs live in folders that only the person who ran the model knows how to navigate.
+- We need to **report findings** — but the first step is always reassembling scattered outputs by hand.
+:::
+
+---
+
+## The proposal
+
+A lightweight **TDM Run Management Framework** — a GitHub repository that sits around our existing TDM, not replacing it, that handles everything except the model run itself.
+
+::: {.columns}
+::: {.column width="55%"}
+**What it manages:**
+
+- Defining run sets and scenarios in version-controlled config
+- Resolving and pinning TDM versions automatically
+- Rendering Control Center files from layered overrides
+- Invoking the model's existing batch entry point
+- Curating and committing selected outputs
+- Recording structured metadata per run
+- Publishing results to a website via GitHub Pages
+:::
+::: {.column width="45%"}
+**What it doesn't touch:**
+
+- The TDM codebase itself
+- The existing `Scenarios/_defaults/` library
+- How the model runs internally
+- Cube Voyager licensing or infrastructure
+:::
+:::
+
+---
+
+## How the two repositories relate
+
+The framework repo and the TDM development repo are separate — connected by a git submodule, not merged together.
+
+```
+GitHub
+├── wf-tdm-development/          ← TDM code repo (exists today, unchanged)
+│   ├── Scenarios/
+│   │   ├── _defaults/           ← baseline Control Center library
+│   │   │   ├── 1ControlCenter - BY_2023.block
+│   │   │   ├── 1ControlCenter - RTP_2050.block
+│   │   │   └── ...
+│   │   └── (run folders — gitignored, working space only)
+│   └── RunModel.bat             ← fixed batch entry point
+│
+└── wf-tdm-runs/                 ← NEW: this framework repo
+    └── tdm/  ──────────────────── git submodule → wf-tdm-development
+```
+
+::: {.callout-note}
+The TDM development repo is **never modified** by this framework. The submodule link just lets the framework know which version to check out before running a scenario.
+:::
+
+---
+
+## Inside the framework repo
+
+```
+wf-tdm-runs/
+│
+├── tdm/                          ← TDM submodule (pinned to a tag per run set)
+│
+├── config/
+│   ├── framework.yaml            ← global settings: paths, size limits, entry point
+│   ├── local.yaml                ← machine-specific: Voyager_EXE, username
+│   │                               (gitignored — never committed)
+│   └── schemas/                  ← JSON Schema validation for all config files
+│
+├── run_sets/
+│   └── nonmotorized-2027/
+│       ├── run_set.yaml          ← TDM version, baseline, shared overrides, outputs
+│       ├── scenarios/
+│       │   ├── NM01.yaml         ← just the delta for each scenario
+│       │   ├── NM02.yaml
+│       │   └── ...
+│       ├── inputs/               ← prepped input files (SE CSVs, etc.)
+│       └── prep/                 ← notebooks that generate inputs/
+│
+├── runs/                         ← committed results (small, curated files only)
+│   └── nonmotorized-2027/
+│       └── NM01/
+│           └── 20260617-211219/
+│               ├── run_metadata.json   ← source of truth for reporting
+│               └── outputs/
+│                   └── reports/
+│                       └── mode_choice_summary.csv
+│
+├── reports/                      ← Quarto site, reads from runs/ at build time
+│   ├── index.qmd                 ← all run sets, auto-discovered
+│   └── run_sets/
+│       └── nonmotorized-2027.qmd ← per-run-set detail page
+│
+└── src/tdmruns/                  ← orchestrator CLI (pip install -e .)
+    ├── cli.py                    ← tdmruns run-set / validate-config / status
+    ├── config.py                 ← config loading and merge logic
+    ├── controlcenter.py          ← override rendering
+    ├── submodule.py              ← version resolution and checkout
+    ├── execution.py              ← run lifecycle and batch invocation
+    ├── outputs.py                ← inventory, selection, size enforcement
+    └── metadata.py               ← run_metadata.json writer and reader
+```
+
+::: {.notes}
+Worth noting for developers: raw model outputs (skims, trip tables, assignment results) never enter this repo. Only the small, deliberately-selected files under runs/.../outputs/ are committed. Everything else lives in the gitignored Scenarios/ working folder in the TDM submodule.
+:::
+
+---
+
+## It was built for our TDM specifically
+
+This isn't a generic framework adapted to our workflow. It was designed around the specifics of how our Cube Voyager TDM actually works.
+
+::: {.incremental}
+- **The `_defaults/` library** — `1ControlCenter - BY_2023.block`, `RTP_2050`, `NB28`, `Needs`, etc. — is the baseline library the framework diffs from. No new convention to learn.
+- **The `_ControlCenter.yaml` file** — the framework reads it, layers overrides, and writes the result. Same file, same format.
+- **The fixed batch entry point** — the framework calls it with the same two arguments it always takes. Nothing changes about how the model runs.
+- **The `Scenarios/` folder** — runs execute there exactly as they do today, in place, gitignored the same way.
+:::
+
+::: {.callout-note}
+The framework is a thin shell around what we already do. Analysts don't learn a new model workflow — they learn a new way to *organize* what they're already doing.
+:::
+
+---
+
+## What a run set looks like
+
+Adding a new sensitivity study — say, a follow-on to the non-motorized work — is two files.
+
+**`run_sets/nonmotorized-2027/run_set.yaml`** — shared settings for the whole study:
+```yaml
+run_set_id: nonmotorized-2027
+description: "Non-motorized mode sensitivity, expanded"
+tdm_ref: "v2.3"
+baseline_control_center: "1ControlCenter - BY_2023.block"
+overrides:
+  Run_Documentation: 0
+outputs:
+  include:
+    - "reports/*.csv"
+```
+
+**`run_sets/nonmotorized-2027/scenarios/NM01.yaml`** — one scenario, just the delta:
+```yaml
+scenario_id: NM01
+description: "Households x2 — small district scope"
+input_files:                      # relative to run_set dir, resolved at runtime
+  WFRC_SEFile: "inputs/SE_NM01.csv"
+  MAG_SEFile:  "inputs/SE_NM01.csv"
+overrides:
+  RunDescription: "NM01 - HH x2 (smldst)"
+```
+
+Fourteen scenarios = fourteen files like that second one. SE files are generated
+once by the prep notebook in `prep/` before the run set executes.
+
+---
+
+## What running it looks like
+
+From the command line — or eventually a scheduled job — one command:
+
+```bash
+tdmruns run-set --run-set nonmotorized-2027
+```
+
+The framework then, for each scenario:
+
+::: {.incremental}
+1. **Validates** all config and override keys before touching anything
+2. **Pins** the TDM version — checks out the exact requested git tag, refuses to proceed if the working tree is dirty
+3. **Renders** the Control Center file — baseline + shared overrides + scenario overrides, with path fields computed automatically
+4. **Runs** the model via the existing batch entry point
+5. **Curates** selected outputs (under a hard 100 MB/file ceiling) into the repo
+6. **Records** structured metadata — version used, overrides applied, outputs produced, timing, status
+7. **Moves to the next scenario** — a failure doesn't stop the rest of the run set
+:::
+
+---
+
+## What the record looks like
+
+Every completed scenario produces a `run_metadata.json` committed to the repository. This is the framework's source of truth for everything — reporting, reproducibility, auditing.
+
+```json
+{
+  "run_set_id": "nonmotorized-2027",
+  "scenario_id": "NM01",
+  "status": "success",
+  "tdm": {
+    "requested_ref": "v2.3",
+    "resolved_commit": "a3f91c8...",
+    "resolved_tag": "v2.3",
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "1ControlCenter - BY_2023.block",
+    "run_set_overrides": { "Run_Documentation": 0 },
+    "scenario_overrides": { "WalkSpeed": 3.3 }
+  },
+  "outputs": {
+    "curated": [
+      { "relative_path": "reports/mode_choice_summary.csv",
+        "size_bytes": 1842, "sha256": "e3b0c4..." }
+    ]
+  }
+}
+```
+
+---
+
+## What gets published
+
+A GitHub Pages site, built automatically from committed metadata whenever results are pushed to main.
+
+::: {.columns}
+::: {.column width="50%"}
+**Landing page** (`reports/index.qmd`)
+Every run set with committed results, automatically indexed — no one maintains this by hand.
+
+| Run set | Scenarios | Status |
+|---|---|---|
+| nonmotorized-2027 | 14 | ✅ 14/14 |
+| toll-sensitivity-2026 | 3 | ✅ 3/3 |
+| i15-alternatives | 5 | ⚠️ 4/5 |
+:::
+::: {.column width="50%"}
+**Per-run-set page** (`reports/run_sets/<id>.qmd`)
+Scenario summary table, TDM version used, overrides applied, links to curated outputs.
+
+Adding a new run set to the index requires **no changes** — it appears automatically once it has a committed run. Add one `.qmd` file for its detail page.
+:::
+:::
+
+---
+
+## What changes for analysts
+
+::: {.columns}
+::: {.column width="50%"}
+**Before**
+
+- Open each Control Center file, edit manually
+- Keep notes (or don't) on what changed between runs
+- Remember where outputs are
+- Reassemble results for reporting
+- Hope someone can reproduce this in six months
+:::
+::: {.column width="50%"}
+**After**
+
+- Write a scenario config (a handful of YAML lines)
+- Run one command per run set
+- Commit results and curated outputs
+- Report generates automatically
+- Anyone can reproduce any run from the metadata
+:::
+:::
+
+::: {.callout-important}
+The non-motorized study — 14 scenarios, over a month — is the target use case. The framework was designed specifically so that study could be repeated in a fraction of the time with a complete, publishable record.
+:::
+
+---
+
+## What stays the same
+
+We want to be direct about what this does and doesn't change, because the biggest risk to adoption is the perception that this adds overhead without removing any.
+
+::: {.incremental}
+- **The TDM model itself** — unchanged. No modifications to model code, no new Cube Voyager conventions.
+- **The `_defaults/` library** — unchanged. Analysts continue maintaining baseline Control Center templates exactly as today.
+- **How runs execute** — unchanged. The model still runs in place, in the `Scenarios/` folder, via the same batch entry point.
+- **Who controls what scenarios run** — unchanged. An analyst defines the scenarios; the framework executes what they ask for.
+- **Judgment and interpretation** — unchanged. The framework tracks and publishes results. Understanding what they mean is still entirely the analyst's job.
+:::
+
+---
+
+## The pilot
+
+We're not proposing a full rollout. We're proposing one run set, end to end, to validate the workflow against our real TDM before committing to anything broader.
+
+**Proposed pilot scope:**
+
+| Item | Detail |
+|---|---|
+| Run set | Non-motorized sensitivity study (repeat of the recent study, or a new defined battery) |
+| Scenarios | 6–10, enough to exercise the full pipeline |
+| TDM version | Current development version, tagged for the pilot |
+| Duration | 4–6 weeks including setup and results review |
+| Success criteria | All scenarios run reproducibly, results published to GitHub Pages, team can read and trust the output |
+
+**What the pilot requires:**
+
+- Connect the TDM development repo as a git submodule (one command)
+- Configure the batch entry point and local machine settings
+- Define the pilot run set in config
+- Review results as a team at the end
+
+---
+
+## What we're asking for today
+
+::: {.columns}
+::: {.column width="60%"}
+**Approval to run the pilot** — one run set, one team, 4–6 weeks.
+
+Specifically:
+- Agreement on which run set to use as the pilot
+- One analyst assigned as the pilot lead
+- A short review session at the end before any decision on broader adoption
+:::
+::: {.column width="40%"}
+**What we already have:**
+
+✅ Framework built and tested  
+✅ Built for our Cube Voyager TDM  
+✅ 34 automated tests passing  
+✅ Example run set with results  
+✅ GitHub Pages reporting working  
+✅ Documentation written  
+
+**What we need:**
+
+🔲 Pilot approval  
+🔲 Pilot run set selected  
+🔲 Pilot lead assigned  
+:::
+:::
+
+---
+
+## Questions?
+
+::: {.columns}
+::: {.column width="60%"}
+**Key things to know going into discussion:**
+
+- This was designed around the specifics of our TDM — the `_defaults/` library, the Control Center file format, the batch entry point calling convention — not adapted from a generic tool.
+- The framework is already built and working. The pilot is about validating it fits our real workflow, not about building something new.
+- Adoption beyond the pilot is a separate decision. Approval today is only for one run set.
+:::
+::: {.column width="40%"}
+**Anticipated questions:**
+
+*"What if it doesn't work with our TDM?"*  
+That's what the pilot is for. The framework was built against our conventions, but a real run against the real model is the definitive test.
+
+*"Is this more work for analysts?"*  
+Setup is slightly more deliberate. Execution, tracking, and reporting are significantly less work.
+
+*"Who maintains this?"*  
+Same team. It's a Python package and a git repo — no server, no external service.
+:::
+:::

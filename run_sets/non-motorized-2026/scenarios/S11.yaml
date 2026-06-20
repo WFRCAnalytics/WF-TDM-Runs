@@ -1,0 +1,9 @@
+scenario_id: S11
+description: "Future Today Centerized — SE_2050 transit corridors, small district scope"
+
+input_files:
+  WFRC_SEFile: "inputs/SE_S11.csv"
+  MAG_SEFile: "inputs/SE_S11.csv"
+
+overrides:
+  RunDescription: "S11 - Future Today Centerized SE_2050_transit_corridors (smldst)"
