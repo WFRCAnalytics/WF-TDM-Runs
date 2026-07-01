@@ -14,6 +14,7 @@ from tdmruns import config as cfg
 from tdmruns import controlcenter as cc
 from tdmruns import metadata as md
 from tdmruns import outputs as out
+from tdmruns import prep
 from tdmruns import submodule as sub
 from tdmruns.exceptions import ExecutionError
 
@@ -121,6 +122,9 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     cc.validate_overrides(baseline, scenario_overrides, f"scenario '{scenario_id}'.overrides")
     local_layer = framework.get("_local", {})
     cc.validate_overrides(baseline, local_layer, "config/local.yaml")
+
+    # --- prep scripts (hard failure stops this scenario before execution) ---
+    prep.run_prep_scripts(run_set, scenario, rs_dir, scenario_id)
 
     folder = scenario_folder_path(
         repo_root, tdm_path, framework, version_label, scenario_id, run_id

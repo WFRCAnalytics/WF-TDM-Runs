@@ -30,3 +30,7 @@ class ExecutionError(tdmrunsError):
 class OutputCollectionError(tdmrunsError):
     """Raised when a selected output file exceeds the configured size limit,
     or an output selection pattern matches nothing and is marked as required."""
+
+
+class PrepScriptError(tdmrunsError):
+    """Raised when a declared prep script is not found or exits non-zero."""

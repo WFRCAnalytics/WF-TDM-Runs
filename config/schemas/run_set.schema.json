@@ -32,6 +32,10 @@
       "description": "Control Center key/value overrides shared by every scenario in this run set, applied before any scenario-specific overrides.",
       "additionalProperties": true
     },
+    "prep_script": {
+      "type": "string",
+      "description": "Path to a Python prep script, relative to the run_set directory. Run once per scenario before model execution. Receives --run-set-dir and --scenario-id as arguments."
+    },
     "outputs": {
       "type": "object",
       "additionalProperties": false,

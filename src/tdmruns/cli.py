@@ -8,6 +8,7 @@ import click
 from tdmruns import config as cfg
 from tdmruns import execution as ex
 from tdmruns import metadata as md
+from tdmruns import prep
 from tdmruns import submodule as sub
 from tdmruns.exceptions import tdmrunsError
 from tdmruns.paths import find_repo_root
@@ -128,6 +129,24 @@ def run_set_cmd(run_set_id, only, force):
         )
     click.echo(f"\n{n_ok} succeeded, {n_fail} failed.")
     sys.exit(1 if n_fail else 0)
+
+
+@main.command("prep-scenario")
+@click.option("--run-set", "run_set_id", required=True)
+@click.option("--scenario", "scenario_id", required=True)
+@click.pass_context
+def prep_scenario_cmd(ctx, run_set_id, scenario_id):
+    """Run prep scripts for a single scenario without executing the model."""
+    repo_root = ctx.obj["repo_root"]
+    try:
+        run_set = cfg.load_run_set(repo_root, run_set_id)
+        scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
+        rs_dir = repo_root / "run_sets" / run_set_id
+        prep.run_prep_scripts(run_set, scenario, rs_dir, scenario_id)
+    except tdmrunsError as e:
+        click.echo(f"[FAIL] {run_set_id}/{scenario_id}: {e}", err=True)
+        sys.exit(1)
+    click.echo(f"[OK]   {run_set_id}/{scenario_id} prep complete")
 
 
 @main.command("status")
