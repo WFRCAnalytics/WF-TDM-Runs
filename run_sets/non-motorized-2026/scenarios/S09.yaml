@@ -1,9 +1,0 @@
-scenario_id: S09
-description: "HH x12 and EMP x12 — small district + specific TAZ scope"
-
-input_files:
-  WFRC_SEFile: "inputs/SE_S09.csv"
-  MAG_SEFile: "inputs/SE_S09.csv"
-
-overrides:
-  RunDescription: "S09 - localized HH x12 + EMP x12 (smldst+taz)"

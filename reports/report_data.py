@@ -22,8 +22,15 @@ def run_set_description(run_set_id: str) -> str:
     path = REPO_ROOT / "run_sets" / run_set_id / "run_set.yaml"
     if not path.is_file():
         return ""
-    data = yaml.safe_load(open(path))
+    data = yaml.safe_load(open(path, encoding="utf-8-sig"))
     return (data.get("description") or "").strip()
+
+
+def scenario_count(run_set_id: str) -> int:
+    scenarios_dir = REPO_ROOT / "run_sets" / run_set_id / "scenarios"
+    if not scenarios_dir.is_dir():
+        return 0
+    return len(list(scenarios_dir.glob("*.yaml")))
 
 
 def latest_run_per_scenario(run_set_id: str) -> list:

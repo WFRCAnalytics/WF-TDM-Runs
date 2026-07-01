@@ -1,0 +1,25 @@
+#========================================================================================
+# run_sets/non-motorized-2023/run_set.yaml
+#========================================================================================
+run_set_id: non-motorized-2023
+description: >
+  Non-motorized network sensitivity test — 13 scenarios varying HH and EMP
+  at different multipliers and spatial scopes (specific TAZs, small districts,
+  or region-wide) to quantify mode-choice response to localized land-use changes.
+  Replicates the 14-scenario study that previously took over a month manually.
+
+tdm_ref: "v1000-E3"
+baseline_control_center: "1ControlCenter - BY_2019.block"
+
+# prep_script:   # optional: path to a Python script relative to this run_set dir
+                 # run once per scenario before model execution
+                 # script receives --run-set-dir and --scenario-id as arguments
+
+overrides:
+  Run_Documentation: 0
+  vizToolDir: "run_sets/non-motorized-2023/.vizTool"
+
+outputs:
+  include:
+    - "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
+  max_file_size_mb: 45

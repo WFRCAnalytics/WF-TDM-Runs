@@ -16,7 +16,7 @@ SCHEMA_DIR_NAME = "schemas"
 def load_yaml(path: Path) -> dict:
     if not path.is_file():
         raise ConfigValidationError(f"Config file not found: {path}")
-    with open(path) as f:
+    with open(path, encoding="utf-8-sig") as f:
         data = yaml.safe_load(f) or {}
     if not isinstance(data, dict):
         raise ConfigValidationError(f"{path} must contain a YAML mapping at the top level.")

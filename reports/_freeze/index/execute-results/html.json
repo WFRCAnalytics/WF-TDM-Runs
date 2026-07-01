@@ -1,0 +1,12 @@
+{
+  "hash": "6eff677e5ba9fe6a8e5fedc23828b35b",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"TDM Run Results\"\nsubtitle: \"Wasatch Front Regional Travel Demand Model — Run Set Reporting\"\nauthor: \"Bill Hereth\"\ndate: today\n---\n\n\n\nGenerated from committed run metadata under `runs/`. A new run set appears\nhere automatically once it has at least one committed run.\n\n## non-motorized-2023\n\nNon-motorized network sensitivity test — 13 scenarios varying HH and EMP at different multipliers and spatial scopes to quantify mode-choice response to localized land-use changes. Manually curated from pre-existing scenario outputs (not run through the `tdmruns` CLI), so it's linked directly here rather than through the generic run-metadata table below.\n\n- [Slides view](run_sets/non-motorized-2023/slides.html)\n- [Summary view](run_sets/non-motorized-2023/summary.html)\n\n\n\nNo run sets have any committed runs yet.\n\n\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

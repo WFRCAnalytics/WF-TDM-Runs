@@ -1,0 +1,510 @@
+---
+title: "Non-Motorized Travel Sensitivity"
+subtitle: "WF-TDM Non-Motorized Enhancement"
+author: "Bill Hereth"
+date: "June 17, 2026"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    embed-resources: true
+    width: 1280
+    height: 720
+    fig-align: center
+    footer: "Wasatch Front Regional Council | Non-Motorized Sensitivity Analysis"
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
+---
+
+```{python}
+#| label: setup
+
+import pandas as pd
+import geopandas as gpd
+import plotly.express as px
+import os
+
+# Base year (test_id 0) and the shared TAZ/district shapefiles aren't scenario
+# outputs, so they're read straight from the (gitignored) tdm/ working tree.
+# Test scenarios 1-13 are curated, filtered CSVs committed under run_sets/.
+TDM_ROOT = os.path.join('..', '..', '..', 'tdm')
+TDM_BASELINE_DIR = os.path.join(TDM_ROOT, 'Scenarios', 'non-motorized-2023')
+CURATED_OUTPUTS_DIR = os.path.join('..', '..', '..', 'run_sets', 'non-motorized-2023', 'outputs')
+smldst_lst = [22, 16, 46, 88, 102]
+
+scenario_meta = pd.DataFrame([
+    {'test_id':  0, 'description': 'Base 2019',               'hh_mult': 1,  'emp_mult': 1,  'scope': 'smldst'},
+    {'test_id':  1, 'description': '2019 HH x2',              'hh_mult': 2,  'emp_mult': 1,  'scope': 'smldst'},
+    {'test_id':  2, 'description': '2019 HH x4',              'hh_mult': 4,  'emp_mult': 1,  'scope': 'smldst'},
+    {'test_id':  3, 'description': '2019 HH x12',             'hh_mult': 12, 'emp_mult': 1,  'scope': 'smldst'},
+    {'test_id':  4, 'description': '2019 EMP x2',             'hh_mult': 1,  'emp_mult': 2,  'scope': 'smldst'},
+    {'test_id':  5, 'description': '2019 EMP x4',             'hh_mult': 1,  'emp_mult': 4,  'scope': 'smldst'},
+    {'test_id':  6, 'description': '2019 EMP x12',            'hh_mult': 1,  'emp_mult': 12, 'scope': 'smldst'},
+    {'test_id':  7, 'description': '2019 HH+EMP x2',          'hh_mult': 2,  'emp_mult': 2,  'scope': 'smldst'},
+    {'test_id':  8, 'description': '2019 HH+EMP x4',          'hh_mult': 4,  'emp_mult': 4,  'scope': 'smldst'},
+    {'test_id':  9, 'description': '2019 HH+EMP x12',         'hh_mult': 12, 'emp_mult': 12, 'scope': 'smldst'},
+    {'test_id': 10, 'description': 'Future Today',            'hh_mult': -1, 'emp_mult': -1, 'scope': 'smldst'},
+    {'test_id': 11, 'description': 'Future Today - Centerized','hh_mult': -1, 'emp_mult': -1, 'scope': 'smldst'},
+    {'test_id': 12, 'description': 'Future Today',            'hh_mult': -1, 'emp_mult': -1, 'scope': 'region'},
+    {'test_id': 13, 'description': 'Future Today - Centerized','hh_mult': -1, 'emp_mult': -1, 'scope': 'region'},
+])
+
+taz_gdf = gpd.read_file(os.path.join(TDM_ROOT, '1_Inputs', '1_TAZ', 'WFv910_TAZ.shp'))
+smldst_tazs = set(taz_gdf[taz_gdf['DISTSML'].isin(smldst_lst)]['TAZID'].astype(int).tolist())
+
+KEEP_COLS = ['Purpose', 'TAZID', 'All', 'Walk', 'Bike', 'NonM']
+
+def load_scenario(test_id):
+    if test_id == 0:
+        path = os.path.join(TDM_BASELINE_DIR, 'BY_2019', '4_ModeChoice',
+                            '2_DetailedTripMatrices', 'BY_2019_ZoneSummary_TripsByMode.csv')
+        df = pd.read_csv(path)
+        df = df[(df['Period'] == 'Dy') & (df['PA'] == 'P')][KEEP_COLS]
+    else:
+        # Curated CSVs are already filtered to Period=='Dy' & PA=='P' with only KEEP_COLS.
+        scenario_id = f'S{test_id:02d}'
+        path = os.path.join(CURATED_OUTPUTS_DIR, scenario_id, 'TripsByMode_daily_productions.csv')
+        df = pd.read_csv(path)
+    df['test_id'] = test_id
+    return df
+
+raw_df = pd.concat([load_scenario(i) for i in range(14)], ignore_index=True)
+raw_df = raw_df.merge(scenario_meta, on='test_id')
+raw_df['TAZID'] = raw_df['TAZID'].astype(int)
+
+filt_df = raw_df
+GROUP_COLS = ['test_id', 'description', 'hh_mult', 'emp_mult', 'Purpose']
+SUM_COLS   = ['All', 'Walk', 'Bike', 'NonM']
+
+local_agg = (
+    filt_df[filt_df['test_id'].isin(range(12)) & filt_df['TAZID'].isin(smldst_tazs)]
+    .groupby(GROUP_COLS)[SUM_COLS].sum().reset_index()
+)
+local_agg['geo_scope'] = 'smldst'
+
+region_agg = (
+    filt_df[filt_df['test_id'].isin([0, 12, 13])]
+    .groupby(GROUP_COLS)[SUM_COLS].sum().reset_index()
+)
+region_agg['geo_scope'] = 'region'
+
+summary = pd.concat([local_agg, region_agg], ignore_index=True)
+summary['nonm_share'] = summary['NonM'] / summary['All'] * 100
+summary['walk_share'] = summary['Walk'] / summary['All'] * 100
+summary['bike_share'] = summary['Bike'] / summary['All'] * 100
+
+def add_deltas(df, geo):
+    base = df[(df['test_id'] == 0) & (df['geo_scope'] == geo)][[
+        'Purpose', 'NonM', 'Walk', 'Bike', 'All', 'nonm_share', 'walk_share', 'bike_share'
+    ]].rename(columns={
+        'NonM': 'base_NonM', 'Walk': 'base_Walk', 'Bike': 'base_Bike', 'All': 'base_All',
+        'nonm_share': 'base_nonm_share', 'walk_share': 'base_walk_share', 'bike_share': 'base_bike_share'
+    })
+    merged = df[df['geo_scope'] == geo].merge(base, on='Purpose')
+    for col in ['NonM', 'Walk', 'Bike']:
+        merged[f'delta_{col}'] = merged[col] - merged[f'base_{col}']
+    merged['delta_nonm_share'] = merged['nonm_share'] - merged['base_nonm_share']
+    merged['delta_walk_share'] = merged['walk_share'] - merged['base_walk_share']
+    merged['delta_bike_share'] = merged['bike_share'] - merged['base_bike_share']
+    return merged
+
+local_delta  = add_deltas(summary, 'smldst')
+region_delta = add_deltas(summary, 'region')
+full_delta   = pd.concat([local_delta, region_delta], ignore_index=True)
+
+purposes = ['HBW', 'HBO', 'NHB']
+
+label_order = [
+    'HH only 2x', 'HH only 4x', 'HH only 12x',
+    'EMP only 2x', 'EMP only 4x', 'EMP only 12x',
+    'HH + EMP 2x', 'HH + EMP 4x', 'HH + EMP 12x',
+]
+
+def series_label(row):
+    if row['hh_mult_n'] > 1 and row['emp_mult_n'] == 1:
+        return 'HH only'
+    elif row['hh_mult_n'] == 1 and row['emp_mult_n'] > 1:
+        return 'EMP only'
+    return 'HH + EMP'
+
+COLORS = {'HH only': '#1f77b4', 'EMP only': '#e6550d', 'HH + EMP': '#31a354'}
+```
+
+## Why This Matters
+
+:::  {.incremental}
+- The WF-TDM has been updated with an enhanced **non-motorized (NM) travel component**
+- Before using it in planning applications, we need to know: **does the model respond to land use changes in a credible way?**
+- We ran 13 controlled tests — artificially increasing household and employment density in five test districts — to see how walk and bike trips respond
+:::
+
+::: {.notes}
+The enhancement improves how the model estimates walking and biking. These sensitivity tests are a standard model validation step — we're stress-testing the model's behavior before applying it to real planning scenarios.
+:::
+
+## How We Tested {.smaller}
+
+:::: {.columns}
+::: {.column width="55%"}
+**Test geography:** 5 small districts (278 TAZs) across the region
+
+**What we changed:**
+
+| Group | Scenarios |
+|---|---|
+| Households only | 2×, 4×, 12× |
+| Employment only | 2×, 4×, 12× |
+| Both HH + EMP | 2×, 4×, 12× |
+| 2050 land use (local) | Base & Centerized |
+| 2050 land use (region) | Base & Centerized |
+
+**What we measured:** Non-motorized mode share — the share of daily productions walked or biked
+:::
+::: {.column width="45%"}
+::: {.callout-note}
+## Why such extreme multipliers?
+The 2×, 4×, and 12× values are intentionally unrealistic. They stress-test the model across a wide range of densities so we can understand its behavior — not to represent actual planning scenarios.
+:::
+:::
+::::
+
+::: {.notes}
+The test districts were selected to represent a range of urban contexts. The base year is 2019. All results shown are daily trip productions at the non-motorized mode share level.
+:::
+
+## Overall Sensitivity {.smaller}
+
+```{python}
+#| fig-align: center
+
+mult_all = full_delta[
+    (full_delta['test_id'].isin(range(10))) &
+    (full_delta['geo_scope'] == 'smldst') &
+    (full_delta['Purpose'] == 'All')
+].copy()
+
+mult_all['hh_mult_n']  = mult_all['hh_mult'].astype(float)
+mult_all['emp_mult_n'] = mult_all['emp_mult'].astype(float)
+mult_all['multiplier'] = mult_all[['hh_mult_n', 'emp_mult_n']].max(axis=1)
+
+base_row = mult_all[mult_all['test_id'] == 0].copy()
+frames = []
+for lbl, mask in [
+    ('HH only',  (mult_all['hh_mult_n'] > 1) & (mult_all['emp_mult_n'] == 1)),
+    ('EMP only', (mult_all['hh_mult_n'] == 1) & (mult_all['emp_mult_n'] > 1)),
+    ('HH + EMP', (mult_all['hh_mult_n'] > 1) & (mult_all['emp_mult_n'] > 1)),
+]:
+    b = base_row.copy(); b['series'] = lbl
+    s = mult_all[mask].copy(); s['series'] = lbl
+    frames.extend([b, s])
+
+curve_df = pd.concat(frames, ignore_index=True).sort_values(['series', 'multiplier'])
+
+fig = px.line(
+    curve_df, x='multiplier', y='nonm_share', color='series', markers=True,
+    labels={'multiplier': 'Density Multiplier (×)', 'nonm_share': 'Non-Motorized Mode Share (%)', 'series': ''},
+    category_orders={'series': ['HH only', 'EMP only', 'HH + EMP']},
+    color_discrete_map=COLORS,
+)
+fig.update_traces(mode='lines+markers', marker_size=10, line_width=3)
+fig.update_xaxes(tickvals=[1, 2, 4, 12], tickfont_size=13, title_font_size=14)
+fig.update_yaxes(tickfont_size=13, title_font_size=14)
+fig.update_layout(
+    height=430, width=1100, margin=dict(t=20, b=20, l=20, r=20),
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+)
+fig.show()
+```
+
+*All trip purposes combined | Modified small districts | Daily productions*
+
+::: {.notes}
+Base Non-Motorized mode share in the test districts is 15.2%. At 12× employment, the model reaches 49.3%. At 12× households, it reaches 28.0%. The response is non-linear with diminishing returns — the slope is steep at low multipliers and flattens at higher ones.
+:::
+
+## Employment Density is the Stronger Driver {.smaller background-color="#f0f5fb"}
+
+:::: {.columns}
+::: {.column width="50%"}
+### At 4× density
+
+| Scenario | NM Share | vs. Base |
+|---|---|---|
+| Base 2019 | 15.2% | — |
+| HH only ×4 | 18.1% | +2.9 pct pts |
+| **EMP only ×4** | **29.8%** | **+14.6 pct pts** |
+| HH + EMP ×4 | 27.9% | +12.7 pct pts |
+:::
+::: {.column width="50%"}
+### At 12× density
+
+| Scenario | NM Share | vs. Base |
+|---|---|---|
+| Base 2019 | 15.2% | — |
+| HH only ×12 | 28.0% | +12.8 pct pts |
+| **EMP only ×12** | **49.3%** | **+34.1 pct pts** |
+| HH + EMP ×12 | 47.4% | +32.3 pct pts |
+:::
+::::
+
+::: {.callout-important}
+At equal multipliers, employment density produces roughly **2–2.5× more non-motorized mode share gain** than household density alone.
+:::
+
+::: {.notes}
+This is one of the most important findings. Employment density creates walkable destinations — offices, shops, restaurants — that draw short walking trips. Household density increases origin-side density but doesn't create as many walkable destinations.
+:::
+
+## Sensitivity by Trip Purpose {.smaller}
+
+```{python}
+#| fig-align: center
+
+mult_purp = full_delta[
+    (full_delta['test_id'].isin(range(10))) &
+    (full_delta['geo_scope'] == 'smldst') &
+    (full_delta['Purpose'].isin(purposes))
+].copy()
+
+mult_purp['hh_mult_n']  = mult_purp['hh_mult'].astype(float)
+mult_purp['emp_mult_n'] = mult_purp['emp_mult'].astype(float)
+mult_purp['multiplier'] = mult_purp[['hh_mult_n', 'emp_mult_n']].max(axis=1)
+
+base_purp = mult_purp[mult_purp['test_id'] == 0].copy()
+frames2 = []
+for lbl, mask in [
+    ('HH only',  (mult_purp['hh_mult_n'] > 1) & (mult_purp['emp_mult_n'] == 1)),
+    ('EMP only', (mult_purp['hh_mult_n'] == 1) & (mult_purp['emp_mult_n'] > 1)),
+    ('HH + EMP', (mult_purp['hh_mult_n'] > 1) & (mult_purp['emp_mult_n'] > 1)),
+]:
+    b = base_purp.copy(); b['series'] = lbl
+    s = mult_purp[mask].copy(); s['series'] = lbl
+    frames2.extend([b, s])
+
+curve_purp = pd.concat(frames2, ignore_index=True).sort_values(['Purpose', 'series', 'multiplier'])
+purpose_labels = {'HBW': 'Home–Based–Work', 'HBO': 'Home-Based-Other', 'NHB': 'Non-Home–Based'}
+curve_purp['Purpose Label'] = curve_purp['Purpose'].map(purpose_labels)
+
+fig = px.line(
+    curve_purp, x='multiplier', y='nonm_share', color='series',
+    facet_col='Purpose Label', markers=True,
+    labels={'multiplier': 'Density Multiplier (×)', 'nonm_share': 'Non-Motorized Mode Share (%)', 'series': ''},
+    category_orders={
+        'series': ['HH only', 'EMP only', 'HH + EMP'],
+        'Purpose Label': [purpose_labels[p] for p in purposes],
+    },
+    color_discrete_map=COLORS,
+)
+fig.update_traces(mode='lines+markers', marker_size=8, line_width=2.5)
+fig.update_xaxes(tickvals=[1, 2, 4, 12], tickfont_size=12)
+fig.update_yaxes(tickfont_size=12)
+fig.for_each_annotation(lambda a: a.update(text=a.text.split('=')[-1], font_size=14))
+fig.update_layout(
+    height=400, width=1100, margin=dict(t=40, b=20, l=20, r=20),
+    legend=dict(orientation='h', yanchor='bottom', y=1.08, xanchor='right', x=1, font_size=12),
+)
+fig.show()
+```
+
+**Home-Based-Other** and **Non-Home–Based** trips are the most sensitive to employment density — these include lunch, errands, and midday travel that become walkable in dense employment environments.
+
+::: {.notes}
+Home–Based–Work trips respond more modestly and more evenly — commute trips have longer distances and are more auto-dependent even in dense areas. Home-Based-Other and NHB trips are short by nature, so walkability improvements have an outsized effect.
+:::
+
+## Walk vs. Bike: Almost All Gains are Walking {.smaller}
+
+```{python}
+#| fig-align: center
+
+wb = full_delta[
+    (full_delta['test_id'].isin(range(1, 10))) &
+    (full_delta['geo_scope'] == 'smldst') &
+    (full_delta['Purpose'] == 'All')
+].copy()
+
+wb['hh_mult_n']  = wb['hh_mult'].astype(float)
+wb['emp_mult_n'] = wb['emp_mult'].astype(float)
+wb['series']     = wb.apply(series_label, axis=1)
+wb['multiplier'] = wb[['hh_mult_n', 'emp_mult_n']].max(axis=1).astype(int)
+wb['label']      = wb['series'] + ' ' + wb['multiplier'].astype(str) + '×'
+
+wb_melt = wb.melt(
+    id_vars=['label'],
+    value_vars=['delta_walk_share', 'delta_bike_share'],
+    var_name='mode', value_name='delta_share'
+)
+wb_melt['mode'] = wb_melt['mode'].map({'delta_walk_share': 'Walk', 'delta_bike_share': 'Bike'})
+
+fig = px.bar(
+    wb_melt, x='label', y='delta_share', color='mode', barmode='stack',
+    labels={'label': '', 'delta_share': 'Change in Mode Share (pct pts)', 'mode': ''},
+    category_orders={
+        'label': [l.replace('x', '×') for l in label_order],
+        'mode': ['Walk', 'Bike']
+    },
+    color_discrete_map={'Walk': '#2196F3', 'Bike': '#FF9800'},
+)
+fig.update_layout(
+    height=390, width=1100, margin=dict(t=20, b=20, l=20, r=20),
+    xaxis_tickangle=-30, xaxis_tickfont_size=12,
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+)
+fig.show()
+```
+
+EMP scenarios: walk gains are 10–100× larger than bike gains. &nbsp; HH scenarios: both modes increase, but walk still dominates.
+
+::: {.notes}
+For EMP x12: walk share rises ~36 percentage points, bike share rises ~0.3 percentage points. Employment density creates short-distance walkable trips, not cycling trips. Household density scenarios show more balanced gains — residential density boosts both walking and biking.
+:::
+
+## 2050 Forecasts in Context {.smaller}
+
+```{python}
+#| fig-align: center
+
+future_ids = [0, 10, 11, 12, 13]
+future = full_delta[
+    full_delta['test_id'].isin(future_ids) &
+    (full_delta['Purpose'] == 'All')
+].copy()
+
+future['geo_label'] = future['geo_scope'].map({
+    'smldst': 'Local (Test Districts)',
+    'region': 'Region-Wide'
+})
+
+desc_order = ['Base 2019', 'Future Today', 'Future Today - Centerized']
+
+fig = px.bar(
+    future, x='description', y='nonm_share', color='geo_label', barmode='group',
+    text=future['nonm_share'].round(1).astype(str) + '%',
+    labels={'description': '', 'nonm_share': 'Non-Motorized Mode Share (%)', 'geo_label': ''},
+    category_orders={
+        'description': desc_order,
+        'geo_label': ['Local (Test Districts)', 'Region-Wide'],
+    },
+    color_discrete_map={'Local (Test Districts)': '#1f77b4', 'Region-Wide': '#d62728'},
+)
+fig.update_traces(textposition='outside', textfont_size=13)
+fig.update_layout(
+    height=400, width=1100, margin=dict(t=30, b=20, l=20, r=20),
+    yaxis_range=[0, 25], xaxis_tickfont_size=13,
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+)
+fig.show()
+```
+
+2050 local forecasts land at **~19%** — comparable to a **2× multiplier** — a moderate, credible response. Centerized appears identical at this local scale because the focal TAZs sit in areas little affected by the redistribution. Region-wide, centerization adds ~7,000 more non-motorized trips (+0.07 percentage points).
+
+::: {.notes}
+The focal test-district TAZs (tests 0–11) happen to sit in areas not significantly affected by the centerization redistribution — that's why Centerized appears nearly identical here. The real signal is at the district level, shown on the next slide.
+:::
+
+## Where Centerization Has an Effect {.smaller}
+
+```{python}
+#| fig-align: center
+
+# Trip data for T10 and T11 across all TAZs
+t10_all = filt_df[filt_df['test_id'] == 10].groupby('TAZID')[['All', 'NonM']].sum().reset_index()
+t11_all = filt_df[filt_df['test_id'] == 11].groupby('TAZID')[['All', 'NonM']].sum().reset_index()
+
+# TAZ → district lookup from base SE DBF
+taz_dist = gpd.read_file(os.path.join(TDM_BASELINE_DIR, 'BY_2019', '0_InputProcessing', 'SE_File_WFv920-E3_BY_2019.dbf'))[['Z', 'DISTMED', 'DMED_NAME']]
+taz_dist = taz_dist.rename(columns={'Z': 'TAZID'})
+taz_dist['TAZID']   = taz_dist['TAZID'].astype(int)
+taz_dist['DISTMED'] = taz_dist['DISTMED'].astype(int)
+
+def district_nm(trips):
+    df = trips.merge(taz_dist, on='TAZID', how='left')
+    g  = df.groupby(['DISTMED', 'DMED_NAME'])[['All', 'NonM']].sum()
+    g['share'] = g['NonM'] / g['All'] * 100
+    return g.reset_index()
+
+t10_d = district_nm(t10_all)
+t11_d = district_nm(t11_all)
+
+t10_se = gpd.read_file(os.path.join(CURATED_OUTPUTS_DIR, 'S10', 'SE_File_WFv920-E3_BY_SensitivityTest_10_2019.dbf'))
+t11_se = gpd.read_file(os.path.join(CURATED_OUTPUTS_DIR, 'S11', 'SE_File_WFv920-E3_BY_SensitivityTest_11_2019.dbf'))
+for se in [t10_se, t11_se]:
+    se['DISTMED'] = se['DISTMED'].astype(int)
+    se['TOTHH']   = se['TOTHH'].astype(float)
+
+dist_areas = gpd.read_file(os.path.join(TDM_ROOT, '1_Inputs', '1_TAZ', 'Districts', 'Dist_Medium.shp'))[['DISTMED', 'geometry']]
+dist_areas['DISTMED']  = dist_areas['DISTMED'].astype(int)
+dist_areas['area_acres'] = dist_areas.geometry.area / 4046.86
+
+hh = t10_se.groupby('DISTMED')['TOTHH'].sum().rename('HH_T10').to_frame()
+hh['HH_T11']    = t11_se.groupby('DISTMED')['TOTHH'].sum()
+hh = hh.reset_index().merge(dist_areas[['DISTMED', 'area_acres']], on='DISTMED', how='left')
+hh['dens_diff'] = (hh['HH_T11'] - hh['HH_T10']) / hh['area_acres']
+
+geo = (
+    t10_d[['DISTMED', 'DMED_NAME', 'share']].rename(columns={'share': 'share_T10'})
+    .merge(t11_d[['DISTMED', 'share']].rename(columns={'share': 'share_T11'}), on='DISTMED')
+    .merge(hh[['DISTMED', 'dens_diff']], on='DISTMED')
+)
+geo['delta_share'] = geo['share_T11'] - geo['share_T10']
+geo = geo[geo['dens_diff'].abs() > 0.02].copy()
+geo['direction'] = geo['dens_diff'].apply(lambda x: 'Gaining density' if x > 0 else 'Losing density')
+
+notable_ids = {12, 31, 10, 21, 18}
+geo['label'] = geo.apply(lambda r: r['DMED_NAME'] if r['DISTMED'] in notable_ids else '', axis=1)
+
+fig = px.scatter(
+    geo, x='dens_diff', y='delta_share', color='direction', text='label',
+    hover_name='DMED_NAME',
+    hover_data={'dens_diff': ':.1f', 'delta_share': ':.2f', 'direction': False},
+    labels={
+        'dens_diff':   'HH Density Change (HH/acre, Centerized vs Future Today)',
+        'delta_share': 'Change in Non-Motorized Mode Share (pct pts)',
+        'direction':   '',
+    },
+    color_discrete_map={'Gaining density': '#2196F3', 'Losing density': '#e6550d'},
+)
+fig.update_traces(marker_size=10, textposition='top center', textfont_size=11)
+fig.add_hline(y=0, line_dash='dash', line_color='gray', line_width=1)
+fig.add_vline(x=0, line_dash='dash', line_color='gray', line_width=1)
+fig.update_layout(
+    height=390, width=1100, margin=dict(t=20, b=20, l=20, r=20),
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+    xaxis_title_font_size=13, yaxis_title_font_size=13,
+)
+fig.show()
+```
+
+Districts **gaining** households (blue) → Non-Motorized share rises. &nbsp; Districts **losing** households (orange) → Non-Motorized share falls.
+
+::: {.notes}
+Ogden Core gains +3.0 percentage points with 13,500 more households — the strongest single-district signal. North Ogden loses 0.5 percentage points with 6,600 fewer. The aggregate test-district comparison looked flat because those 4 focal TAZs happened to sit in areas little affected by the redistribution. At the district and region-wide level, the model correctly captures the effect: denser areas get more walking and biking.
+:::
+
+## Non-Motorized (NM) Key Takeaways {background-color="#2c3e50" style="color: white;"}
+
+::: {.incremental}
+1. **The model passes the test** — NM mode share increases consistently and proportionally with density increases in the expected direction.
+
+2. **Employment density is the primary lever** — at equal multipliers, EMP produces 2–2.5× more NM mode share gain than households.
+
+3. **Walk trips, not bike, drive the gains** — especially in high-employment scenarios.
+
+4. **Home-Based-Other and Non-Home–Based trips are most sensitive** — short-trip purposes respond most to walkable environments.
+
+5. **2050 forecasts are in a reasonable range** — comparable to roughly 2× current density, not extreme.
+:::
+
+::: {.notes}
+Final message: The model is behaving as expected. These results support using the enhanced non-motorized component in planning applications. The full technical report with interactive charts is available as a companion document.
+:::
+
+## Summary {background-color="#1a252f" style="color: white; text-align: center;"}
+
+<br><br>
+
+[View a more detailed summary](summary.html){style="font-size: 1.2em; color: #3498db; font-weight: bold; text-decoration: none; border: 2px solid #3498db; padding: 0.4em 0.8em; border-radius: 8px;"}

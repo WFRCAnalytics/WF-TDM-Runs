@@ -1,9 +1,0 @@
-scenario_id: S03
-description: "HH x12 — small district + specific TAZ scope"
-
-input_files:
-  WFRC_SEFile: "inputs/SE_S03.csv"
-  MAG_SEFile: "inputs/SE_S03.csv"
-
-overrides:
-  RunDescription: "S03 - localized HH x12"

@@ -1,9 +1,0 @@
-scenario_id: S04
-description: "EMP x2 — small district scope"
-
-input_files:
-  WFRC_SEFile: "inputs/SE_S04.csv"
-  MAG_SEFile: "inputs/SE_S04.csv"
-
-overrides:
-  RunDescription: "S04 - localized EMP x2"
