@@ -2,7 +2,7 @@
 or scenario.yaml.
 
 Scripts are plain Python files. The framework invokes them with two named
-arguments so they can locate the run_set's data/inputs/ directory and know which
+arguments so they can locate the run_set's inputs/ directory and know which
 scenario they are prepping:
 
     python <script> --run-set-dir <abs-path> --scenario-id <id>

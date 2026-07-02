@@ -3,8 +3,8 @@ description: "Future Today Centerized â€” SE_2050 transit corridors, small 
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 input_files:
-  WFRC_SEFile: "data/inputs/SE_S11.csv"
-  MAG_SEFile: "data/inputs/SE_S11.csv"
+  WFRC_SEFile: "inputs/SE_S11.csv"
+  MAG_SEFile: "inputs/SE_S11.csv"
 
 overrides:
   RunDescription: "S11 - Future Today Centerized SE_2050_transit_corridors (smldst)"
@@ -17,3 +17,7 @@ outputs:
     - "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
     - "0_InputProcessing/SE_File_*.dbf"
   max_file_size_mb: 45
+
+# Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by
+# import-manual-run(-set) to locate raw outputs to curate into runs/.
+manual_scenario_folder: "Scenarios/non-motorized-2023/BY_2019_SensitivityTest_11"

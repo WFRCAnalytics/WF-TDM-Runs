@@ -3,9 +3,13 @@ description: "Region Future Today Centerized â€” SE_2050 transit corridors,
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 input_files:
-  WFRC_SEFile: "data/inputs/SE_S13.csv"
-  MAG_SEFile: "data/inputs/SE_S13.csv"
+  WFRC_SEFile: "inputs/SE_S13.csv"
+  MAG_SEFile: "inputs/SE_S13.csv"
 
 overrides:
   RunDescription: "S13 - Region Future Today Centerized SE_2050_transit_corridors (region)"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
+
+# Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by
+# import-manual-run(-set) to locate raw outputs to curate into runs/.
+manual_scenario_folder: "Scenarios/non-motorized-2023/BY_2019_SensitivityTest_13"

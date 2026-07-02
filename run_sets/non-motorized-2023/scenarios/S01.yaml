@@ -3,9 +3,13 @@ description: "HH x2 â€” small district scope"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 input_files:
-  WFRC_SEFile: "data/inputs/SE_S01.csv"
-  MAG_SEFile: "data/inputs/SE_S01.csv"
+  WFRC_SEFile: "inputs/SE_S01.csv"
+  MAG_SEFile: "inputs/SE_S01.csv"
 
 overrides:
   RunDescription: "S01 - localized HH x2"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
+
+# Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by
+# import-manual-run(-set) to locate raw outputs to curate into runs/.
+manual_scenario_folder: "Scenarios/non-motorized-2023/BY_2019_SensitivityTest_01"
