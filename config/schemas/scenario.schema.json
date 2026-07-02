@@ -43,6 +43,10 @@
         "include": { "type": "array", "items": { "type": "string" } },
         "max_file_size_mb": { "type": "number", "exclusiveMinimum": 0 }
       }
+    },
+    "manual_scenario_folder": {
+      "type": "string",
+      "description": "Path to this scenario's raw output folder, relative to the TDM submodule root, when it was run manually outside run-scenario/run-set. Read by import-manual-run(-set) to locate outputs to curate; unused by a CLI-driven run."
     }
   }
 }

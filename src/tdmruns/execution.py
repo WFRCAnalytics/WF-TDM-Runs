@@ -16,7 +16,7 @@ from tdmruns import metadata as md
 from tdmruns import outputs as out
 from tdmruns import prep
 from tdmruns import submodule as sub
-from tdmruns.exceptions import ExecutionError
+from tdmruns.exceptions import ConfigValidationError, ExecutionError
 
 
 def generate_run_id() -> str:
@@ -197,6 +197,124 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
     md.write(run_dir, run_metadata)
     return run_metadata
+
+
+def import_manual_run(
+    repo_root: Path,
+    run_set_id: str,
+    scenario_id: str,
+    scenario_folder: Path = None,
+) -> dict:
+    """Curates outputs and records metadata for a scenario that was executed
+    outside the CLI -- e.g. Cube Voyager invoked directly against a raw
+    scenario_folder, because the TDM's real Control Center isn't renderable
+    by this framework yet. Applies the same select/size-check/copy sequence
+    run_scenario() uses after a real execution, so runs/ stays the one place
+    curated outputs land regardless of how the model was actually invoked.
+    Does not check out, fetch, or otherwise touch the TDM submodule -- only
+    its current (read-only) state is recorded, since a checkout here would
+    not reflect what was actually used for this manual run anyway.
+
+    scenario_folder defaults to the scenario's declared manual_scenario_folder
+    (relative to the TDM submodule root) when not passed explicitly -- lets
+    import_manual_run_set() drive a whole run set without per-scenario paths.
+
+    Unlike run_scenario(), there's no skip-if-already-successful check: this
+    is only ever invoked deliberately (there's no automatic trigger for a
+    manual run the way there is for CLI execution), so the invocation itself
+    is the signal that outputs should be (re-)gathered -- every call creates
+    a new timestamped run rather than guessing whether the raw folder
+    changed since the last import."""
+    framework = cfg.load_framework_config(repo_root)
+    run_set = cfg.load_run_set(repo_root, run_set_id)
+    scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
+
+    tdm_path = repo_root / framework["tdm_submodule_path"]
+    if scenario_folder is None:
+        scenario_folder = cfg.resolved_manual_scenario_folder(tdm_path, scenario)
+        if scenario_folder is None:
+            raise ConfigValidationError(
+                f"scenario '{scenario_id}' has no --scenario-folder given and no "
+                "manual_scenario_folder declared in its YAML -- nothing to import from."
+            )
+
+    requested_ref = cfg.resolved_tdm_ref(run_set, scenario)
+    baseline_filename = cfg.resolved_baseline_filename(run_set, scenario)
+    rs_dir = repo_root / "run_sets" / run_set_id
+    run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(run_set, scenario, rs_dir)
+    output_spec = cfg.resolved_output_spec(framework, run_set, scenario)
+
+    run_id = generate_run_id()
+    started_at = md.utc_now_iso()
+    fw_commit = md.framework_commit(repo_root)
+    version_state = sub.current_state(tdm_path, requested_ref)
+
+    full_inventory = out.inventory(scenario_folder)
+    selected = out.select(full_inventory, output_spec["include"])
+    curated = []
+    status, error = "success", None
+    if selected:
+        try:
+            out.validate_size_limit(selected, output_spec["max_file_size_mb"])
+            run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+            curated = out.copy_selected(scenario_folder, selected, run_dir / "outputs")
+        except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently
+            status, error = "failed", f"Output curation failed: {e}"
+    else:
+        status = "failed"
+        error = (
+            f"No files under {scenario_folder} matched outputs.include "
+            f"{output_spec['include']!r}."
+        )
+
+    run_metadata = md.build(
+        schema_version=framework["run_metadata_schema_version"],
+        run_set_id=run_set_id,
+        scenario_id=scenario_id,
+        run_id=run_id,
+        status=status,
+        started_at=started_at,
+        framework_commit_sha=fw_commit,
+        tdm_state=version_state.as_dict(),
+        baseline_file=baseline_filename,
+        run_set_overrides=run_set_overrides,
+        scenario_overrides=scenario_overrides,
+        scenario_folder=str(scenario_folder),
+        inventory_count=len(full_inventory),
+        inventory_total_bytes=sum(e["size_bytes"] for e in full_inventory),
+        curated=curated,
+        finished_at=md.utc_now_iso(),
+        error=error,
+        execution_mode="manual",
+    )
+    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+    md.write(run_dir, run_metadata)
+    return run_metadata
+
+
+def import_manual_run_set(repo_root: Path, run_set_id: str, only: list = None) -> list:
+    """Runs import_manual_run() for every scenario in a run set that declares
+    a manual_scenario_folder. A scenario missing that field is recorded as a
+    skipped result rather than stopping the rest of the run set -- mirrors
+    run_scenarios()'s per-scenario failure isolation."""
+    scenario_ids = cfg.list_scenario_ids(repo_root, run_set_id)
+    if only:
+        scenario_ids = [s for s in scenario_ids if s in only]
+    results = []
+    for scenario_id in scenario_ids:
+        try:
+            results.append(import_manual_run(repo_root, run_set_id, scenario_id))
+        except Exception as e:  # noqa: BLE001 -- one scenario's error shouldn't stop the set
+            results.append(
+                {
+                    "run_set_id": run_set_id,
+                    "scenario_id": scenario_id,
+                    "run_id": None,
+                    "status": "failed",
+                    "error": str(e),
+                }
+            )
+    return results
 
 
 def run_scenarios(repo_root: Path, run_set_id: str, only: list = None, force: bool = False) -> list:

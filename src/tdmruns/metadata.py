@@ -40,29 +40,42 @@ def build(
     curated: list = None,
     finished_at: str = None,
     error: str = None,
+    execution_mode: str = "cli",
 ) -> dict:
+    # rendered_path/command are only meaningful when the orchestrator itself
+    # rendered a Control Center and invoked the model (execution_mode "cli").
+    # Left out entirely rather than set to null for a manual import, since
+    # the schema types them as non-nullable.
+    control_center = {
+        "baseline_file": baseline_file,
+        "run_set_overrides": run_set_overrides,
+        "scenario_overrides": scenario_overrides,
+    }
+    if rendered_path is not None:
+        control_center["rendered_path"] = rendered_path
+
+    execution = {}
+    if command is not None:
+        execution["command"] = command
+    if exit_code is not None:
+        execution["exit_code"] = exit_code
+    if log_path is not None:
+        execution["log_path"] = log_path
+
     return {
         "schema_version": schema_version,
         "run_set_id": run_set_id,
         "scenario_id": scenario_id,
         "run_id": run_id,
         "status": status,
+        "execution_mode": execution_mode,
         "started_at": started_at,
         "finished_at": finished_at,
         "framework_commit": framework_commit_sha,
         "tdm": tdm_state,
-        "control_center": {
-            "baseline_file": baseline_file,
-            "run_set_overrides": run_set_overrides,
-            "scenario_overrides": scenario_overrides,
-            "rendered_path": rendered_path,
-        },
+        "control_center": control_center,
         "scenario_folder": scenario_folder,
-        "execution": {
-            "command": command,
-            "exit_code": exit_code,
-            "log_path": log_path,
-        },
+        "execution": execution,
         "outputs": {
             "inventory_count": inventory_count,
             "inventory_total_bytes": inventory_total_bytes,

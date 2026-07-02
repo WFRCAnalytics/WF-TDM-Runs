@@ -14,6 +14,11 @@
     "scenario_id": { "type": "string" },
     "run_id": { "type": "string" },
     "status": { "type": "string", "enum": ["pending", "running", "success", "failed"] },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["cli", "manual"],
+      "description": "\"cli\" if run-scenario/run-set executed the model; \"manual\" if the model was run outside the CLI and this record was produced by import-manual-run to curate outputs after the fact."
+    },
     "started_at": { "type": "string", "format": "date-time" },
     "finished_at": { "type": ["string", "null"], "format": "date-time" },
     "framework_commit": {

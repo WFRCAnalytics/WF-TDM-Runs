@@ -54,6 +54,44 @@ def is_dirty(tdm_path: Path) -> bool:
     return bool(status)
 
 
+def _inspect_head(tdm_path: Path, requested_ref: str, dirty: bool) -> TdmVersionState:
+    """Reads back whatever commit/branch/tags are currently at HEAD. Read-only
+    -- does not fetch, checkout, or otherwise mutate the working tree."""
+    resolved_commit = _git(["rev-parse", "HEAD"], cwd=tdm_path)
+
+    branch_result = subprocess.run(
+        ["git", "symbolic-ref", "-q", "--short", "HEAD"],
+        cwd=str(tdm_path),
+        capture_output=True,
+        text=True,
+    )
+    branch = branch_result.stdout.strip() or None
+    detached_head = branch is None
+
+    tags_at_head = _git(["tag", "--points-at", "HEAD"], cwd=tdm_path)
+    tag_list = [t for t in tags_at_head.splitlines() if t]
+    resolved_tag = requested_ref if requested_ref in tag_list else (tag_list[0] if tag_list else None)
+
+    return TdmVersionState(
+        requested_ref=requested_ref,
+        resolved_commit=resolved_commit,
+        resolved_tag=resolved_tag,
+        branch=branch,
+        detached_head=detached_head,
+        dirty=dirty,
+    )
+
+
+def current_state(tdm_path: Path, requested_ref: str) -> TdmVersionState:
+    """Read-only inspection of whatever the submodule is currently checked
+    out to -- no fetch, no checkout, no mutation. For recording TDM state
+    against a scenario that wasn't executed through resolve_version (e.g. run
+    manually outside the CLI), where checking out `requested_ref` now would
+    not reflect what was actually used and would be a surprising side effect
+    of what's meant to be an outputs-gathering step."""
+    return _inspect_head(tdm_path, requested_ref, dirty=is_dirty(tdm_path))
+
+
 def resolve_version(repo_root: Path, tdm_path: Path, ref: str) -> TdmVersionState:
     """Checks out `ref` in the TDM submodule and returns the actual resolved
     state. Raises VersionResolutionError if the ref does not exist or the
@@ -90,29 +128,7 @@ def resolve_version(repo_root: Path, tdm_path: Path, ref: str) -> TdmVersionStat
             "checkout -- investigate before trusting this run's results."
         )
 
-    resolved_commit = _git(["rev-parse", "HEAD"], cwd=tdm_path)
-
-    branch_result = subprocess.run(
-        ["git", "symbolic-ref", "-q", "--short", "HEAD"],
-        cwd=str(tdm_path),
-        capture_output=True,
-        text=True,
-    )
-    branch = branch_result.stdout.strip() or None
-    detached_head = branch is None
-
-    tags_at_head = _git(["tag", "--points-at", "HEAD"], cwd=tdm_path)
-    tag_list = [t for t in tags_at_head.splitlines() if t]
-    resolved_tag = ref if ref in tag_list else (tag_list[0] if tag_list else None)
-
-    return TdmVersionState(
-        requested_ref=ref,
-        resolved_commit=resolved_commit,
-        resolved_tag=resolved_tag,
-        branch=branch,
-        detached_head=detached_head,
-        dirty=False,
-    )
+    return _inspect_head(tdm_path, ref, dirty=False)
 
 
 def short_version_label(state: TdmVersionState) -> str:

@@ -120,6 +120,14 @@ def resolved_output_spec(framework: dict, run_set: dict, scenario: dict) -> dict
     return {"include": spec.get("include", []), "max_file_size_mb": max_mb}
 
 
+def resolved_manual_scenario_folder(tdm_path: Path, scenario: dict) -> Path | None:
+    """Resolves a scenario's declared manual_scenario_folder (relative to the
+    TDM submodule root) to an absolute path, or None if the scenario doesn't
+    declare one -- e.g. because it has only ever been run through the CLI."""
+    rel = scenario.get("manual_scenario_folder")
+    return (tdm_path / rel) if rel else None
+
+
 def _resolve_input_files(run_set_dir: Path, input_files: dict) -> dict:
     """Resolve relative paths in an input_files block to absolute paths
     anchored at run_set_dir. Absolute paths are passed through unchanged."""

@@ -143,6 +143,68 @@ def run_set_cmd(run_set_id, only, force):
     sys.exit(1 if n_fail else 0)
 
 
+@main.command("import-manual-run")
+@click.option("--run-set", "run_set_id", required=True)
+@click.option("--scenario", "scenario_id", required=True)
+@click.option(
+    "--scenario-folder", "scenario_folder",
+    default=None,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help=(
+        "Raw output folder from a scenario run outside the CLI (e.g. Cube Voyager invoked "
+        "directly). Defaults to the scenario's manual_scenario_folder in its YAML."
+    ),
+)
+@click.pass_context
+def import_manual_run_cmd(ctx, run_set_id, scenario_id, scenario_folder):
+    """Curate outputs for a scenario that was run manually, outside
+    run-scenario/run-set. Applies the scenario's outputs.include glob
+    selection and size ceiling exactly as a CLI-driven run would, copies the
+    result into runs/<run-set>/<scenario>/<run-id>/outputs/, and records
+    run_metadata.json with execution_mode "manual" so it's clear the model
+    itself wasn't invoked by this framework. Does not touch the TDM
+    submodule. Always creates a new timestamped run -- there's no
+    skip-if-unchanged check, since running this command is itself the
+    deliberate signal to (re-)gather outputs."""
+    repo_root = ctx.obj["repo_root"]
+    try:
+        result = ex.import_manual_run(repo_root, run_set_id, scenario_id, scenario_folder)
+    except tdmrunsError as e:
+        click.echo(f"[FAIL] {run_set_id}/{scenario_id}: {e}", err=True)
+        sys.exit(1)
+    click.echo(
+        f"[{result['status'].upper()}] {run_set_id}/{scenario_id} run {result['run_id']} (manual)"
+    )
+    n_curated = len(result["outputs"]["curated"])
+    click.echo(f"  {n_curated} file(s) curated to runs/{run_set_id}/{scenario_id}/{result['run_id']}/outputs/")
+    if result["status"] != "success":
+        click.echo(f"  {result.get('error')}", err=True)
+        sys.exit(1)
+
+
+@main.command("import-manual-run-set")
+@click.option("--run-set", "run_set_id", required=True)
+@click.option("--only", "only", default=None, help="Comma-separated scenario IDs to import.")
+def import_manual_run_set_cmd(run_set_id, only):
+    """Curate outputs for every scenario in a run set that was run manually,
+    using each scenario's declared manual_scenario_folder. A failed or
+    undeclared scenario does not stop the rest of the run set. Always
+    creates a new timestamped run per scenario -- see import-manual-run."""
+    repo_root = find_repo_root()
+    only_list = only.split(",") if only else None
+    results = ex.import_manual_run_set(repo_root, run_set_id, only=only_list)
+    n_ok = sum(1 for r in results if r["status"] == "success")
+    n_fail = sum(1 for r in results if r["status"] != "success")
+    for r in results:
+        click.echo(
+            f"[{r['status'].upper():7s}] {run_set_id}/{r['scenario_id']}  run={r.get('run_id')}"
+        )
+        if r["status"] != "success" and r.get("error"):
+            click.echo(f"    {r['error']}", err=True)
+    click.echo(f"\n{n_ok} succeeded, {n_fail} failed.")
+    sys.exit(1 if n_fail else 0)
+
+
 @main.command("prep-scenario")
 @click.option("--run-set", "run_set_id", required=True)
 @click.option("--scenario", "scenario_id", required=True)
