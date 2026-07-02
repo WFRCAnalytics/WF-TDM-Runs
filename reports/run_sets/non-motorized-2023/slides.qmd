@@ -33,7 +33,7 @@ import os
 # Test scenarios 1-13 are curated, filtered CSVs committed under run_sets/.
 TDM_ROOT = os.path.join('..', '..', '..', 'tdm')
 TDM_BASELINE_DIR = os.path.join(TDM_ROOT, 'Scenarios', 'non-motorized-2023')
-CURATED_OUTPUTS_DIR = os.path.join('..', '..', '..', 'run_sets', 'non-motorized-2023', 'outputs')
+CURATED_OUTPUTS_DIR = os.path.join('..', '..', '..', 'run_sets', 'non-motorized-2023', 'data', 'outputs')
 smldst_lst = [22, 16, 46, 88, 102]
 
 scenario_meta = pd.DataFrame([

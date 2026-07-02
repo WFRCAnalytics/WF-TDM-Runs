@@ -94,12 +94,13 @@ wf-tdm-runs/
 │   └── schemas/                  ← JSON Schema for run_set, scenario, run_metadata
 ├── run_sets/
 │   └── <run_set_id>/
-│       ├── run_set.yaml
-│       ├── scenarios/
+│       ├── run_set.yaml          ← config: shared tdm_ref/baseline/overrides
+│       ├── scenarios/            ← config: one YAML file per scenario
 │       │   └── <scenario_id>.yaml
-│       ├── inputs/               ← prepped input files (e.g. SE CSVs); gitignored until generated
-│       ├── _prep/                ← input preparation notebooks (committed)
-│       └── outputs/              ← curated report-source data for run sets whose
+│       └── data/                 ← everything that isn't config, grouped together
+│           ├── inputs/           ← prepped input files (e.g. SE CSVs); committed, not gitignored
+│           ├── _prep/            ← input preparation notebooks (committed)
+│           └── outputs/          ← curated report-source data for run sets whose
 │                                    scenarios weren't executed through the CLI
 │                                    (e.g. historical backfills); see non-motorized-2023
 ├── runs/                         ← committed metadata + curated outputs only
@@ -208,8 +209,8 @@ model is touched.
   whether they select input files or tune model parameters. `input_files` in
   scenario YAML is syntactic sugar for file-path overrides with automatic path
   resolution; it merges into the same single override dict.
-- **Input prep is manual, not automated** — each run_set has a `_prep/` folder
-  for notebooks that generate input files (e.g. SE CSVs). The framework does
+- **Input prep is manual, not automated** — each run_set has a `data/_prep/`
+  folder for notebooks that generate input files (e.g. SE CSVs). The framework does
   not run prep; analysts run it once before executing the run_set.
 - **Curated outputs with a hard size ceiling** — raw outputs stay gitignored.
   Only a declared, glob-selected, size-checked subset enters the repo.
@@ -300,8 +301,8 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
 - **Baseline:** `1ControlCenter - BY_2019.block`
 - **Scenarios:** S01–S13 (HH/EMP multipliers at smldst/smldst+taz scope, plus
   full SE_2050 and SE_2050_transit_corridors substitutions)
-- **SE prep:** done — `run_sets/non-motorized-2023/inputs/SE_S01.csv` through
-  `SE_S13.csv` are already generated and committed.
+- **SE prep:** done — `run_sets/non-motorized-2023/data/inputs/SE_S01.csv`
+  through `SE_S13.csv` are already generated and committed.
 - **Not run through the `tdmruns` CLI.** The block-file-parsing blocker above
   means these scenarios were run manually (Cube Voyager invoked directly,
   outside the framework), and their raw outputs copied into
@@ -309,19 +310,21 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
   committed). `run_sets/non-motorized-2023/run_set.yaml` and `S10.yaml`/
   `S11.yaml`'s `outputs.include` glob patterns still document what a real CLI
   run *would* curate from those raw folders, for when the blocker is fixed.
-- **Curated report data:** `run_sets/non-motorized-2023/outputs/S01`–`S13/` —
-  each scenario's `TripsByMode_daily_productions.csv` filtered down to the
+- **Curated report data:** `run_sets/non-motorized-2023/data/outputs/S01`–`S13/`
+  — each scenario's `TripsByMode_daily_productions.csv` filtered down to the
   rows/columns the reports use (Period=='Dy' & PA=='P'; 486 MB of raw CSVs
   shrunk to ~13 MB total); `S10`/`S11` also have their `SE_File_*.dbf` copied
   verbatim. This is a one-time manual backfill, not CLI output — see
-  `run_sets/non-motorized-2023/outputs/` vs. the CLI's own `runs/` destination.
+  `run_sets/non-motorized-2023/data/outputs/` vs. the CLI's own `runs/`
+  destination.
 - **Reporting pages** (custom, not the generic `runs/`-metadata-driven
   pattern): `reports/run_sets/non-motorized-2023/slides.qmd` (RevealJS deck)
   and `summary.qmd` (detailed HTML writeup), both linked directly from
   `reports/index.qmd`. They read curated S01–S13 data from
-  `run_sets/non-motorized-2023/outputs/`, but the BY_2019 baseline (test_id 0)
-  and the static TAZ/District shapefiles (`tdm/1_Inputs/1_TAZ/...`) are read
-  straight from the gitignored `tdm/` working tree, since neither is scoped to
+  `run_sets/non-motorized-2023/data/outputs/`, but the BY_2019 baseline
+  (test_id 0) and the static TAZ/District shapefiles (`tdm/1_Inputs/1_TAZ/...`)
+  are read straight from the gitignored `tdm/` working tree, since neither is
+  scoped to
   a single scenario.
 
 SE files are referenced in scenario YAMLs via `input_files` (relative paths

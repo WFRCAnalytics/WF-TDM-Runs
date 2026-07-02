@@ -3,8 +3,8 @@ description: "HH x4 and EMP x4 â€” small district + specific TAZ scope"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 input_files:
-  WFRC_SEFile: "inputs/SE_S08.csv"
-  MAG_SEFile: "inputs/SE_S08.csv"
+  WFRC_SEFile: "data/inputs/SE_S08.csv"
+  MAG_SEFile: "data/inputs/SE_S08.csv"
 
 overrides:
   RunDescription: "S08 - localized HH x4 + EMP x4 (smldst+taz)"

@@ -3,8 +3,8 @@ description: "Region Future Today â€” full SE_2050 substitution, region-wid
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 input_files:
-  WFRC_SEFile: "inputs/SE_S12.csv"
-  MAG_SEFile: "inputs/SE_S12.csv"
+  WFRC_SEFile: "data/inputs/SE_S12.csv"
+  MAG_SEFile: "data/inputs/SE_S12.csv"
 
 overrides:
   RunDescription: "S12 - Region Future Today SE_2050 (region)"
