@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "run_set_id": "non-motorized-2023",
+  "scenario_id": "S07",
+  "run_id": "20260702-220843-d5a5",
+  "status": "success",
+  "execution_mode": "manual",
+  "started_at": "2026-07-02T22:08:43.093196+00:00",
+  "finished_at": "2026-07-02T22:08:43.411794+00:00",
+  "framework_commit": "5859a7dc6de6016711dc129d099d6f2105a49eef",
+  "tdm": {
+    "requested_ref": "archive/non-motorized-sensitivity-tests",
+    "resolved_commit": "610cb2b7f8de070514668af8eeea7e69e9b732b4",
+    "resolved_tag": null,
+    "branch": "archive/non-motorized-sensitivity-tests",
+    "detached_head": false,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "1ControlCenter - BY_2019.block",
+    "run_set_overrides": {
+      "Run_Documentation": 0,
+      "vizToolDir": "run_sets/non-motorized-2023/.vizTool"
+    },
+    "scenario_overrides": {
+      "RunDescription": "S07 - localized HH x2 + EMP x2 (smldst)",
+      "WFRC_SEFile": "M:\\GitHub\\WF-TDM-Runs\\run_sets\\non-motorized-2023\\inputs\\SE_S07.csv",
+      "MAG_SEFile": "M:\\GitHub\\WF-TDM-Runs\\run_sets\\non-motorized-2023\\inputs\\SE_S07.csv"
+    }
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\non-motorized-2023\\BY_2019_SensitivityTest_07",
+  "execution": {},
+  "outputs": {
+    "inventory_count": 1112,
+    "inventory_total_bytes": 27259112386,
+    "curated": [
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/BY_SensitivityTest_07_2019_ZoneSummary_TripsByMode.csv",
+        "size_bytes": 39280455,
+        "sha256": "49dcdf623fb42cab856072a759903498a0d97cedc5ac234c1cd0c3c8afffad15",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/non-motorized-2023/S07/20260702-220843-d5a5/outputs/BY_SensitivityTest_07_2019_ZoneSummary_TripsByMode.csv"
+      }
+    ]
+  },
+  "error": null
+}

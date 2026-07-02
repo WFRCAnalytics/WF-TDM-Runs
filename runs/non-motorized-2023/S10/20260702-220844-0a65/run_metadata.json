@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "run_set_id": "non-motorized-2023",
+  "scenario_id": "S10",
+  "run_id": "20260702-220844-0a65",
+  "status": "success",
+  "execution_mode": "manual",
+  "started_at": "2026-07-02T22:08:44.112429+00:00",
+  "finished_at": "2026-07-02T22:08:44.470068+00:00",
+  "framework_commit": "5859a7dc6de6016711dc129d099d6f2105a49eef",
+  "tdm": {
+    "requested_ref": "archive/non-motorized-sensitivity-tests",
+    "resolved_commit": "610cb2b7f8de070514668af8eeea7e69e9b732b4",
+    "resolved_tag": null,
+    "branch": "archive/non-motorized-sensitivity-tests",
+    "detached_head": false,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "1ControlCenter - BY_2019.block",
+    "run_set_overrides": {
+      "Run_Documentation": 0,
+      "vizToolDir": "run_sets/non-motorized-2023/.vizTool"
+    },
+    "scenario_overrides": {
+      "RunDescription": "S10 - Future Today SE_2050 (smldst)",
+      "WFRC_SEFile": "M:\\GitHub\\WF-TDM-Runs\\run_sets\\non-motorized-2023\\inputs\\SE_S10.csv",
+      "MAG_SEFile": "M:\\GitHub\\WF-TDM-Runs\\run_sets\\non-motorized-2023\\inputs\\SE_S10.csv"
+    }
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\non-motorized-2023\\BY_2019_SensitivityTest_10",
+  "execution": {},
+  "outputs": {
+    "inventory_count": 1126,
+    "inventory_total_bytes": 29298172423,
+    "curated": [
+      {
+        "relative_path": "0_InputProcessing/SE_File_WFv920-E3_BY_SensitivityTest_10_2019.dbf",
+        "size_bytes": 1685567,
+        "sha256": "68161c4439a5201221a96b61b9f270a1e0d24ebf8222682ed77edf765d7cdebf",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/non-motorized-2023/S10/20260702-220844-0a65/outputs/SE_File_WFv920-E3_BY_SensitivityTest_10_2019.dbf"
+      },
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/BY_SensitivityTest_10_2019_ZoneSummary_TripsByMode.csv",
+        "size_bytes": 39280455,
+        "sha256": "b8e81c82c0f8598fef88cd7d46de1cd84a98dbdd2c2f8470fd15d17dc13aef23",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/non-motorized-2023/S10/20260702-220844-0a65/outputs/BY_SensitivityTest_10_2019_ZoneSummary_TripsByMode.csv"
+      }
+    ]
+  },
+  "error": null
+}
