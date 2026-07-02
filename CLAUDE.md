@@ -148,11 +148,19 @@ wf-tdm-runs/
 pip install -e .
 tdmruns validate-config                              # validate all run_sets
 tdmruns validate-config --run-set <id>              # validate one run_set
+tdmruns sync-tdm --run-set <id>                     # sync the submodule to tdm_ref
+tdmruns sync-tdm --run-set <id> --scenario <id>     # ...or a scenario's tdm_ref override
+tdmruns prep-scenario --run-set <id> --scenario <id> # run prep_script only, no model execution
 tdmruns run-set --run-set <id>                      # run all scenarios
 tdmruns run-scenario --run-set <id> --scenario <id> # run one scenario
 tdmruns run-scenario ... --force                    # re-run even if already successful
 tdmruns status                                      # show latest result per scenario
 ```
+
+`sync-tdm` actually mutates the submodule (git fetch + checkout) to match
+whatever `tdm_ref` is declared in config — it's not a dry-run preview. It
+refuses on a dirty submodule tree, same guard `run-scenario` uses internally
+before rendering anything.
 
 ### Config layer order (later layers win)
 

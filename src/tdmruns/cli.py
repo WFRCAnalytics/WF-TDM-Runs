@@ -72,23 +72,35 @@ def validate_config(ctx, run_set_id):
     sys.exit(1 if had_error else 0)
 
 
-@main.command("resolve-version")
+@main.command("sync-tdm")
 @click.option("--run-set", "run_set_id", required=True)
-@click.option("--scenario", "scenario_id", default=None)
-def resolve_version(run_set_id, scenario_id):
-    """Show what TDM version would be checked out, without rendering or
-    running anything."""
+@click.option(
+    "--scenario", "scenario_id", default=None,
+    help="Use this scenario's tdm_ref override instead of the run set's.",
+)
+def sync_tdm_cmd(run_set_id, scenario_id):
+    """Make the TDM submodule match the tag/branch/commit declared in the
+    run set's (or scenario's) tdm_ref -- a git checkout under the hood, so
+    it mutates the submodule's working tree. Refuses on a dirty tree before
+    and after checkout, same as a real scenario run, but does not render a
+    Control Center or execute the model."""
     repo_root = find_repo_root()
-    framework = cfg.load_framework_config(repo_root)
-    run_set = cfg.load_run_set(repo_root, run_set_id)
-    ref = run_set["tdm_ref"]
-    if scenario_id:
-        scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
-        ref = cfg.resolved_tdm_ref(run_set, scenario)
-    tdm_path = repo_root / framework["tdm_submodule_path"]
-    state = sub.resolve_version(repo_root, tdm_path, ref)
+    label = f"{run_set_id}/{scenario_id}" if scenario_id else run_set_id
+    try:
+        framework = cfg.load_framework_config(repo_root)
+        run_set = cfg.load_run_set(repo_root, run_set_id)
+        ref = run_set["tdm_ref"]
+        if scenario_id:
+            scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
+            ref = cfg.resolved_tdm_ref(run_set, scenario)
+        tdm_path = repo_root / framework["tdm_submodule_path"]
+        state = sub.resolve_version(repo_root, tdm_path, ref)
+    except tdmrunsError as e:
+        click.echo(f"[FAIL] {label}: {e}", err=True)
+        sys.exit(1)
+    click.echo(f"[OK] {label}: TDM synced to '{ref}'")
     for k, v in state.as_dict().items():
-        click.echo(f"{k}: {v}")
+        click.echo(f"  {k}: {v}")
 
 
 @main.command("run-scenario")

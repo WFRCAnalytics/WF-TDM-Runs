@@ -8,7 +8,7 @@ description: >
   or region-wide) to quantify mode-choice response to localized land-use changes.
   Replicates the 14-scenario study that previously took over a month manually.
 
-tdm_ref: "v1000-E3"
+tdm_ref: "archive/non-motorized-sensitivity-tests"
 baseline_control_center: "1ControlCenter - BY_2019.block"
 
 # prep_script:   # optional: path to a Python script relative to this run_set dir
