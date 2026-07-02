@@ -36,9 +36,8 @@ def main():
                 print(f"    {loc}: {e.message}", file=sys.stderr)
             continue
 
-        run_dir = path.parent
         for entry in data.get("outputs", {}).get("curated", []):
-            file_path = run_dir / "outputs" / entry["relative_path"]
+            file_path = Path(entry["repo_path"])
             if not file_path.is_file():
                 had_error = True
                 print(f"[FAIL] {path}: curated output missing on disk: {file_path}", file=sys.stderr)

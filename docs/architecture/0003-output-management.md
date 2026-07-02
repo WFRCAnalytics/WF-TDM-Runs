@@ -34,3 +34,15 @@ being silently skipped, on the theory that a selection spec pulling
 something too large is a configuration mistake worth surfacing immediately
 (exclude it, or have the model produce a smaller summary), not something to
 quietly drop.
+
+## Update: checksums only for curated files, not the full inventory
+
+The full inventory was originally described as path/size/checksum for every
+file. In practice, run metadata only ever stored the *aggregate* count and
+byte total from that inventory (`inventory_count`/`inventory_total_bytes`) --
+the per-file checksum was computed for every file (often 1000+ files,
+tens of GB, e.g. `non-motorized-2023`'s manually-run scenarios) and then
+discarded for anything not selected. The full inventory is now stat()-only
+(path + size, no file contents read); `copy_selected()` computes the sha256
+only for the files actually selected and copied into the repo, since those
+are the only checksums metadata ever keeps.
