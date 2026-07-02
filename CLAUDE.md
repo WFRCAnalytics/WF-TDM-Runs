@@ -97,15 +97,12 @@ wf-tdm-runs/
 │       ├── run_set.yaml          ← config: shared tdm_ref/baseline/overrides
 │       ├── scenarios/            ← config: one YAML file per scenario
 │       │   └── <scenario_id>.yaml
-│       └── data/                 ← everything that isn't config, grouped together
-│           ├── inputs/           ← prepped input files (e.g. SE CSVs); committed, not gitignored
-│           ├── _prep/            ← input preparation notebooks (committed)
-│           └── outputs/          ← curated report-source data for run sets whose
-│                                    scenarios weren't executed through the CLI
-│                                    (e.g. historical backfills); see non-motorized-2023
-├── runs/                         ← committed metadata + curated outputs only
+│       ├── inputs/               ← prepped input files (e.g. SE CSVs); committed, not gitignored
+│       └── input_prep.ipynb      ← input preparation notebook (committed; optional)
+├── runs/                         ← committed metadata + curated outputs only, whether
+│   │                                gathered by a CLI-driven run or import-manual-run(-set)
 │   └── <run_set_id>/<scenario_id>/<run_id>/
-│       ├── run_metadata.json
+│       ├── run_metadata.json     ← execution_mode: "cli" or "manual"
 │       └── outputs/
 ├── reports/                      ← Quarto website
 │   ├── _quarto.yml
@@ -116,8 +113,10 @@ wf-tdm-runs/
 │   └── run_sets/
 │       ├── <run_set_id>.qmd      ← generic per-run-set page, data-driven from runs/
 │       └── <run_set_id>/         ← custom per-run-set pages (e.g. slides.qmd +
-│                                    summary.qmd for non-motorized-2023), reading
-│                                    curated data directly rather than run_metadata.json
+│                                    summary.qmd for non-motorized-2023), reading the
+│                                    latest curated outputs via report_data.py and
+│                                    applying any report-specific filtering at render
+│                                    time rather than pre-filtering a committed copy
 ├── src/tdmruns/                  ← orchestrator CLI
 │   ├── cli.py
 │   ├── config.py
@@ -154,6 +153,11 @@ tdmruns prep-scenario --run-set <id> --scenario <id> # run prep_script only, no 
 tdmruns run-set --run-set <id>                      # run all scenarios
 tdmruns run-scenario --run-set <id> --scenario <id> # run one scenario
 tdmruns run-scenario ... --force                    # re-run even if already successful
+tdmruns import-manual-run --run-set <id> --scenario <id> [--scenario-folder <path>]
+                                                     # curate outputs for a scenario run
+                                                     # outside the CLI (see below)
+tdmruns import-manual-run-set --run-set <id>        # same, for every scenario in a run
+                                                     # set that declares manual_scenario_folder
 tdmruns status                                      # show latest result per scenario
 ```
 
@@ -161,6 +165,21 @@ tdmruns status                                      # show latest result per sce
 whatever `tdm_ref` is declared in config — it's not a dry-run preview. It
 refuses on a dirty submodule tree, same guard `run-scenario` uses internally
 before rendering anything.
+
+`import-manual-run(-set)` exists because a scenario can be run manually
+(Cube Voyager invoked directly, outside `run-scenario`) when a real CLI-driven
+run isn't possible yet (see the `.block`-format blocker below) or isn't
+desired. It applies the scenario's `outputs.include` selection and size
+ceiling exactly like a real run would, curates into `runs/<run_set>/<scenario>/
+<run_id>/outputs/`, and records `run_metadata.json` with `execution_mode:
+"manual"`. `--scenario-folder` defaults to the scenario's declared
+`manual_scenario_folder` (relative to the TDM submodule root) when omitted.
+It does not check out, fetch, or otherwise touch the TDM submodule — only
+its current state is read for the record. There is no skip-if-unchanged
+logic and no `--force`: every invocation creates a fresh timestamped run,
+since running the command at all is already the deliberate signal to
+(re-)gather outputs — the alternative (guessing staleness from the raw
+folder's mtime) was tried and dropped as unnecessary complexity.
 
 ### Config layer order (later layers win)
 
@@ -189,14 +208,15 @@ model is touched.
 - `control_center_defaults_dir` in `config/framework.yaml` is `Scenarios/_default`
   (**singular**, not `_defaults` as earlier drafts of this doc said) — verified
   against the real submodule, which has `tdm/Scenarios/_default/`.
-- **Blocker discovered this session:** `tdmruns validate-config` fails against
-  the real TDM — `1ControlCenter - BY_2019.block` in the real defaults library
-  is Cube Voyager's native block format, not YAML (see the constraints note
-  above). `cli.py`/`controlcenter.py` haven't been updated for this yet, so no
-  real scenario has been run through the CLI. Until this is fixed, running a
-  new run set means either running the model manually outside the framework
-  and backfilling curated outputs (see `non-motorized-2023` below), or writing
-  a real `.block` parser in `controlcenter.py`.
+- **Blocker (still open):** `tdmruns validate-config` fails against the real
+  TDM — `1ControlCenter - BY_2019.block` in the real defaults library is Cube
+  Voyager's native block format, not YAML (see the constraints note above).
+  `cli.py`/`controlcenter.py` haven't been updated for this yet, so no real
+  scenario has been run through `run-scenario`/`run-set`. Until it's fixed,
+  new run sets are executed manually (Cube Voyager invoked directly) and their
+  outputs gathered with `tdmruns import-manual-run(-set)` (see CLI commands
+  above) — a first-class, supported path now, not a one-off workaround. See
+  `non-motorized-2023` below for the current example.
 - The test suite's fixtures still assume the old mock TDM layout (they try to
   copy a `RunModel_stub.py` that no longer exists in the now-real submodule),
   so `pytest tests/` currently shows ~19 errors in `test_config.py` /
@@ -217,11 +237,27 @@ model is touched.
   whether they select input files or tune model parameters. `input_files` in
   scenario YAML is syntactic sugar for file-path overrides with automatic path
   resolution; it merges into the same single override dict.
-- **Input prep is manual, not automated** — each run_set has a `data/_prep/`
-  folder for notebooks that generate input files (e.g. SE CSVs). The framework does
-  not run prep; analysts run it once before executing the run_set.
+- **Input prep is manual, not automated** — each run_set has an optional
+  `input_prep.ipynb` notebook at its root that generates input files (e.g.
+  SE CSVs) into its `inputs/` folder. The framework does not run prep;
+  analysts run it once before executing the run_set.
 - **Curated outputs with a hard size ceiling** — raw outputs stay gitignored.
   Only a declared, glob-selected, size-checked subset enters the repo.
+  Checksums are computed only for that curated subset (at copy time), not for
+  every file the model produced — the full inventory (for the aggregate
+  count/byte-total in metadata) is stat()-only, since scenario folders
+  routinely hold thousands of files and tens of GB and nothing ever read the
+  per-file checksum for anything not selected (see `docs/architecture/0003-output-management.md`'s update note).
+- **Manual execution is a first-class path, not just a workaround** —
+  `import-manual-run(-set)` curates outputs for a scenario run outside the
+  CLI the same way `run-scenario` does after a real execution (same
+  select/size-check/copy sequence), flattening curated files into
+  `outputs/` (no preserved subfolder structure) and tagging
+  `run_metadata.json` with `execution_mode: "manual"`. It never touches the
+  TDM submodule. It always creates a new run rather than trying to detect
+  whether the raw folder changed since the last import (an mtime-based
+  staleness check was tried and deliberately removed as unneeded complexity
+  — every invocation is already a deliberate human action).
 - **Flat JSON metadata as source of truth** — one `run_metadata.json` per run,
   committed, schema-versioned. No database. Quarto reads these directly.
 - **CI scoped to validation and reporting** — never model execution.
@@ -305,35 +341,44 @@ originally took over a month. **Renamed from `non-motorized-2026`** once the
 actual model runs (base year 2019, results reported 2023) were completed and
 folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
 
-- **TDM ref:** `v1000-E3`
+- **TDM ref:** `archive/non-motorized-sensitivity-tests` (per `run_set.yaml`
+  `tdm_ref` — not `v1000-E3`, which an earlier draft of this doc said).
 - **Baseline:** `1ControlCenter - BY_2019.block`
 - **Scenarios:** S01–S13 (HH/EMP multipliers at smldst/smldst+taz scope, plus
   full SE_2050 and SE_2050_transit_corridors substitutions)
-- **SE prep:** done — `run_sets/non-motorized-2023/data/inputs/SE_S01.csv`
-  through `SE_S13.csv` are already generated and committed.
-- **Not run through the `tdmruns` CLI.** The block-file-parsing blocker above
-  means these scenarios were run manually (Cube Voyager invoked directly,
-  outside the framework), and their raw outputs copied into
-  `tdm/Scenarios/non-motorized-2023/` (gitignored — machine-specific, not
-  committed). `run_sets/non-motorized-2023/run_set.yaml` and `S10.yaml`/
-  `S11.yaml`'s `outputs.include` glob patterns still document what a real CLI
-  run *would* curate from those raw folders, for when the blocker is fixed.
-- **Curated report data:** `run_sets/non-motorized-2023/data/outputs/S01`–`S13/`
-  — each scenario's `TripsByMode_daily_productions.csv` filtered down to the
-  rows/columns the reports use (Period=='Dy' & PA=='P'; 486 MB of raw CSVs
-  shrunk to ~13 MB total); `S10`/`S11` also have their `SE_File_*.dbf` copied
-  verbatim. This is a one-time manual backfill, not CLI output — see
-  `run_sets/non-motorized-2023/data/outputs/` vs. the CLI's own `runs/`
-  destination.
+- **SE prep:** done — `run_sets/non-motorized-2023/inputs/SE_S01.csv`
+  through `SE_S13.csv` are already generated and committed (produced by
+  `input_prep.ipynb` at the run_set root).
+- **Not run through `run-scenario`/`run-set`.** The block-file-parsing
+  blocker above means these scenarios were run manually (Cube Voyager
+  invoked directly, outside the framework). Each scenario YAML declares a
+  `manual_scenario_folder` (e.g. `Scenarios/non-motorized-2023/
+  BY_2019_SensitivityTest_01`, relative to the TDM submodule root) pointing
+  at that raw, gitignored output. `run_set.yaml` and `S10.yaml`/`S11.yaml`'s
+  `outputs.include` glob patterns are the real selection patterns — used both
+  as documentation of what a CLI-driven run would curate, and as what
+  `import-manual-run(-set)` actually applies today.
+- **Outputs gathered via `tdmruns import-manual-run-set --run-set
+  non-motorized-2023`**, which curates each scenario's raw, unfiltered
+  `outputs.include`-matched files into `runs/non-motorized-2023/S01`–`S13/
+  <run_id>/outputs/` and writes `run_metadata.json` with `execution_mode:
+  "manual"`. There used to be a separate, pre-filtered backfill under
+  `run_sets/non-motorized-2023/data/outputs/` (and a one-off script to
+  produce it) — both were deleted once the reports were pointed at `runs/`
+  directly; `runs/` is now the only copy of curated output for this run set.
 - **Reporting pages** (custom, not the generic `runs/`-metadata-driven
   pattern): `reports/run_sets/non-motorized-2023/slides.qmd` (RevealJS deck)
   and `summary.qmd` (detailed HTML writeup), both linked directly from
-  `reports/index.qmd`. They read curated S01–S13 data from
-  `run_sets/non-motorized-2023/data/outputs/`, but the BY_2019 baseline
-  (test_id 0) and the static TAZ/District shapefiles (`tdm/1_Inputs/1_TAZ/...`)
-  are read straight from the gitignored `tdm/` working tree, since neither is
-  scoped to
-  a single scenario.
+  `reports/index.qmd`. Both import `reports/report_data.py` (`sys.path.insert(0,
+  '../..')` since they live two levels deeper) and call
+  `latest_run_per_scenario`/`curated_output_paths` to resolve each scenario's
+  most recently imported files, then apply the `Period=='Dy' & PA=='P'` +
+  fixed-column filter themselves at render time (unified with the base-year
+  branch, which always worked this way) rather than reading a pre-filtered
+  copy. The BY_2019 baseline (test_id 0) and the static TAZ/District
+  shapefiles (`tdm/1_Inputs/1_TAZ/...`) are still read straight from the
+  gitignored `tdm/` working tree, since neither is scoped to a single
+  scenario/run.
 
 SE files are referenced in scenario YAMLs via `input_files` (relative paths
 like `inputs/SE_S01.csv`), resolved to absolute at runtime.
@@ -355,7 +400,8 @@ one — the real `1ControlCenter - BY_2019.block` is Cube Voyager's native
 indented `KEY = value` / `;`-comment block format. This blocks
 `tdmruns validate-config` and any real CLI-driven run. Until it's fixed, new
 run sets have to be executed manually outside the framework and their outputs
-backfilled the way `non-motorized-2023` was.
+gathered with `tdmruns import-manual-run(-set)`, the way `non-motorized-2023`
+is (declaring `manual_scenario_folder` per scenario).
 
 **2. Fix the test suite's fixtures.**
 `tests/` fixtures still assume the old mock TDM layout (copying a
@@ -366,8 +412,10 @@ signal until updated.
 
 **3. Once #1 is fixed, run `tdmruns validate-config --run-set non-motorized-2023`**
 against the real submodule to confirm S01–S13's override keys are valid, then
-consider re-running the scenarios through the CLI so future run sets don't
-need the manual-backfill workaround.
+consider re-running the scenarios through `run-scenario`/`run-set` so this run
+set no longer depends on `manual_scenario_folder`/`import-manual-run-set` —
+though that path is now solid enough (flattened, checksummed, schema-validated)
+that switching isn't urgent on its own.
 
 **4. Verify GitHub Actions actually deploys.**
 `publish-report.yml` was updated this session to install `geopandas`/`plotly`
