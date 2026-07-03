@@ -40,7 +40,9 @@
         "sha256": "11307db13f6acab9f754bc67b5d70ebb7a64c6cb14589ed69aff58c86c31f5ea",
         "repo_path": "M:/GitHub/WF-TDM-Runs/runs/non-motorized-2023/S05/20260702-220842-2a23/outputs/BY_SensitivityTest_05_2019_ZoneSummary_TripsByMode.csv"
       }
-    ]
+    ],
+    "retired": true,
+    "retired_at": "2026-07-03T11:52:46.324101+00:00"
   },
   "error": null
 }
