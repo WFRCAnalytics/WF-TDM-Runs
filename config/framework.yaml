@@ -30,13 +30,15 @@ default_driver_script: "_HailMary_1Subfolder.s"
 # version, not of this framework. {control_center_path} and {scenario_folder}
 # are filled in by the orchestrator for each run.
 #
-# NOTE: this currently points at RunModel_stub.py, a stand-in entry point
-# bundled in the mock tdm/ submodule used for local development and testing,
-# since Cube Voyager itself can't run in most CI/sandbox environments. Once
-# tdm/ is pointed at the real TDM repository (see README), change this to
-# the real batch file, e.g. "RunModel.bat".
+# Path is resolved relative to the framework repo root (not the tdm/
+# submodule) -- this entry point belongs to the framework, not to any one
+# TDM version, since it just locates and invokes whatever driver script the
+# orchestrator already staged into the scenario folder. Cube Voyager's
+# install location is machine-local, not baked in here -- it's read from
+# config/local.yaml's Voyager_EXE and passed through as the VOYAGER_EXE
+# environment variable (see execution.invoke()).
 execution:
-  entry_point: "RunModel.bat"
+  entry_point: "bin/RunModel.bat"
   args: ["{control_center_path}", "{scenario_folder}"]
   timeout_seconds: 86400
 

@@ -138,6 +138,11 @@ wf-tdm-runs/
 │   ├── outputs.py
 │   ├── metadata.py
 │   └── retirement.py             ← snapshot-run-set / purge-run-set-outputs logic
+├── bin/
+│   └── RunModel.bat               ← fixed batch entry point (config/framework.yaml
+│                                     execution.entry_point); TDM-version-independent,
+│                                     deliberately lives here and not in tdm/ (see
+│                                     "What's currently mocked vs. real")
 ├── scripts/
 │   ├── check_file_sizes.py       ← CI backstop for 100 MB ceiling
 │   └── validate_run_metadata.py  ← CI schema + checksum validation
@@ -268,9 +273,26 @@ model is touched.
 
 - `tdm/` submodule is now connected to the **real TDM repo**
   (`https://github.com/WFRCAnalytics/WF-TDM-Development.git`) — no longer the
-  local mock. `config/framework.yaml` `execution.entry_point` is already
-  `RunModel.bat`; the mock's `RunModel_stub.py` no longer exists in the
-  submodule.
+  local mock.
+- `bin/RunModel.bat` — the fixed batch entry point `config/framework.yaml`
+  `execution.entry_point` points at — now exists, and deliberately lives in
+  **this framework repo**, not the `tdm/` submodule: it's a thin, TDM-version-
+  independent wrapper that locates whatever driver script the orchestrator
+  already staged into the scenario folder (glob on `*.s`, not a hardcoded
+  `_HailMary` name, matching the ADR 0007 assumption) and runs it through
+  Cube Voyager, `pushd`-ing into the scenario folder first so the driver
+  script's relative `READ FILE = '..\..\..\2_ModelScripts\...'` paths
+  resolve correctly, then propagates Voyager's exit code back out. Voyager's
+  install location is machine-local, not hardcoded in the bat file — it's
+  read from `config/local.yaml`'s existing `Voyager_EXE` key and passed
+  through by `execution.invoke()` as the `VOYAGER_EXE` environment variable;
+  the bat file fails loudly if that's unset or points at a nonexistent path.
+  Because of this, `build_command()` (`src/tdmruns/execution.py`) now
+  resolves `execution.entry_point` against `repo_root`, not `tdm_path`.
+  **Still unconfirmed end-to-end** — blocked on the next bullet, since the
+  driver script's hardcoded `READ FILE = '0GeneralParameters.block'` /
+  `'1ControlCenter.block'` won't find anything in the scenario folder until
+  that's fixed.
 - `control_center_defaults_dir` in `config/framework.yaml` is `Scenarios/_default`
   (**singular**, not `_defaults` as earlier drafts of this doc said) — verified
   against the real submodule, which has `tdm/Scenarios/_default/`.
@@ -278,8 +300,14 @@ model is touched.
   TDM — `1ControlCenter - BY_2019.block` in the real defaults library is Cube
   Voyager's native block format, not YAML (see the constraints note above).
   `cli.py`/`controlcenter.py` haven't been updated for this yet, so no real
-  scenario has been run through `run-scenario`/`run-set`. Until it's fixed,
-  new run sets are executed manually (Cube Voyager invoked directly) and their
+  scenario has been run through `run-scenario`/`run-set`. Relatedly,
+  `controlcenter.write_block_file()` currently writes plain YAML to
+  `_ControlCenter.yaml`, but the driver script expects Cube block syntax in a
+  file literally named `1ControlCenter.block` (plus a `0GeneralParameters.block`
+  neither this function nor anything else currently stages into the scenario
+  folder) — fixing the read side (`load_baseline()`) without also fixing the
+  write side won't be enough to actually run Cube. Until it's fixed, new run
+  sets are executed manually (Cube Voyager invoked directly) and their
   outputs gathered with `tdmruns import-manual-run(-set)` (see CLI commands
   above) — a first-class, supported path now, not a one-off workaround. See
   `non-motorized-2023` below for the current example.
@@ -320,10 +348,11 @@ model is touched.
   referenced from the custom driver script by a relative path computed back
   to that location. This swaps which code runs, not a parameter value, so
   it's not folded into `overrides`/`validate_overrides()` — see
-  `docs/architecture/0007-custom-driver-script.md`. Depends on the
-  not-yet-existing `RunModel.bat` running whatever driver script it finds
-  staged in the scenario folder it's given (see the `RunModel.bat` blocker
-  below); unconfirmed until that exists.
+  `docs/architecture/0007-custom-driver-script.md`. `bin/RunModel.bat` now
+  exists and does glob for whatever driver script it finds staged in the
+  scenario folder it's given (see "What's currently mocked vs. real" above);
+  still unconfirmed end-to-end since it depends on the Control Center
+  block-format blocker being fixed first.
 - **`start_from_copy` seeds a scenario's raw folder from a prior scenario's
   run — a third, narrow mechanism, orthogonal to overrides and driver
   scripts** — a scenario may declare `start_from_copy: <scenario_id>`
@@ -338,8 +367,9 @@ model is touched.
   `docs/architecture/0008-scenario-seeding.md`. This mechanism only copies
   files; it never makes Cube Voyager skip a step — that's the analyst's own
   `driver_script` logic to write. Wired into `run-scenario`/`run-set` only
-  (no standalone command), so it depends on the same `RunModel.bat` blocker,
-  plus the source scenario needing a successful run first.
+  (no standalone command), so it depends on the same block-format blocker as
+  everything else routed through Cube, plus the source scenario needing a
+  successful run first.
 - **Input prep is manual, not automated** — each run_set has an optional
   `input_prep.ipynb` notebook at its root that generates input files (e.g.
   SE CSVs) into its `inputs/` folder. The framework does not run prep;
@@ -501,12 +531,22 @@ Example run set for toll sensitivity testing. Scenarios defined, no runs execute
 
 In rough priority order:
 
-**1. Fix `controlcenter.py`'s baseline parser for the real TDM's `.block` format.**
+**1. Fix `controlcenter.py`'s Control Center handling for the real TDM's `.block` format — both directions.**
 `load_baseline()` (`src/tdmruns/controlcenter.py:23`) calls `yaml.safe_load()`
 directly on the baseline file, which works for the mock TDM but not the real
 one — the real `1ControlCenter - BY_2019.block` is Cube Voyager's native
 indented `KEY = value` / `;`-comment block format. This blocks
-`tdmruns validate-config` and any real CLI-driven run. Until it's fixed, new
+`tdmruns validate-config` and any real CLI-driven run. Separately,
+`write_block_file()` writes plain YAML to a file named `_ControlCenter.yaml`,
+but the driver script (`READ FILE = '0GeneralParameters.block'` /
+`'1ControlCenter.block'`, both relative to the scenario folder) expects Cube
+block syntax under the literal name `1ControlCenter.block`, plus a
+`0GeneralParameters.block` that nothing currently stages into the scenario
+folder at all (it's presumably an unmodified copy from `Scenarios/_default/`,
+but that needs confirming). Fixing only the read side isn't enough to
+actually run Cube end-to-end via `bin/RunModel.bat` (see "What's currently
+mocked vs. real" above) — both sides need to agree on the real format before
+a real scenario can run through `run-scenario`/`run-set`. Until it's fixed,
 run sets have to be executed manually outside the framework and their outputs
 gathered with `tdmruns import-manual-run(-set)`, the way `non-motorized-2023`
 is (declaring `manual_scenario_folder` per scenario).
@@ -536,16 +576,24 @@ run for kernel/package issues that don't show up locally.
 written but still unconfirmed against the real (possibly private) TDM repo —
 if private, they'll need a deploy key or PAT to check out the submodule.
 
-**6. Confirm `RunModel.bat`'s driver-script lookup once it exists.**
-The new `driver_script` mechanism (`src/tdmruns/driver_script.py`, see ADR
-0007) always stages a driver script into the per-run scenario folder before
-invocation — the TDM's default `_HailMary_1Subfolder.s` unless a run_set/
-scenario declares a custom one, staged under its own filename either way.
-This assumes the batch entry point will run whichever driver script it
-finds staged there, under whatever name it has, rather than always reading
-a hardcoded path to `Scenarios/_default/`. `RunModel.bat` doesn't exist yet
-in the current checkout (see #1), so this assumption is unconfirmed — once
-it exists, verify it actually runs the scenario-folder-local file.
+**6. Exercise `bin/RunModel.bat` end-to-end once #1 is fixed.**
+`bin/RunModel.bat` now exists (lives in the framework repo, not `tdm/` — see
+"What's currently mocked vs. real" above): it globs the scenario folder for
+whatever driver script `src/tdmruns/driver_script.py` staged there (default
+`_HailMary_1Subfolder.s` or a run_set's custom one, see ADR 0007), `pushd`s
+into the scenario folder so the driver script's relative
+`..\..\..\2_ModelScripts\...` paths resolve, and invokes Cube Voyager via
+the `VOYAGER_EXE` env var (sourced from `config/local.yaml`'s `Voyager_EXE`
+by `execution.invoke()`). None of this has been run against real Cube
+Voyager yet — it can't produce a working run until #1's block-format fix
+lands, since the driver script's `READ FILE = '1ControlCenter.block'` /
+`'0GeneralParameters.block'` won't find anything until then. Once #1 is
+fixed, verify: the bat file actually locates and runs the staged driver
+script, and `VOYAGER_EXE` resolves correctly on a real workstation.
+Success/failure is decided from Voyager's process exit code (`%ERRORLEVEL%`
+right after `start /w`, propagated by `RunModel.bat` and read by
+`execution.invoke()`) — a deliberate choice, not the model scripts'
+`_TimeStamp_ModelSuccess.block` / `_TimeStamp_ModelCrashed.block` convention.
 
 **7. Exercise `start_from_copy` once possible.**
 The new scenario-seeding mechanism (`src/tdmruns/scenario_seed.py`, see ADR

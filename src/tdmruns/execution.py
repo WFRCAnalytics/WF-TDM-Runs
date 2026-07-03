@@ -3,6 +3,7 @@ the TDM's fixed batch entry point, and the top-level run_scenario() that ties
 config, version resolution, Control Center rendering, execution, output
 curation, and metadata together into one auditable attempt."""
 
+import os
 import platform
 import secrets
 import subprocess
@@ -49,13 +50,13 @@ def _windows_style(path_str: str, trailing_sep: bool = True) -> str:
 
 
 def build_command(
-    framework: dict, tdm_path: Path, control_center_path: Path, scenario_folder: Path
+    framework: dict, repo_root: Path, control_center_path: Path, scenario_folder: Path
 ) -> list:
     execution_cfg = framework["execution"]
-    entry_point_abs = (tdm_path / execution_cfg["entry_point"]).resolve()
+    entry_point_abs = (repo_root / execution_cfg["entry_point"]).resolve()
     if not entry_point_abs.is_file():
         raise ExecutionError(
-            f"TDM batch entry point not found at {entry_point_abs} "
+            f"Batch entry point not found at {entry_point_abs} "
             f"(config/framework.yaml execution.entry_point = '{execution_cfg['entry_point']}')."
         )
     args = [
@@ -69,14 +70,22 @@ def build_command(
     return [str(entry_point_abs), *args]
 
 
-def invoke(command: list, cwd: Path, log_path: Path, timeout_seconds: int) -> int:
+def invoke(
+    command: list, cwd: Path, log_path: Path, timeout_seconds: int, env: dict = None
+) -> int:
     log_path.parent.mkdir(parents=True, exist_ok=True)
+    full_env = {**os.environ, **env} if env else None
     with open(log_path, "w") as log:
         log.write(f"command: {command}\ncwd: {cwd}\n\n")
         log.flush()
         try:
             result = subprocess.run(
-                command, cwd=str(cwd), stdout=log, stderr=subprocess.STDOUT, timeout=timeout_seconds
+                command,
+                cwd=str(cwd),
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                timeout=timeout_seconds,
+                env=full_env,
             )
             return result.returncode
         except subprocess.TimeoutExpired:
@@ -161,13 +170,14 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     )
 
     # --- execute ---
-    command = build_command(framework, tdm_path, control_center_path, folder)
+    command = build_command(framework, repo_root, control_center_path, folder)
     log_path = folder / "logs" / "orchestrator_invocation.log"
     exit_code = invoke(
         command,
         cwd=tdm_path,
         log_path=log_path,
         timeout_seconds=framework["execution"]["timeout_seconds"],
+        env={"VOYAGER_EXE": local_layer.get("Voyager_EXE", "")},
     )
     status = "success" if exit_code == 0 else "failed"
     error = (
