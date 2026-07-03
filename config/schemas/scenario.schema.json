@@ -32,6 +32,10 @@
       "description": "Control Center key/value overrides specific to this scenario, applied on top of the run set's shared overrides.",
       "additionalProperties": true
     },
+    "driver_script": {
+      "type": "string",
+      "description": "Overrides the run set's driver_script for this scenario only (or the framework default, if the run set doesn't declare one). Path to a custom driver script, relative to the run_set directory. Staged keeping its own filename; companion scripts stay in place and must be referenced by a relative path back to their location."
+    },
     "prep_script": {
       "type": "string",
       "description": "Path to a Python prep script, relative to the run_set directory. Run before this scenario's model execution. Receives --run-set-dir and --scenario-id as arguments. Runs after any run_set-level prep_script."

@@ -103,6 +103,14 @@ def resolved_baseline_filename(run_set: dict, scenario: dict) -> str:
     return scenario.get("baseline_control_center") or run_set["baseline_control_center"]
 
 
+def resolved_driver_script(run_set: dict, scenario: dict) -> str | None:
+    """Path (relative to the run_set directory) to a custom _HailMary.s
+    driver script, or None if neither the scenario nor the run set declares
+    one -- in which case the TDM's own default driver script is used
+    unmodified."""
+    return scenario.get("driver_script") or run_set.get("driver_script")
+
+
 def resolved_output_spec(framework: dict, run_set: dict, scenario: dict) -> dict:
     """Scenario output spec overrides the run set's; run set's overrides the
     framework default. include patterns are NOT merged across levels --

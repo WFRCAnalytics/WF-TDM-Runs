@@ -12,6 +12,7 @@ from pathlib import Path
 
 from tdmruns import config as cfg
 from tdmruns import controlcenter as cc
+from tdmruns import driver_script as ds
 from tdmruns import metadata as md
 from tdmruns import outputs as out
 from tdmruns import prep
@@ -142,6 +143,17 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     control_center_path = folder / "_ControlCenter.yaml"
     cc.write_block_file(rendered, control_center_path)
 
+    # --- stage the driver script: declared custom one, or the TDM's default ---
+    driver_script_path = ds.stage(
+        rs_dir,
+        tdm_path,
+        framework["control_center_defaults_dir"],
+        framework["default_driver_script"],
+        run_set,
+        scenario,
+        folder,
+    )
+
     # --- execute ---
     command = build_command(framework, tdm_path, control_center_path, folder)
     log_path = folder / "logs" / "orchestrator_invocation.log"
@@ -184,6 +196,7 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
         run_set_overrides=run_set_overrides,
         scenario_overrides=scenario_overrides,
         rendered_path=str(control_center_path),
+        driver_script=driver_script_path,
         scenario_folder=str(folder),
         command=command,
         exit_code=exit_code,

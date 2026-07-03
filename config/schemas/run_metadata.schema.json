@@ -44,7 +44,11 @@
         "baseline_file": { "type": "string" },
         "run_set_overrides": { "type": "object" },
         "scenario_overrides": { "type": "object" },
-        "rendered_path": { "type": "string" }
+        "rendered_path": { "type": "string" },
+        "driver_script": {
+          "type": "string",
+          "description": "Source path of the driver script staged into the scenario folder for this run -- relative to the run_set directory if a custom driver_script was declared, or relative to the TDM submodule root (e.g. 'Scenarios/_default/_HailMary_1Subfolder.s') if the framework's default was used. Absent only for execution_mode 'manual', where no staging occurred."
+        }
       }
     },
     "execution": {

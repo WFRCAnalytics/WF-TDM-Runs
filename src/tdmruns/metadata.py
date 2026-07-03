@@ -31,6 +31,7 @@ def build(
     run_set_overrides: dict,
     scenario_overrides: dict,
     rendered_path: str = None,
+    driver_script: str = None,
     scenario_folder: str = None,
     command: list = None,
     exit_code: int = None,
@@ -42,10 +43,11 @@ def build(
     error: str = None,
     execution_mode: str = "cli",
 ) -> dict:
-    # rendered_path/command are only meaningful when the orchestrator itself
-    # rendered a Control Center and invoked the model (execution_mode "cli").
-    # Left out entirely rather than set to null for a manual import, since
-    # the schema types them as non-nullable.
+    # rendered_path/command/driver_script are only meaningful when the
+    # orchestrator itself rendered a Control Center, staged a driver script,
+    # and invoked the model (execution_mode "cli") -- always set together in
+    # that case, always absent for a manual import. Left out entirely rather
+    # than set to null, since the schema types them as non-nullable.
     control_center = {
         "baseline_file": baseline_file,
         "run_set_overrides": run_set_overrides,
@@ -53,6 +55,8 @@ def build(
     }
     if rendered_path is not None:
         control_center["rendered_path"] = rendered_path
+    if driver_script is not None:
+        control_center["driver_script"] = driver_script
 
     execution = {}
     if command is not None:

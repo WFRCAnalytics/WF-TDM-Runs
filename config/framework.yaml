@@ -18,6 +18,13 @@ control_center_defaults_dir: "Scenarios/_default"
 # submodule root. Available placeholders: {resolved_version}, {scenario_id}, {run_id}.
 scenario_folder_template: "Scenarios/{resolved_version}/{scenario_id}__{run_id}"
 
+# Filename, within control_center_defaults_dir, of the driver script staged
+# into every run's scenario folder unless a run_set/scenario declares its own
+# via driver_script. Its name is preserved when staged -- it's the variant of
+# _HailMary.s designed to run one directory level deeper than _default/
+# itself, matching scenario_folder_template's depth.
+default_driver_script: "_HailMary_1Subfolder.s"
+
 # The fixed batch entry point and how the orchestrator invokes it. Kept as
 # config (not hardcoded) since the calling convention is a property of the TDM
 # version, not of this framework. {control_center_path} and {scenario_folder}
