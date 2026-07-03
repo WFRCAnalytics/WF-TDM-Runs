@@ -17,6 +17,15 @@ def discover_run_set_ids() -> list:
     return sorted(p.name for p in runs_dir.iterdir() if p.is_dir())
 
 
+def has_custom_report_pages(run_set_id: str) -> bool:
+    """True if this run set has its own reports/run_sets/<id>/ directory of
+    hand-written pages (e.g. non-motorized-2023's slides.qmd/summary.qmd)
+    instead of the generic data-driven reports/run_sets/<id>.qmd template.
+    Callers that auto-list run sets from runs/ should skip these -- they're
+    linked in manually wherever they're introduced instead."""
+    return (REPORTS_DIR / "run_sets" / run_set_id).is_dir()
+
+
 def _load_run_set_yaml(run_set_id: str) -> dict:
     import yaml
     path = REPO_ROOT / "run_sets" / run_set_id / "run_set.yaml"
