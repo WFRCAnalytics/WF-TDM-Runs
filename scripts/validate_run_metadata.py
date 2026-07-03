@@ -36,16 +36,17 @@ def main():
                 print(f"    {loc}: {e.message}", file=sys.stderr)
             continue
 
-        for entry in data.get("outputs", {}).get("curated", []):
-            file_path = Path(entry["repo_path"])
-            if not file_path.is_file():
-                had_error = True
-                print(f"[FAIL] {path}: curated output missing on disk: {file_path}", file=sys.stderr)
-                continue
-            actual = sha256(file_path)
-            if actual != entry["sha256"]:
-                had_error = True
-                print(f"[FAIL] {path}: checksum mismatch for {file_path}", file=sys.stderr)
+        if not data.get("outputs", {}).get("retired"):
+            for entry in data.get("outputs", {}).get("curated", []):
+                file_path = Path(entry["repo_path"])
+                if not file_path.is_file():
+                    had_error = True
+                    print(f"[FAIL] {path}: curated output missing on disk: {file_path}", file=sys.stderr)
+                    continue
+                actual = sha256(file_path)
+                if actual != entry["sha256"]:
+                    had_error = True
+                    print(f"[FAIL] {path}: checksum mismatch for {file_path}", file=sys.stderr)
 
         if not errors:
             print(f"[OK]   {path.relative_to(REPO_ROOT)}")

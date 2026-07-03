@@ -61,6 +61,20 @@ def all_overrides(run: dict) -> dict:
     return merged
 
 
+def snapshot_dir(run_set_id: str) -> Path:
+    return REPO_ROOT / "run_sets" / run_set_id / "snapshot"
+
+
+def is_retired(run_set_id: str) -> bool:
+    """True once a run set has a populated snapshot/ directory -- written by
+    `tdmruns snapshot-run-set`, the first (safe, repeatable) step of
+    retiring a run set. Per-run-set report loaders check this to prefer the
+    frozen snapshot over live runs/ reads, whether or not the raw curated
+    outputs have actually been purged yet."""
+    d = snapshot_dir(run_set_id)
+    return d.is_dir() and any(p.is_file() for p in d.iterdir())
+
+
 def curated_output_paths(run: dict) -> list:
     repo_root_str = str(REPO_ROOT)
     paths = []

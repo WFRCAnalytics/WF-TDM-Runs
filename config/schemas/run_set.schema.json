@@ -36,6 +36,10 @@
       "type": "string",
       "description": "Path to a Python prep script, relative to the run_set directory. Run once per scenario before model execution. Receives --run-set-dir and --scenario-id as arguments."
     },
+    "report_snapshot_script": {
+      "type": "string",
+      "description": "Path to a Python script, relative to the run_set directory, that freezes whatever this run set's reports need from runs/ into run_sets/<id>/snapshot/ so raw curated outputs can later be purged. Invoked by `tdmruns snapshot-run-set` with --run-set-dir and --snapshot-dir arguments."
+    },
     "outputs": {
       "type": "object",
       "additionalProperties": false,

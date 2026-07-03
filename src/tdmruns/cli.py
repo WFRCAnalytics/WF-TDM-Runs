@@ -9,6 +9,7 @@ from tdmruns import config as cfg
 from tdmruns import execution as ex
 from tdmruns import metadata as md
 from tdmruns import prep
+from tdmruns import retirement as ret
 from tdmruns import submodule as sub
 from tdmruns.exceptions import tdmrunsError
 from tdmruns.paths import find_repo_root
@@ -203,6 +204,48 @@ def import_manual_run_set_cmd(run_set_id, only):
             click.echo(f"    {r['error']}", err=True)
     click.echo(f"\n{n_ok} succeeded, {n_fail} failed.")
     sys.exit(1 if n_fail else 0)
+
+
+@main.command("snapshot-run-set")
+@click.option("--run-set", "run_set_id", required=True)
+@click.pass_context
+def snapshot_run_set_cmd(ctx, run_set_id):
+    """Freeze whatever this run set's reports need from runs/ into
+    run_sets/<id>/snapshot/, by invoking its declared report_snapshot_script.
+    Safe and repeatable -- overwrites any existing snapshot, deletes nothing
+    under runs/. Re-render the reports afterward to confirm they still match
+    before ever running purge-run-set-outputs."""
+    repo_root = ctx.obj["repo_root"]
+    try:
+        run_set = cfg.load_run_set(repo_root, run_set_id)
+        files = ret.snapshot_run_set(repo_root, run_set, run_set_id)
+    except tdmrunsError as e:
+        click.echo(f"[FAIL] {run_set_id}: {e}", err=True)
+        sys.exit(1)
+    total_bytes = sum(f.stat().st_size for f in files)
+    click.echo(f"[OK] {run_set_id}: wrote {len(files)} file(s) ({total_bytes / 1024:.1f} KB) to snapshot/")
+    for f in files:
+        click.echo(f"  {f.name}")
+
+
+@main.command("purge-run-set-outputs")
+@click.option("--run-set", "run_set_id", required=True)
+def purge_run_set_outputs_cmd(run_set_id):
+    """Delete curated output files under runs/<run-set>/**/outputs/ and mark
+    each run's metadata as retired. Refuses unless run_sets/<run-set>/snapshot/
+    already exists and is populated -- run snapshot-run-set first. Deletes
+    real, currently-committed files; this is the irreversible-ish step."""
+    repo_root = find_repo_root()
+    try:
+        summary = ret.purge_outputs(repo_root, run_set_id)
+    except tdmrunsError as e:
+        click.echo(f"[FAIL] {run_set_id}: {e}", err=True)
+        sys.exit(1)
+    click.echo(
+        f"[OK] {run_set_id}: purged outputs from {summary['runs_purged']} run(s), "
+        f"removed {summary['files_removed']} file(s), "
+        f"freed {summary['bytes_freed'] / (1024 * 1024):.1f} MB"
+    )
 
 
 @main.command("prep-scenario")

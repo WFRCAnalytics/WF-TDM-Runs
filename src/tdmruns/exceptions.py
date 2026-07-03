@@ -34,3 +34,9 @@ class OutputCollectionError(tdmrunsError):
 
 class PrepScriptError(tdmrunsError):
     """Raised when a declared prep script is not found or exits non-zero."""
+
+
+class RetirementError(tdmrunsError):
+    """Raised when snapshotting or purging a run set's outputs can't proceed
+    -- e.g. no report_snapshot_script declared, or purge attempted before a
+    snapshot exists."""

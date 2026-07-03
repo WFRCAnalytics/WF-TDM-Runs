@@ -21,135 +21,28 @@ jupyter: july2025
 #| label: setup
 
 import pandas as pd
-import geopandas as gpd
 import plotly.express as px
 import os
 import sys
 
-# Base year (test_id 0) and the shared TAZ/district shapefiles aren't scenario
-# outputs, so they're read straight from the (gitignored) tdm/ working tree.
-# Test scenarios 1-13 read whatever tdmruns import-manual-run(-set) most
-# recently curated under runs/, resolved via report_data.py -- the same
-# runs/-reading module the generic run-set pages use.
-REPO_ROOT_REL = os.path.join('..', '..', '..')
-sys.path.insert(0, os.path.join('..', '..'))
-import report_data as rd
+# All data loading/aggregation lives in run_sets/non-motorized-2023/report_loader.py,
+# shared with slides.qmd. It reads test scenarios 1-13 from a frozen snapshot
+# once this run set is retired (tdmruns snapshot-run-set / purge-run-set-outputs),
+# falling back to whatever tdmruns import-manual-run(-set) most recently curated
+# under runs/ otherwise. The base year and TAZ/district shapefiles are always
+# read live from the (gitignored) tdm/ working tree -- see CLAUDE.md.
+sys.path.insert(0, os.path.join('..', '..', '..', 'run_sets', 'non-motorized-2023'))
+import report_loader as loader
 
-RUN_SET_ID = 'non-motorized-2023'
-TDM_ROOT = os.path.join(REPO_ROOT_REL, 'tdm')
-TDM_BASELINE_DIR = os.path.join(TDM_ROOT, 'Scenarios', RUN_SET_ID)
-latest_runs = {r['scenario_id']: r for r in rd.latest_run_per_scenario(RUN_SET_ID)}
-smldst_lst = [22, 16, 46, 88, 102]
-
-scenario_meta = pd.DataFrame([
-    {'test_id':  0, 'description': 'Base 2019',                        'hh_mult': 1,  'emp_mult': 1,  'scope': 'smldst'},
-    {'test_id':  1, 'description': '2019 HH x2',                       'hh_mult': 2,  'emp_mult': 1,  'scope': 'smldst'},
-    {'test_id':  2, 'description': '2019 HH x4',                       'hh_mult': 4,  'emp_mult': 1,  'scope': 'smldst'},
-    {'test_id':  3, 'description': '2019 HH x12',                      'hh_mult': 12, 'emp_mult': 1,  'scope': 'smldst'},
-    {'test_id':  4, 'description': '2019 EMP x2',                      'hh_mult': 1,  'emp_mult': 2,  'scope': 'smldst'},
-    {'test_id':  5, 'description': '2019 EMP x4',                      'hh_mult': 1,  'emp_mult': 4,  'scope': 'smldst'},
-    {'test_id':  6, 'description': '2019 EMP x12',                     'hh_mult': 1,  'emp_mult': 12, 'scope': 'smldst'},
-    {'test_id':  7, 'description': '2019 HH+EMP x2',                   'hh_mult': 2,  'emp_mult': 2,  'scope': 'smldst'},
-    {'test_id':  8, 'description': '2019 HH+EMP x4',                   'hh_mult': 4,  'emp_mult': 4,  'scope': 'smldst'},
-    {'test_id':  9, 'description': '2019 HH+EMP x12',                  'hh_mult': 12, 'emp_mult': 12, 'scope': 'smldst'},
-    {'test_id': 10, 'description': 'Future Today',                     'hh_mult': -1, 'emp_mult': -1, 'scope': 'smldst'},
-    {'test_id': 11, 'description': 'Future Today - Centerized',        'hh_mult': -1, 'emp_mult': -1, 'scope': 'smldst'},
-    {'test_id': 12, 'description': 'Future Today',                     'hh_mult': -1, 'emp_mult': -1, 'scope': 'region'},
-    {'test_id': 13, 'description': 'Future Today - Centerized',        'hh_mult': -1, 'emp_mult': -1, 'scope': 'region'},
-])
-
-taz_gdf = gpd.read_file(os.path.join(TDM_ROOT, '1_Inputs', '1_TAZ', 'WFv910_TAZ.shp'))
-smldst_tazs = set(taz_gdf[taz_gdf['DISTSML'].isin(smldst_lst)]['TAZID'].astype(int).tolist())
-
-KEEP_COLS = ['Purpose', 'TAZID', 'All', 'Walk', 'Bike', 'NonM']
-
-def curated_path(scenario_id, suffix):
-    """Repo-root-relative path to the most recently imported curated output
-    ending in suffix, for scenario_id -- e.g. suffix='.dbf' or
-    '_ZoneSummary_TripsByMode.csv'. Raises if no import has been run yet."""
-    run = latest_runs.get(scenario_id)
-    if run is None:
-        raise FileNotFoundError(
-            f"No imported run found for {RUN_SET_ID}/{scenario_id} -- run "
-            f"`tdmruns import-manual-run --run-set {RUN_SET_ID} --scenario {scenario_id}` first."
-        )
-    matches = [p for p in rd.curated_output_paths(run) if p.endswith(suffix)]
-    if not matches:
-        raise FileNotFoundError(
-            f"Run {run['run_id']} for {RUN_SET_ID}/{scenario_id} has no curated "
-            f"output ending in '{suffix}'."
-        )
-    return os.path.join(REPO_ROOT_REL, matches[0])
-
-def load_scenario(test_id):
-    if test_id == 0:
-        path = os.path.join(TDM_BASELINE_DIR, 'BY_2019', '4_ModeChoice',
-                            '2_DetailedTripMatrices', 'BY_2019_ZoneSummary_TripsByMode.csv')
-    else:
-        path = curated_path(f'S{test_id:02d}', '_ZoneSummary_TripsByMode.csv')
-    df = pd.read_csv(path)
-    df = df[(df['Period'] == 'Dy') & (df['PA'] == 'P')][KEEP_COLS]
-    df['test_id'] = test_id
-    return df
-
-raw_df = pd.concat([load_scenario(i) for i in range(14)], ignore_index=True)
-raw_df = raw_df.merge(scenario_meta, on='test_id')
-raw_df['TAZID'] = raw_df['TAZID'].astype(int)
-
+frames = loader.load()
+raw_df = frames['raw_df']
 filt_df = raw_df
-GROUP_COLS = ['test_id', 'description', 'hh_mult', 'emp_mult', 'Purpose']
-SUM_COLS   = ['All', 'Walk', 'Bike', 'NonM']
+full_delta = frames['full_delta']
+geo = frames['geo_centerization']
 
-local_agg = (
-    filt_df[filt_df['test_id'].isin(range(12)) & filt_df['TAZID'].isin(smldst_tazs)]
-    .groupby(GROUP_COLS)[SUM_COLS].sum().reset_index()
-)
-local_agg['geo_scope'] = 'smldst'
-
-region_agg = (
-    filt_df[filt_df['test_id'].isin([0, 12, 13])]
-    .groupby(GROUP_COLS)[SUM_COLS].sum().reset_index()
-)
-region_agg['geo_scope'] = 'region'
-
-summary = pd.concat([local_agg, region_agg], ignore_index=True)
-summary['nonm_share'] = summary['NonM'] / summary['All'] * 100
-summary['walk_share'] = summary['Walk'] / summary['All'] * 100
-summary['bike_share'] = summary['Bike'] / summary['All'] * 100
-
-def add_deltas(df, geo):
-    base = df[(df['test_id'] == 0) & (df['geo_scope'] == geo)][[
-        'Purpose', 'NonM', 'Walk', 'Bike', 'All', 'nonm_share', 'walk_share', 'bike_share'
-    ]].rename(columns={
-        'NonM': 'base_NonM', 'Walk': 'base_Walk', 'Bike': 'base_Bike', 'All': 'base_All',
-        'nonm_share': 'base_nonm_share', 'walk_share': 'base_walk_share', 'bike_share': 'base_bike_share'
-    })
-    merged = df[df['geo_scope'] == geo].merge(base, on='Purpose')
-    for col in ['NonM', 'Walk', 'Bike']:
-        merged[f'delta_{col}'] = merged[col] - merged[f'base_{col}']
-    merged['delta_nonm_share'] = merged['nonm_share'] - merged['base_nonm_share']
-    merged['delta_walk_share'] = merged['walk_share'] - merged['base_walk_share']
-    merged['delta_bike_share'] = merged['bike_share'] - merged['base_bike_share']
-    return merged
-
-local_delta  = add_deltas(summary, 'smldst')
-region_delta = add_deltas(summary, 'region')
-full_delta   = pd.concat([local_delta, region_delta], ignore_index=True)
-
-purposes = ['HBW', 'HBO', 'NHB']
-
-label_order = [
-    'HH only 2x', 'HH only 4x', 'HH only 12x',
-    'EMP only 2x', 'EMP only 4x', 'EMP only 12x',
-    'HH + EMP 2x', 'HH + EMP 4x', 'HH + EMP 12x',
-]
-
-def series_label(row):
-    if row['hh_mult_n'] > 1 and row['emp_mult_n'] == 1:
-        return 'HH only'
-    elif row['hh_mult_n'] == 1 and row['emp_mult_n'] > 1:
-        return 'EMP only'
-    return 'HH + EMP'
+purposes = loader.PURPOSES
+label_order = loader.LABEL_ORDER
+series_label = loader.series_label
 ```
 
 **[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Slides view](slides.html)
@@ -515,52 +408,8 @@ The centerized variant does not change total regional growth — it redistribute
 ```{python}
 #| label: fig-geo-center
 
-# Trip data for T10 and T11 across all TAZs (no smldst filter)
-t10_all = filt_df[filt_df['test_id'] == 10].groupby('TAZID')[['All', 'NonM']].sum().reset_index()
-t11_all = filt_df[filt_df['test_id'] == 11].groupby('TAZID')[['All', 'NonM']].sum().reset_index()
-
-# TAZ → district lookup from base SE DBF
-taz_dist = gpd.read_file(os.path.join(TDM_BASELINE_DIR, 'BY_2019', '0_InputProcessing', 'SE_File_WFv920-E3_BY_2019.dbf'))[['Z', 'DISTMED', 'DMED_NAME']]
-taz_dist = taz_dist.rename(columns={'Z': 'TAZID'})
-taz_dist['TAZID']   = taz_dist['TAZID'].astype(int)
-taz_dist['DISTMED'] = taz_dist['DISTMED'].astype(int)
-
-def district_nm(trips):
-    df = trips.merge(taz_dist, on='TAZID', how='left')
-    g  = df.groupby(['DISTMED', 'DMED_NAME'])[['All', 'NonM']].sum()
-    g['share'] = g['NonM'] / g['All'] * 100
-    return g.reset_index()
-
-t10_d = district_nm(t10_all)
-t11_d = district_nm(t11_all)
-
-# HH density change by district (T11 − T10)
-t10_se = gpd.read_file(curated_path('S10', '.dbf'))
-t11_se = gpd.read_file(curated_path('S11', '.dbf'))
-for se in [t10_se, t11_se]:
-    se['DISTMED'] = se['DISTMED'].astype(int)
-    se['TOTHH']   = se['TOTHH'].astype(float)
-
-dist_areas = gpd.read_file(os.path.join(TDM_ROOT, '1_Inputs', '1_TAZ', 'Districts', 'Dist_Medium.shp'))[['DISTMED', 'geometry']]
-dist_areas['DISTMED']  = dist_areas['DISTMED'].astype(int)
-dist_areas['area_acres'] = dist_areas.geometry.area / 4046.86
-
-hh = t10_se.groupby('DISTMED')['TOTHH'].sum().rename('HH_T10').to_frame()
-hh['HH_T11']    = t11_se.groupby('DISTMED')['TOTHH'].sum()
-hh = hh.reset_index().merge(dist_areas[['DISTMED', 'area_acres']], on='DISTMED', how='left')
-hh['dens_diff'] = (hh['HH_T11'] - hh['HH_T10']) / hh['area_acres']
-
-geo = (
-    t10_d[['DISTMED', 'DMED_NAME', 'share']].rename(columns={'share': 'share_T10'})
-    .merge(t11_d[['DISTMED', 'share']].rename(columns={'share': 'share_T11'}), on='DISTMED')
-    .merge(hh[['DISTMED', 'dens_diff']], on='DISTMED')
-)
-geo['delta_share'] = geo['share_T11'] - geo['share_T10']
-geo = geo[geo['dens_diff'].abs() > 0.02].copy()
-geo['direction'] = geo['dens_diff'].apply(lambda x: 'Gaining density' if x > 0 else 'Losing density')
-
-notable_ids = {12, 31, 10, 21, 18}
-geo['label'] = geo.apply(lambda r: r['DMED_NAME'] if r['DISTMED'] in notable_ids else '', axis=1)
+# geo (district-level share/density-change table) is built by
+# report_loader.build_geo_centerization() and already loaded in the setup cell.
 
 fig_geo = px.scatter(
     geo, x='dens_diff', y='delta_share', color='direction', text='label',

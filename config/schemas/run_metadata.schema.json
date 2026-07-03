@@ -72,6 +72,15 @@
               "repo_path": { "type": "string" }
             }
           }
+        },
+        "retired": {
+          "type": "boolean",
+          "description": "True once `tdmruns purge-run-set-outputs` has deleted this run's curated output files. The curated[] manifest (paths/sizes/checksums) is left in place as a permanent record of what once existed; repo_path no longer resolves to a file on disk."
+        },
+        "retired_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When this run's outputs were purged, if ever."
         }
       }
     },
