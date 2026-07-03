@@ -14,6 +14,10 @@
     "description": {
       "type": "string"
     },
+    "author": {
+      "type": "string",
+      "description": "Who prepared/maintains this run set, shown in reports under its own heading rather than as a single page-wide author -- since different run sets in this repo may be maintained by different people."
+    },
     "tdm_ref": {
       "type": "string",
       "description": "Git tag, branch, or commit SHA in the TDM submodule that scenarios in this run set run against, unless a scenario overrides it."

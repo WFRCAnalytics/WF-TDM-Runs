@@ -1,8 +1,6 @@
 ---
 title: "Non-Motorized Travel Sensitivity Analysis"
 subtitle: "Wasatch Front Regional Travel Demand Model — Non-Motorized Enhancement"
-author: "Bill Hereth"
-date: "June 17, 2026"
 format:
   html:
     toc: true
@@ -46,6 +44,15 @@ series_label = loader.series_label
 ```
 
 **[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Slides view](slides.html)
+
+```{python}
+#| echo: false
+#| output: asis
+from IPython.display import Markdown, display
+byline = loader.rd.run_set_byline(loader.RUN_SET_ID)
+if byline:
+    display(Markdown(f"*{byline}*"))
+```
 
 ## Purpose
 

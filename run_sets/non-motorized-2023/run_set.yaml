@@ -2,6 +2,7 @@
 # run_sets/non-motorized-2023/run_set.yaml
 #========================================================================================
 run_set_id: non-motorized-2023
+author: "Bill Hereth"
 description: >
   Non-motorized network sensitivity test — 13 scenarios varying HH and EMP
   at different multipliers and spatial scopes (specific TAZs, small districts,

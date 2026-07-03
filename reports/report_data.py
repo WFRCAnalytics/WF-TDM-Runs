@@ -17,13 +17,48 @@ def discover_run_set_ids() -> list:
     return sorted(p.name for p in runs_dir.iterdir() if p.is_dir())
 
 
-def run_set_description(run_set_id: str) -> str:
+def _load_run_set_yaml(run_set_id: str) -> dict:
     import yaml
     path = REPO_ROOT / "run_sets" / run_set_id / "run_set.yaml"
     if not path.is_file():
+        return {}
+    return yaml.safe_load(open(path, encoding="utf-8-sig")) or {}
+
+
+def run_set_description(run_set_id: str) -> str:
+    return (_load_run_set_yaml(run_set_id).get("description") or "").strip()
+
+
+def run_set_author(run_set_id: str) -> str:
+    return (_load_run_set_yaml(run_set_id).get("author") or "").strip()
+
+
+def run_set_latest_run_at(run_set_id: str) -> str:
+    """The most recent activity date across every scenario in this run set
+    (its latest run's finished_at, or started_at if that run never finished),
+    as a plain YYYY-MM-DD -- so "when was this last touched" is read from
+    run_metadata.json rather than hand-maintained, and stays accurate as new
+    runs/imports land. Empty string if the run set has no runs yet."""
+    runs = latest_run_per_scenario(run_set_id)
+    if not runs:
         return ""
-    data = yaml.safe_load(open(path, encoding="utf-8-sig"))
-    return (data.get("description") or "").strip()
+    latest = max(r.get("finished_at") or r["started_at"] for r in runs)
+    return latest[:10]
+
+
+def run_set_byline(run_set_id: str) -> str:
+    """'Prepared by <author> · Last updated <date>' (or just one half, or
+    empty) -- shown under each run set's own heading in reports instead of a
+    single page-wide author/date, since different run sets may be maintained
+    by different people."""
+    author = run_set_author(run_set_id)
+    updated = run_set_latest_run_at(run_set_id)
+    parts = []
+    if author:
+        parts.append(f"Prepared by {author}")
+    if updated:
+        parts.append(f"last updated {updated}")
+    return " · ".join(parts)
 
 
 def scenario_count(run_set_id: str) -> int:

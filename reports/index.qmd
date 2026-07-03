@@ -1,8 +1,6 @@
 ---
 title: "TDM Run Results"
 subtitle: "Wasatch Front Regional Travel Demand Model — Run Set Reporting"
-author: "Bill Hereth"
-date: today
 ---
 
 ```{python}
@@ -23,9 +21,11 @@ here automatically once it has at least one committed run.
 ```{python}
 #| echo: false
 #| output: asis
+nm2023_byline = rd.run_set_byline("non-motorized-2023")
 display(Markdown(
     "## non-motorized-2023\n\n"
-    f"Non-motorized network sensitivity test — {nm2023_scenario_count} scenarios "
+    + (f"*{nm2023_byline}*\n\n" if nm2023_byline else "")
+    + f"Non-motorized network sensitivity test — {nm2023_scenario_count} scenarios "
     "varying HH and EMP at different multipliers and spatial scopes to quantify "
     "mode-choice response to localized land-use changes. Manually curated from "
     "pre-existing scenario outputs (not run through the `tdmruns` CLI), so it's "
@@ -43,7 +43,9 @@ if not run_set_ids:
 
 for rs_id in run_set_ids:
     description = rd.run_set_description(rs_id)
-    display(Markdown(f"## [{rs_id}](run_sets/{rs_id}.qmd)\n\n{description}\n"))
+    byline = rd.run_set_byline(rs_id)
+    byline_md = f"*{byline}*\n\n" if byline else ""
+    display(Markdown(f"## [{rs_id}](run_sets/{rs_id}.qmd)\n\n{byline_md}{description}\n"))
 
     runs = rd.latest_run_per_scenario(rs_id)
     if not runs:
