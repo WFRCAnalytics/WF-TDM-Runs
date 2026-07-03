@@ -1,0 +1,18 @@
+scenario_id: Close01
+description: "Close01 - 10% HBW trip redistribution by City Area"
+driver_script: hail-mary/_HailMary_1Subfolder_closer.s
+start_from_copy: Close00
+# prep_script:   # optional: path to a Python script relative to the run_set dir
+
+variables:
+  # 10% of HBW trips currently ending outside the target geography are redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern)
+  HBW_TripRedistributionPct: 0.10
+  GeographyType: "CITYAREA"
+
+overrides:
+  RunDescription: "Close01 - City Area 10% HBW trip redistribution"
+# prep_script:   # optional: path to a Python script relative to the run_set dir
+
+# Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by
+# import-manual-run(-set) to locate raw outputs to curate into runs/.
+manual_scenario_folder: "Scenarios/bring-work-trips-closer-to-home/Close01"

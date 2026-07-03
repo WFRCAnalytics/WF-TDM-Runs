@@ -32,6 +32,7 @@ def build(
     scenario_overrides: dict,
     rendered_path: str = None,
     driver_script: str = None,
+    seeded_from: dict = None,
     scenario_folder: str = None,
     command: list = None,
     exit_code: int = None,
@@ -66,7 +67,7 @@ def build(
     if log_path is not None:
         execution["log_path"] = log_path
 
-    return {
+    result = {
         "schema_version": schema_version,
         "run_set_id": run_set_id,
         "scenario_id": scenario_id,
@@ -87,6 +88,11 @@ def build(
         },
         "error": error,
     }
+    # seeded_from is only set when start_from_copy was declared for this
+    # scenario -- absent otherwise, same "leave out entirely" convention.
+    if seeded_from is not None:
+        result["seeded_from"] = seeded_from
+    return result
 
 
 def write(run_dir: Path, metadata: dict):

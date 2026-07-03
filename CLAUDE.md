@@ -324,6 +324,22 @@ model is touched.
   not-yet-existing `RunModel.bat` running whatever driver script it finds
   staged in the scenario folder it's given (see the `RunModel.bat` blocker
   below); unconfirmed until that exists.
+- **`start_from_copy` seeds a scenario's raw folder from a prior scenario's
+  run — a third, narrow mechanism, orthogonal to overrides and driver
+  scripts** — a scenario may declare `start_from_copy: <scenario_id>`
+  (naming a sibling scenario in the same run set) to have its entire raw
+  scenario folder copied from that scenario's most recent *successful*
+  recorded run before this run's own Control Center/driver script are
+  written — useful when a scenario's modification only affects a model step
+  late in the pipeline, so upstream steps don't need to be recomputed. The
+  source folder is resolved via `metadata.latest_run()`'s recorded
+  `scenario_folder` (works whether the source was run via the CLI or
+  imported from a manual run), not a declared `manual_scenario_folder` — see
+  `docs/architecture/0008-scenario-seeding.md`. This mechanism only copies
+  files; it never makes Cube Voyager skip a step — that's the analyst's own
+  `driver_script` logic to write. Wired into `run-scenario`/`run-set` only
+  (no standalone command), so it depends on the same `RunModel.bat` blocker,
+  plus the source scenario needing a successful run first.
 - **Input prep is manual, not automated** — each run_set has an optional
   `input_prep.ipynb` notebook at its root that generates input files (e.g.
   SE CSVs) into its `inputs/` folder. The framework does not run prep;
@@ -530,3 +546,11 @@ finds staged there, under whatever name it has, rather than always reading
 a hardcoded path to `Scenarios/_default/`. `RunModel.bat` doesn't exist yet
 in the current checkout (see #1), so this assumption is unconfirmed — once
 it exists, verify it actually runs the scenario-folder-local file.
+
+**7. Exercise `start_from_copy` once possible.**
+The new scenario-seeding mechanism (`src/tdmruns/scenario_seed.py`, see ADR
+0008) is wired into `run-scenario`/`run-set` but can't be exercised yet for
+`bring-work-trips-closer-to-home` (`Close01`/`Close02`/`Close03` declare
+`start_from_copy: Close00`): it needs both `RunModel.bat` to exist (#1) and
+`Close00` to have at least one successful recorded run
+(`run_metadata.json`) before the copy source can resolve to anything.

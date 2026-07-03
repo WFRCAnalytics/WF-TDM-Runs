@@ -60,6 +60,15 @@
       }
     },
     "scenario_folder": { "type": "string" },
+    "seeded_from": {
+      "type": "object",
+      "required": ["scenario_id", "run_id"],
+      "description": "Identifies the prior run whose raw scenario folder was copied into this one before Control Center rendering, when this scenario declared start_from_copy. Absent when the scenario started from an empty folder.",
+      "properties": {
+        "scenario_id": { "type": "string" },
+        "run_id": { "type": "string" }
+      }
+    },
     "outputs": {
       "type": "object",
       "properties": {

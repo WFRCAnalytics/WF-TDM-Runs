@@ -16,6 +16,7 @@ from tdmruns import driver_script as ds
 from tdmruns import metadata as md
 from tdmruns import outputs as out
 from tdmruns import prep
+from tdmruns import scenario_seed as seed
 from tdmruns import submodule as sub
 from tdmruns.exceptions import ConfigValidationError, ExecutionError
 
@@ -132,6 +133,11 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     )
     folder.mkdir(parents=True, exist_ok=True)
 
+    # --- seed from a prior scenario's raw folder, if declared (before this
+    # run's own Control Center/driver script are written, so they overwrite
+    # any stale copies rather than the other way around) ---
+    seeded_from = seed.seed(repo_root, run_set_id, scenario, folder)
+
     identity_fields = {
         "ScenarioName": scenario_id,
         "ScenarioDir": _windows_style(str(folder.relative_to(tdm_path))),
@@ -197,6 +203,7 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
         scenario_overrides=scenario_overrides,
         rendered_path=str(control_center_path),
         driver_script=driver_script_path,
+        seeded_from=seeded_from,
         scenario_folder=str(folder),
         command=command,
         exit_code=exit_code,

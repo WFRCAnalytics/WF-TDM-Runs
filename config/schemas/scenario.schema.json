@@ -36,6 +36,10 @@
       "type": "string",
       "description": "Overrides the run set's driver_script for this scenario only (or the framework default, if the run set doesn't declare one). Path to a custom driver script, relative to the run_set directory. Staged keeping its own filename; companion scripts stay in place and must be referenced by a relative path back to their location."
     },
+    "start_from_copy": {
+      "type": "string",
+      "description": "scenario_id of another scenario in this same run set whose most recent successful run's raw scenario folder should be copied (in full) into this scenario's folder before execution -- lets a scenario whose modification only affects a later model step skip recomputing everything upstream. Resolved via that scenario's run_metadata.json (works whether it was run via the CLI or imported from a manual run); the source scenario must already have a successful recorded run. Only used by run-scenario/run-set -- has no effect on manual execution."
+    },
     "prep_script": {
       "type": "string",
       "description": "Path to a Python prep script, relative to the run_set directory. Run before this scenario's model execution. Receives --run-set-dir and --scenario-id as arguments. Runs after any run_set-level prep_script."

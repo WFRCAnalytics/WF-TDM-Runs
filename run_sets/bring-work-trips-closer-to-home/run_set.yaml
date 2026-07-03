@@ -1,0 +1,28 @@
+#========================================================================================
+# run_sets/bring-work-trips-closer-to-home/run_set.yaml
+#========================================================================================
+run_set_id: bring-work-trips-closer-to-home
+author: "Bill Hereth"
+description: >
+  Sketch-level test of localized HBW trip redistribution. For each of three geography types (City Area ~55, Medium District ~35, Workshop Area 8), 10% of home-based work trips currently ending outside the target geography are proportionally redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern), applied before mode choice. Three scenarios total, one per geography type, each applied region-wide (all areas of that type adjusted simultaneously). Base year 2023, model v10.0.0-beta.1 (updated household/transit on-board survey data). Outputs: VMT, VHD, traffic volume, and transit/corridor effects vs. base.
+
+tdm_ref: "v10.0.0-beta.1"
+baseline_control_center: "1ControlCenter - BY_2019.block"
+
+# prep_script:   # optional: path to a Python script relative to this run_set dir
+                 # run once per scenario before model execution
+                 # script receives --run-set-dir and --scenario-id as arguments
+
+overrides:
+  Run_Documentation: 0
+
+outputs:
+  include:
+    - "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
+    - "4_ModeChoice/4_Shares/*_RegionShares_Daily.csv"
+    - "4_ModeChoice/4_Shares/*_RegionShares_Ok.csv"
+    - "4_ModeChoice/4_Shares/*_RegionShares_Pk.csv"
+    - "5_AssignHwy/4_Summaries/*_Summary_SEGID.csv"
+  max_file_size_mb: 45
+
+report_snapshot_script: report_snapshot.py

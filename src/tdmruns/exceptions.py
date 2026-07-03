@@ -40,6 +40,12 @@ class DriverScriptError(tdmrunsError):
     """Raised when a declared driver_script (custom _HailMary.s) is not found."""
 
 
+class ScenarioSeedError(tdmrunsError):
+    """Raised when a declared start_from_copy source scenario has no
+    successful recorded run, or its recorded scenario_folder no longer
+    exists on disk."""
+
+
 class RetirementError(tdmrunsError):
     """Raised when snapshotting or purging a run set's outputs can't proceed
     -- e.g. no report_snapshot_script declared, or purge attempted before a
