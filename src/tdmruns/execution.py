@@ -1,7 +1,9 @@
-"""Execution orchestration: run-folder creation, command building, invoking
+"""
+Execution orchestration: run-folder creation, command building, invoking
 the TDM's fixed batch entry point, and the top-level run_scenario() that ties
 config, version resolution, Control Center rendering, execution, output
-curation, and metadata together into one auditable attempt."""
+curation, and metadata together into one auditable attempt.
+"""
 
 import os
 import platform
@@ -33,11 +35,15 @@ def scenario_folder_path(
     tdm_path: Path,
     framework: dict,
     resolved_version_label: str,
+    run_set_id: str,
     scenario_id: str,
     run_id: str,
 ) -> Path:
     rel = framework["scenario_folder_template"].format(
-        resolved_version=resolved_version_label, scenario_id=scenario_id, run_id=run_id
+        resolved_version=resolved_version_label,
+        run_set_id=run_set_id,
+        scenario_id=scenario_id,
+        run_id=run_id,
     )
     return tdm_path / rel
 
@@ -70,9 +76,7 @@ def build_command(
     return [str(entry_point_abs), *args]
 
 
-def invoke(
-    command: list, cwd: Path, log_path: Path, timeout_seconds: int, env: dict = None
-) -> int:
+def invoke(command: list, cwd: Path, log_path: Path, timeout_seconds: int, env: dict = None) -> int:
     log_path.parent.mkdir(parents=True, exist_ok=True)
     full_env = {**os.environ, **env} if env else None
     with open(log_path, "w") as log:
@@ -94,13 +98,15 @@ def invoke(
 
 
 def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool = False) -> dict:
-    """Executes one full attempt of a scenario: resolve version, render
+    """
+    Executes one full attempt of a scenario: resolve version, render
     Control Center, invoke the TDM, curate outputs, write metadata. Returns
     the run metadata dict. Raises on validation failures that should stop
     execution before anything happens (config errors, unknown override keys,
     unresolvable TDM ref); execution and output failures are instead recorded
     in a 'failed' run record so a run set can continue to the next scenario
-    rather than aborting."""
+    rather than aborting.
+    """
     framework = cfg.load_framework_config(repo_root)
     run_set = cfg.load_run_set(repo_root, run_set_id)
     scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
@@ -114,7 +120,9 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     requested_ref = cfg.resolved_tdm_ref(run_set, scenario)
     baseline_filename = cfg.resolved_baseline_filename(run_set, scenario)
     rs_dir = repo_root / "run_sets" / run_set_id
-    run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(run_set, scenario, rs_dir)
+    run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(
+        run_set, scenario, rs_dir
+    )
     output_spec = cfg.resolved_output_spec(framework, run_set, scenario)
 
     run_id = generate_run_id()
@@ -132,13 +140,17 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     cc.validate_overrides(baseline, run_set_overrides, f"run set '{run_set_id}'.overrides")
     cc.validate_overrides(baseline, scenario_overrides, f"scenario '{scenario_id}'.overrides")
     local_layer = framework.get("_local", {})
-    cc.validate_overrides(baseline, local_layer, "config/local.yaml")
+    # Voyager_EXE is a framework-only value (used below for the VOYAGER_EXE
+    # env var) -- it is not a real Control Center key, so it's excluded from
+    # what gets validated/rendered into the block file.
+    cc_local_layer = {k: v for k, v in local_layer.items() if k != "Voyager_EXE"}
+    cc.validate_overrides(baseline, cc_local_layer, "config/local.yaml")
 
     # --- prep scripts (hard failure stops this scenario before execution) ---
     prep.run_prep_scripts(run_set, scenario, rs_dir, scenario_id)
 
     folder = scenario_folder_path(
-        repo_root, tdm_path, framework, version_label, scenario_id, run_id
+        repo_root, tdm_path, framework, version_label, run_set_id, scenario_id, run_id
     )
     folder.mkdir(parents=True, exist_ok=True)
 
@@ -149,14 +161,13 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
 
     identity_fields = {
         "ScenarioName": scenario_id,
-        "ScenarioDir": _windows_style(str(folder.relative_to(tdm_path))),
-        "ParentDir": _windows_style(str(tdm_path.resolve())),
+        "ScenarioDir": _windows_style(str(folder.resolve()), trailing_sep=False),
+        "ModelDir": _windows_style(str(tdm_path.resolve()), trailing_sep=False),
     }
-    rendered = cc.render(
-        baseline, run_set_overrides, scenario_overrides, local_layer, identity_fields
-    )
-    control_center_path = folder / "_ControlCenter.yaml"
-    cc.write_block_file(rendered, control_center_path)
+    rendered = cc.render(run_set_overrides, scenario_overrides, cc_local_layer, identity_fields)
+    baseline_path = tdm_path / framework["control_center_defaults_dir"] / baseline_filename
+    control_center_path = folder / "_ControlCenter.block"
+    cc.write_block_file(baseline_path, rendered, control_center_path)
 
     # --- stage the driver script: declared custom one, or the TDM's default ---
     driver_script_path = ds.stage(
@@ -230,12 +241,10 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
 
 
 def import_manual_run(
-    repo_root: Path,
-    run_set_id: str,
-    scenario_id: str,
-    scenario_folder: Path = None,
+    repo_root: Path, run_set_id: str, scenario_id: str, scenario_folder: Path = None
 ) -> dict:
-    """Curates outputs and records metadata for a scenario that was executed
+    """
+    Curates outputs and records metadata for a scenario that was executed
     outside the CLI -- e.g. Cube Voyager invoked directly against a raw
     scenario_folder, because the TDM's real Control Center isn't renderable
     by this framework yet. Applies the same select/size-check/copy sequence
@@ -254,7 +263,8 @@ def import_manual_run(
     manual run the way there is for CLI execution), so the invocation itself
     is the signal that outputs should be (re-)gathered -- every call creates
     a new timestamped run rather than guessing whether the raw folder
-    changed since the last import."""
+    changed since the last import.
+    """
     framework = cfg.load_framework_config(repo_root)
     run_set = cfg.load_run_set(repo_root, run_set_id)
     scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
@@ -271,7 +281,9 @@ def import_manual_run(
     requested_ref = cfg.resolved_tdm_ref(run_set, scenario)
     baseline_filename = cfg.resolved_baseline_filename(run_set, scenario)
     rs_dir = repo_root / "run_sets" / run_set_id
-    run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(run_set, scenario, rs_dir)
+    run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(
+        run_set, scenario, rs_dir
+    )
     output_spec = cfg.resolved_output_spec(framework, run_set, scenario)
 
     run_id = generate_run_id()
@@ -293,8 +305,7 @@ def import_manual_run(
     else:
         status = "failed"
         error = (
-            f"No files under {scenario_folder} matched outputs.include "
-            f"{output_spec['include']!r}."
+            f"No files under {scenario_folder} matched outputs.include {output_spec['include']!r}."
         )
 
     run_metadata = md.build(
@@ -323,10 +334,12 @@ def import_manual_run(
 
 
 def import_manual_run_set(repo_root: Path, run_set_id: str, only: list = None) -> list:
-    """Runs import_manual_run() for every scenario in a run set that declares
+    """
+    Runs import_manual_run() for every scenario in a run set that declares
     a manual_scenario_folder. A scenario missing that field is recorded as a
     skipped result rather than stopping the rest of the run set -- mirrors
-    run_scenarios()'s per-scenario failure isolation."""
+    run_scenarios()'s per-scenario failure isolation.
+    """
     scenario_ids = cfg.list_scenario_ids(repo_root, run_set_id)
     if only:
         scenario_ids = [s for s in scenario_ids if s in only]
@@ -348,10 +361,12 @@ def import_manual_run_set(repo_root: Path, run_set_id: str, only: list = None) -
 
 
 def run_scenarios(repo_root: Path, run_set_id: str, only: list = None, force: bool = False) -> list:
-    """Runs every scenario in a run set sequentially. A failed scenario does
+    """
+    Runs every scenario in a run set sequentially. A failed scenario does
     not stop the run set -- successful runs already on disk are untouched,
     and the function returns metadata for every attempted scenario so the
-    caller can report a clear success/failure summary."""
+    caller can report a clear success/failure summary.
+    """
     scenario_ids = cfg.list_scenario_ids(repo_root, run_set_id)
     if only:
         scenario_ids = [s for s in scenario_ids if s in only]

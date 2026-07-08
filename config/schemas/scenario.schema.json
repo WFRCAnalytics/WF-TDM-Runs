@@ -32,6 +32,11 @@
       "description": "Control Center key/value overrides specific to this scenario, applied on top of the run set's shared overrides.",
       "additionalProperties": true
     },
+    "variables": {
+      "type": "object",
+      "description": "Documentation-only scenario parameters (e.g. a custom driver/step script's inputs) that are not Control Center keys and are not applied by the framework -- unlike overrides, which are validated against the baseline and rendered into _ControlCenter.yaml, these are not read by anything yet. Record here what a custom driver_script's companion step script is meant to consume once it reads them itself.",
+      "additionalProperties": true
+    },
     "driver_script": {
       "type": "string",
       "description": "Overrides the run set's driver_script for this scenario only (or the framework default, if the run set doesn't declare one). Path to a custom driver script, relative to the run_set directory. Staged keeping its own filename; companion scripts stay in place and must be referenced by a relative path back to their location."

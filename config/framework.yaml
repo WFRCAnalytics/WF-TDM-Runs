@@ -15,15 +15,37 @@ tdm_submodule_path: "tdm"
 control_center_defaults_dir: "Scenarios/_default"
 
 # Convention for where a run's working folder is created, relative to the
-# submodule root. Available placeholders: {resolved_version}, {scenario_id}, {run_id}.
-scenario_folder_template: "Scenarios/{resolved_version}/{scenario_id}__{run_id}"
+# submodule root. Available placeholders: {run_set_id}, {resolved_version},
+# {scenario_id}, {run_id}. Uses run_set_id (not resolved_version) so a run
+# set's CLI-driven runs land under the same Scenarios/<run_set_id>/ folder
+# regardless of which TDM version a given run resolved to -- matching the
+# Scenarios/<run_set_id>/<scenario_folder_name> convention already used for
+# manually-run scenarios (see manual_scenario_folder).
+#
+# Deliberately excludes {run_id}: raw model outputs are too large to
+# duplicate on every attempt, so re-running a scenario reuses the same
+# on-disk folder and lets Cube overwrite files in place, the same way a
+# manually-run scenario's fixed manual_scenario_folder is reused across
+# re-runs. runs/<run_set_id>/<scenario_id>/<run_id>/run_metadata.json still
+# records one entry per attempt -- only the TDM-side working folder itself
+# is shared across attempts, not the framework's own run history.
+scenario_folder_template: "Scenarios/{run_set_id}/{scenario_id}"
 
 # Filename, within control_center_defaults_dir, of the driver script staged
 # into every run's scenario folder unless a run_set/scenario declares its own
 # via driver_script. Its name is preserved when staged -- it's the variant of
 # _HailMary.s designed to run one directory level deeper than _default/
 # itself, matching scenario_folder_template's depth.
-default_driver_script: "_HailMary_1Subfolder.s"
+#
+# This filename is a property of whatever TDM ref is currently checked out,
+# not a framework-wide constant -- it changed from _HailMary_1Subfolder.s
+# (single leading underscore) in the v920-E3-era library to
+# __HailMary_1Subfolder.s (double) as of v10.0.0-beta.1. Only one TDM version
+# is checked out at a time (see docs/architecture/0001), so this value always
+# has to match whatever run_set/tdm_ref is actually being executed through
+# the CLI; update it here when switching which version's run sets are driven
+# by run-scenario/run-set.
+default_driver_script: "__HailMary_1Subfolder.s"
 
 # The fixed batch entry point and how the orchestrator invokes it. Kept as
 # config (not hardcoded) since the calling convention is a property of the TDM
