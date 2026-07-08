@@ -361,15 +361,29 @@ model is touched.
   recorded run before this run's own Control Center/driver script are
   written — useful when a scenario's modification only affects a model step
   late in the pipeline, so upstream steps don't need to be recomputed. The
-  source folder is resolved via `metadata.latest_run()`'s recorded
-  `scenario_folder` (works whether the source was run via the CLI or
-  imported from a manual run), not a declared `manual_scenario_folder` — see
-  `docs/architecture/0008-scenario-seeding.md`. This mechanism only copies
-  files; it never makes Cube Voyager skip a step — that's the analyst's own
-  `driver_script` logic to write. Wired into `run-scenario`/`run-set` only
-  (no standalone command), so it depends on the same block-format blocker as
-  everything else routed through Cube, plus the source scenario needing a
-  successful run first.
+  source folder is resolved via `metadata.latest_successful_run()`'s
+  recorded `scenario_folder` (works whether the source was run via the CLI
+  or imported from a manual run), not a declared `manual_scenario_folder` —
+  see `docs/architecture/0008-scenario-seeding.md`. `latest_successful_run()`
+  skips past any newer failed attempts to find the most recent success — an
+  earlier version called plain `latest_run()` and required *that* one to
+  have succeeded, which wrongly blocked copying whenever a scenario's latest
+  attempt failed for a reason unrelated to seeding (e.g. output curation
+  tripping the size limit) even though an earlier attempt had succeeded.
+  This mechanism only copies files; it never makes Cube Voyager skip a step
+  — that's the analyst's own `driver_script` logic to write. Wired into
+  `run-scenario`/`run-set` only (no standalone command), so it depends on
+  the same block-format blocker as everything else routed through Cube, plus
+  the source scenario needing a successful run first. Because the raw
+  scenario folder is reused across every run attempt for a given
+  `scenario_id` (`scenario_folder_template` has no `run_id` component), a
+  scenario declaring `start_from_copy` re-copies the source's entire folder
+  — potentially tens of GB — on every one of its own retries too. A
+  scenario may additionally declare `lock_down_copy: true` once its folder
+  already holds the seeded state it needs, to suppress that repeated copy
+  without discarding the `start_from_copy` declaration (kept as the record
+  of where it was seeded from); it has no effect unless `start_from_copy` is
+  also declared.
 - **Input prep is manual, not automated** — each run_set has an optional
   `input_prep.ipynb` notebook at its root that generates input files (e.g.
   SE CSVs) into its `inputs/` folder. The framework does not run prep;
@@ -595,10 +609,21 @@ right after `start /w`, propagated by `RunModel.bat` and read by
 `execution.invoke()`) — a deliberate choice, not the model scripts'
 `_TimeStamp_ModelSuccess.block` / `_TimeStamp_ModelCrashed.block` convention.
 
-**7. Exercise `start_from_copy` once possible.**
-The new scenario-seeding mechanism (`src/tdmruns/scenario_seed.py`, see ADR
-0008) is wired into `run-scenario`/`run-set` but can't be exercised yet for
-`bring-work-trips-closer-to-home` (`Close01`/`Close02`/`Close03` declare
-`start_from_copy: Close00`): it needs both `RunModel.bat` to exist (#1) and
-`Close00` to have at least one successful recorded run
-(`run_metadata.json`) before the copy source can resolve to anything.
+**7. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
+`Close00` (`Close01`/`Close02`/`Close03` all declare `start_from_copy:
+Close00`) has recorded successful runs now that `RunModel.bat` works
+end-to-end, so the copy source resolves. Fixed a real bug in
+`scenario_seed.seed()` this session: it used to require the single most
+recent recorded run to have `status: "success"`, so Close00's frequent
+unrelated re-run failures (block-format/exit-code issues while iterating,
+output curation tripping the 45 MB ceiling) would wrongly block Close01/02/03
+from copying, even with an earlier Close00 success on record. It now calls
+the new `metadata.latest_successful_run()`, which skips past newer failures
+to find the most recent success. Also added `lock_down_copy: true` (scenario
+YAML), since the raw scenario folder is reused across every retry of a given
+scenario_id — without it, every Close01 retry would re-`shutil.copytree()`
+Close00's entire raw folder (currently ~34 GB) again. Declare it on
+Close01/02/03 once each has been seeded once and doesn't need Close00's
+folder re-copied on further retries. Covered by new unit tests in
+`tests/test_scenario_seed.py`; still not exercised end-to-end via a live
+`run-scenario` invocation against the real TDM.

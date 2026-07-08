@@ -43,7 +43,11 @@
     },
     "start_from_copy": {
       "type": "string",
-      "description": "scenario_id of another scenario in this same run set whose most recent successful run's raw scenario folder should be copied (in full) into this scenario's folder before execution -- lets a scenario whose modification only affects a later model step skip recomputing everything upstream. Resolved via that scenario's run_metadata.json (works whether it was run via the CLI or imported from a manual run); the source scenario must already have a successful recorded run. Only used by run-scenario/run-set -- has no effect on manual execution."
+      "description": "scenario_id of another scenario in this same run set whose most recent successful run's raw scenario folder should be copied (in full) into this scenario's folder before execution -- lets a scenario whose modification only affects a later model step skip recomputing everything upstream. Resolved via that scenario's run_metadata.json (works whether it was run via the CLI or imported from a manual run), skipping past any newer failed attempts to find the most recent success. Only used by run-scenario/run-set -- has no effect on manual execution."
+    },
+    "lock_down_copy": {
+      "type": "boolean",
+      "description": "When true, suppresses the start_from_copy copy for this scenario's runs, leaving its raw scenario folder untouched by seeding -- use once the folder already holds the seeded state it needs, since the raw folder is reused across every run attempt and would otherwise be re-copied (potentially tens of GB) on each retry. Has no effect unless start_from_copy is also declared; keep start_from_copy set for the record of where it was seeded from."
     },
     "prep_script": {
       "type": "string",

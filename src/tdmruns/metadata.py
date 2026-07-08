@@ -121,3 +121,17 @@ def list_runs(repo_root: Path, run_set_id: str = None, scenario_id: str = None) 
 def latest_run(repo_root: Path, run_set_id: str, scenario_id: str) -> dict:
     runs = list_runs(repo_root, run_set_id, scenario_id)
     return runs[0] if runs else None
+
+
+def latest_successful_run(repo_root: Path, run_set_id: str, scenario_id: str) -> dict:
+    """
+    Like latest_run(), but skips past newer failed attempts.
+
+    Returns the most recent run with status "success" -- a scenario re-run
+    for an unrelated reason (e.g. a later attempt that failed) shouldn't
+    shadow an earlier successful one.
+    """
+    for run in list_runs(repo_root, run_set_id, scenario_id):
+        if run["status"] == "success":
+            return run
+    return None

@@ -28,18 +28,35 @@ folder, before the Control Center is rendered or a driver script is staged
 -- so this run's own files land on top of (and overwrite) whatever stale
 copies came along in the copy, not the other way around.
 
-The source folder is resolved via `metadata.latest_run(repo_root,
+The source folder is resolved via `metadata.latest_successful_run(repo_root,
 run_set_id, source_scenario_id)`'s recorded `scenario_folder` -- not the
 source scenario's declared `manual_scenario_folder`. This works uniformly
 whether the source scenario was executed through the CLI or imported from a
-manual run (`import_manual_run()` records `scenario_folder` too), and reuses
-the existing "most recent run" lookup rather than re-deriving one. It also
-means `start_from_copy` has a real precondition: the source scenario must
-already have a successful recorded run, checked explicitly
-(`scenario_seed.seed()` raises `ScenarioSeedError` otherwise, along with a
-missing-on-disk check for the recorded folder -- retirement only purges
-curated `runs/**/outputs/` copies, never the raw TDM working folder, but
-nothing guarantees it wasn't cleaned up by hand).
+manual run (`import_manual_run()` records `scenario_folder` too).
+`latest_successful_run()` skips past any newer failed attempts to find the
+most recent run with `status: "success"`, rather than requiring the single
+most recent run (of any status) to have succeeded -- an earlier version of
+this code called plain `latest_run()` and checked its status, which meant a
+scenario re-run that failed for a reason unrelated to seeding (e.g. output
+curation tripping the size limit) would wrongly block copying from an
+already-successful earlier run. `start_from_copy` has a real precondition:
+the source scenario must already have a successful recorded run, checked
+explicitly (`scenario_seed.seed()` raises `ScenarioSeedError` otherwise,
+along with a missing-on-disk check for the recorded folder -- retirement
+only purges curated `runs/**/outputs/` copies, never the raw TDM working
+folder, but nothing guarantees it wasn't cleaned up by hand).
+
+Because the raw scenario folder is reused across every run attempt for a
+given `scenario_id` (`scenario_folder_template` has no `run_id` component,
+see `execution.py`'s `scenario_folder_path()`), a scenario declaring
+`start_from_copy` re-copies the source's entire folder -- potentially tens
+of GB -- on *every one of its own retries* too, not just its first run. A
+scenario may additionally declare `lock_down_copy: true` once its folder
+already holds the seeded state it needs, to suppress the copy on subsequent
+runs without discarding the `start_from_copy` declaration (kept as the
+record of where it was seeded from). `lock_down_copy` has no effect unless
+`start_from_copy` is also declared, and is scenario-only, same as
+`start_from_copy`.
 
 `start_from_copy` is scenario-only, not available at the run_set level --
 it names a specific sibling scenario, which is never a run_set-wide default

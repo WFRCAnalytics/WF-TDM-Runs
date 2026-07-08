@@ -2,6 +2,7 @@ scenario_id: Close01
 description: "Close01 - 10% HBW trip redistribution by City Area"
 driver_script: hail-mary/_HailMary_1Subfolder_closer.s
 start_from_copy: Close00
+lock_down_copy: false
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 variables:
