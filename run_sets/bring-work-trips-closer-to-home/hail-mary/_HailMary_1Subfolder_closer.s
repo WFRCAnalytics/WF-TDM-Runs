@@ -123,7 +123,7 @@
 ;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\05_Skim_Tran.s'
 ;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\06_HBW_logsums.s'
 ;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\07_HBW_dest_choice.s'
-    READ FILE = '..\..\..\..\run_sets\bring-work-trips-closer-to-home\scripts\test.s'
+    READ FILE = '..\..\..\..\run_sets\bring-work-trips-closer-to-home\scripts\redistribute_hbw_trips.s'
     READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\08_TripTablesByPeriod.s'
     READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\09_Segmnt_PA_HBbyMC.s'
     READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\10_ConvertSomeXI2HBW.s'
