@@ -14,8 +14,8 @@ ScriptStartTime = currenttime()
 ;====================================================================================================================================================================;
 
 ; redistribute a share of HBW trips from each origin zone toward destinations
-; within that zone's own geography unit -- HBW_TripRedistributionPct /
-; GeographyType are read directly by the python script from the scenario's
+; within that zone's own geography unit -- hbw_trip_redistribution_portion /
+; geography_type are read directly by the python script from the scenario's
 ; own CloseXX.yaml `variables:` block (they are not Control Center keys, so
 ; Cube itself never sees them; only @ScenarioName@/@ScenarioDir@/@ModelDir@
 ; are passed through here)

@@ -23,6 +23,6 @@ outputs:
     - "4_ModeChoice/4_Shares/*_RegionShares_Ok.csv"
     - "4_ModeChoice/4_Shares/*_RegionShares_Pk.csv"
     - "5_AssignHwy/4_Summaries/*_Summary_SEGID.csv"
-  max_file_size_mb: 45
+  max_file_size_mb: 95
 
 report_snapshot_script: report_snapshot.py

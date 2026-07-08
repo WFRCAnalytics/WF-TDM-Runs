@@ -3,7 +3,7 @@
 #     zone toward destinations within that zone's own geography unit
 #     (city area / medium district / workshop area), pulling the moved
 #     trips out of destinations outside that unit. Reads
-#     HBW_TripRedistributionPct / GeographyType from the scenario's own
+#     hbw_trip_redistribution_portion / geography_type from the scenario's own
 #     CloseXX.yaml `variables:` block (these are documentation-only to the
 #     framework -- this script is the thing that actually consumes them).
 #
@@ -31,15 +31,11 @@ from dbfread import DBF
 # configurable at this layer, consistent with those.
 VOYAGER_DIR = r"C:\Program Files\Citilabs\CubeVoyager"
 
-# GeographyType (scenario `variables:`) -> field name in WFv1000_TAZ.dbf.
+# geography_type (scenario `variables:`) -> field name in WFv1000_TAZ.dbf.
 # Confirmed against the TDM's TAZ dbf: CITYAREA has no literal field of its
 # own and maps to CITY_UGRC; DISTMED and CITYGRP are literal field name
 # matches.
-GEOGRAPHY_FIELD_MAP = {
-    "CITYAREA": "CITY_UGRC",
-    "DISTMED": "DISTMED",
-    "CITYGRP": "CITYGRP",
-}
+GEOGRAPHY_FIELD_MAP = {"CITYAREA": "CITY_UGRC", "DISTMED": "DISTMED", "CITYGRP": "CITYGRP"}
 
 
 def _run_convertmat(script_path: Path, bat_path: Path):
@@ -55,7 +51,7 @@ def convert_mtx_to_omx(mtx_path: Path, omx_path: Path):
     with open(script_path, "w") as f:
         f.write(
             f'convertmat from="{mtx_path.resolve()}", to="{omx_path.resolve()}", '
-            f'compression=2, format="omx"\n',
+            f'compression=2, format="omx"\n'
         )
     _run_convertmat(script_path, bat_path)
     if not omx_path.exists():
@@ -82,7 +78,8 @@ def load_scenario_variables(run_set_dir: Path, scenario_id: str) -> dict:
 
 
 def load_geography_lookup(taz_dbf_path: Path, field_name: str, num_zones: int) -> np.ndarray:
-    """Build a length-num_zones lookup of geography-unit id per zone index
+    """
+    Build a length-num_zones lookup of geography-unit id per zone index
     (0-based; zone index z holds TAZID z+1). None marks zones with no
     geography assignment (dummy/external zones, or blank field values) --
     such zones never participate as a redistribution "inside" target and
@@ -113,7 +110,8 @@ def load_geography_lookup(taz_dbf_path: Path, field_name: str, num_zones: int) -
 
 
 def redistribute_hbw_trips(matrix: np.ndarray, geography: np.ndarray, pct: float) -> tuple:
-    """For each origin row i with a valid geography assignment, moves `pct`
+    """
+    For each origin row i with a valid geography assignment, moves `pct`
     of the trips currently ending outside geography[i] into destinations
     inside geography[i], distributed proportional to the existing inside
     trip pattern for that row. Row totals are conserved exactly. Returns
@@ -184,7 +182,7 @@ def main():
     parser.add_argument("--taz-dbf", required=True, type=Path)
     parser.add_argument(
         "--geography-field",
-        help="Override the TAZ dbf field name to use instead of looking up GeographyType "
+        help="Override the TAZ dbf field name to use instead of looking up geography_type "
         "in GEOGRAPHY_FIELD_MAP.",
     )
     args = parser.parse_args()
@@ -192,13 +190,13 @@ def main():
     output_mtx = args.output_mtx or args.input_mtx
 
     variables = load_scenario_variables(args.run_set_dir, args.scenario_id)
-    pct = float(variables.get("HBW_TripRedistributionPct", 0))
-    geography_type = variables.get("GeographyType", "")
+    pct = float(variables.get("hbw_trip_redistribution_portion", 0))
+    geography_type = variables.get("geography_type", "")
 
     if pct <= 0 or not geography_type:
         print(
-            f"{args.scenario_id}: HBW_TripRedistributionPct={pct}, "
-            f"GeographyType='{geography_type}' -- nothing to redistribute, leaving matrix unchanged."
+            f"{args.scenario_id}: hbw_trip_redistribution_portion={pct}, "
+            f"geography_type='{geography_type}' -- nothing to redistribute, leaving matrix unchanged."
         )
         if output_mtx != args.input_mtx:
             output_mtx.write_bytes(args.input_mtx.read_bytes())
@@ -207,7 +205,7 @@ def main():
     field_name = args.geography_field or GEOGRAPHY_FIELD_MAP.get(geography_type)
     if field_name is None:
         raise ValueError(
-            f"Unknown GeographyType '{geography_type}' -- add it to GEOGRAPHY_FIELD_MAP "
+            f"Unknown geography_type '{geography_type}' -- add it to GEOGRAPHY_FIELD_MAP "
             "or pass --geography-field explicitly."
         )
 

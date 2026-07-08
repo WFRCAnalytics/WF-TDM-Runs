@@ -1,18 +1,11 @@
 scenario_id: Close00
 description: "Close00 - Baseline (no HBW trip redistribution)"
-# prep_script:   # optional: path to a Python script relative to the run_set dir
 
 variables:
-  # 10% of HBW trips currently ending outside the target geography are redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern)
-  HBW_TripRedistributionPct: 0
-  GeographyType: ""
+  # portion of HBW trips currently ending outside the target geography are redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern)
+  hbw_trip_redistribution_portion: 0
+  geography_type: ""
 
 overrides:
   ModelVersion: 'v10.0.0-beta.1'  # this is the version the beta should actual show. so fixing error in the ControlCenter block that was showing C01 instead of C33
   RunDescription: "Close00 - Baseline (no HBW trip redistribution)"
-# prep_script:   # optional: path to a Python script relative to the run_set dir
-
-# Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by
-# import-manual-run(-set) to locate raw outputs to curate into runs/.
-manual_scenario_folder: "Scenarios/bring-work-trips-closer-to-home/Close00"
-

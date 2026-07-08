@@ -1,14 +1,14 @@
-scenario_id: Close01
-description: "Close01 - 10% HBW trip redistribution by City Area"
+scenario_id: Close09
+description: "Close09 - 25% HBW trip redistribution by Workshop Area"
 driver_script: hail-mary/_HailMary_1Subfolder_closer.s
 start_from_copy: Close00
 lock_down_copy: false
 
 variables:
   # portion of HBW trips currently ending outside the target geography are redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern)
-  hbw_trip_redistribution_portion: 0.10
-  geography_type: "CITY_UGRC"
+  hbw_trip_redistribution_portion: 0.25
+  geography_type: "CITYGRP"
 
 overrides:
   ModelVersion: 'v10.0.0-beta.1'  # this is the version the beta should actual show. so fixing error in the ControlCenter block that was showing C01 instead of C33
-  RunDescription: "Close01 - City Area 10% HBW trip redistribution"
+  RunDescription: "Close09 - Workshop Area 25% HBW trip redistribution"
