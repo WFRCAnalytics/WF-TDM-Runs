@@ -31,11 +31,10 @@ from dbfread import DBF
 # configurable at this layer, consistent with those.
 VOYAGER_DIR = r"C:\Program Files\Citilabs\CubeVoyager"
 
-# geography_type (scenario `variables:`) -> field name in WFv1000_TAZ.dbf.
-# Confirmed against the TDM's TAZ dbf: CITYAREA has no literal field of its
-# own and maps to CITY_UGRC; DISTMED and CITYGRP are literal field name
-# matches.
-GEOGRAPHY_FIELD_MAP = {"CITYAREA": "CITY_UGRC", "DISTMED": "DISTMED", "CITYGRP": "CITYGRP"}
+# geography_type values (scenario `variables:`) known to map 1:1 onto a
+# WFv1000_TAZ.dbf field name. Guards against a typo in geography_type that
+# would otherwise silently match some unrelated dbf column (e.g. TAZID).
+KNOWN_GEOGRAPHY_TYPES = {"CITY_UGRC", "DISTMED", "CITYGRP"}
 
 
 def _run_convertmat(script_path: Path, bat_path: Path):
@@ -182,8 +181,7 @@ def main():
     parser.add_argument("--taz-dbf", required=True, type=Path)
     parser.add_argument(
         "--geography-field",
-        help="Override the TAZ dbf field name to use instead of looking up geography_type "
-        "in GEOGRAPHY_FIELD_MAP.",
+        help="Override the TAZ dbf field name to use instead of geography_type.",
     )
     args = parser.parse_args()
 
@@ -202,12 +200,14 @@ def main():
             output_mtx.write_bytes(args.input_mtx.read_bytes())
         sys.exit(0)
 
-    field_name = args.geography_field or GEOGRAPHY_FIELD_MAP.get(geography_type)
-    if field_name is None:
-        raise ValueError(
-            f"Unknown geography_type '{geography_type}' -- add it to GEOGRAPHY_FIELD_MAP "
-            "or pass --geography-field explicitly."
+    if not args.geography_field and geography_type not in KNOWN_GEOGRAPHY_TYPES:
+        message = (
+            f"Unknown geography_type '{geography_type}' -- expected one of "
+            f"{sorted(KNOWN_GEOGRAPHY_TYPES)}, or pass --geography-field explicitly."
         )
+        raise ValueError(message)
+
+    field_name = args.geography_field or geography_type
 
     work_dir = args.input_mtx.parent
     input_omx = work_dir / f"{args.input_mtx.stem}_redistribute_in.omx"
