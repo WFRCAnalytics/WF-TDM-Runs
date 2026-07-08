@@ -10,6 +10,7 @@ variables:
   GeographyType: "CITYAREA"
 
 overrides:
+  ModelVersion: 'v10.0.0-beta.1'  # this is the version the beta should actual show. so fixing error in the ControlCenter block that was showing C01 instead of C33
   RunDescription: "Close01 - City Area 10% HBW trip redistribution"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
