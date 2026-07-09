@@ -21,6 +21,15 @@ staged file by a relative path computed back to that location, the same way
 the default file's own '..\..\..\2_ModelScripts\...' references are relative
 to wherever it ends up running from.
 
+A scenario's raw scenario_folder is reused across every run attempt for a
+given scenario_id (no run_id component in scenario_folder_template -- see
+ADR 0008), so a driver script staged by an earlier attempt (the default,
+or a different custom one) can still be sitting there from before.
+bin/RunModel.bat locates the driver script by globbing scenario_folder for
+*.s, so more than one present is ambiguous. stage() therefore deletes any
+*.s files already in scenario_folder before copying the resolved one in,
+keeping the invariant that exactly one is ever present.
+
 This is a distinct mechanism from Control Center overrides (controlcenter.py):
 it substitutes which code runs, not a parameter value, so it never touches
 the overrides dict or its baseline-key validation.
@@ -57,6 +66,9 @@ def stage(
 
     if not script_path.is_file():
         raise DriverScriptError(f"driver_script not found: {script_path}")
+
+    for stale in scenario_folder.glob("*.s"):
+        stale.unlink()
 
     shutil.copy2(script_path, scenario_folder / script_path.name)
 

@@ -20,10 +20,18 @@ if not exist "%VOYAGER_EXE%" (
 )
 
 set "DRIVER_SCRIPT="
-for %%F in ("%SCENARIO_FOLDER%\*.s") do set "DRIVER_SCRIPT=%%~nxF"
+set "DRIVER_SCRIPT_COUNT=0"
+for %%F in ("%SCENARIO_FOLDER%\*.s") do (
+    set "DRIVER_SCRIPT=%%~nxF"
+    set /a DRIVER_SCRIPT_COUNT+=1
+)
 
-if "%DRIVER_SCRIPT%"=="" (
+if "%DRIVER_SCRIPT_COUNT%"=="0" (
     echo RunModel.bat: no driver script ^(*.s^) found in "%SCENARIO_FOLDER%"
+    exit /b 1
+)
+if not "%DRIVER_SCRIPT_COUNT%"=="1" (
+    echo RunModel.bat: found %DRIVER_SCRIPT_COUNT% driver scripts ^(*.s^) in "%SCENARIO_FOLDER%" -- expected exactly 1
     exit /b 1
 )
 

@@ -1,6 +1,6 @@
 scenario_id: Close08
 description: "Close08 - 25% HBW trip redistribution by Medium District"
-driver_script: hail-mary/_HailMary_1Subfolder_closer.s
+driver_script: hail-mary/__HailMary_1Subfolder_closer.s
 start_from_copy: Close00
 lock_down_copy: false
 

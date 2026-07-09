@@ -1,6 +1,6 @@
 scenario_id: Close04
 description: "Close04 - 5% HBW trip redistribution by City Area"
-driver_script: hail-mary/_HailMary_1Subfolder_closer.s
+driver_script: hail-mary/__HailMary_1Subfolder_closer.s
 start_from_copy: Close00
 lock_down_copy: false
 
