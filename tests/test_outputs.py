@@ -158,3 +158,83 @@ def test_copy_selected_raises_when_declared_column_missing(tmp_path):
     dest = tmp_path / "curated"
     with pytest.raises(OutputCollectionError, match="NoSuchColumn"):
         out.copy_selected(folder, selected, dest, max_file_size_mb=1)
+
+
+# ---------------------------------------------------------------------------
+# curate() -- shared status/error/curated resolution for run_scenario() and
+# import_manual_run()
+# ---------------------------------------------------------------------------
+
+
+def test_curate_stays_success_when_something_matches(tmp_path):
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": ["reports/*.csv"], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "success"
+    assert error is None
+    assert len(curated) == 1
+
+
+def test_curate_stays_success_when_no_outputs_declared(tmp_path):
+    # A run set legitimately declaring no outputs.include shouldn't be
+    # penalized for curating nothing -- only a declared-but-unmatched
+    # pattern is a red flag.
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": [], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "success"
+    assert error is None
+    assert curated == []
+
+
+def test_curate_fails_when_declared_patterns_match_nothing(tmp_path):
+    # Regression test: Close00's exit code was 0 but outputs.include's
+    # patterns matched nothing (the model hadn't reached that step yet) --
+    # this used to be silently recorded as "success" with curated: [].
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": ["nonexistent/*.csv"], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "failed"
+    assert "nonexistent/*.csv" in error
+    assert curated == []
+
+
+def test_curate_preserves_and_appends_to_existing_error_on_no_match(tmp_path):
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": ["nonexistent/*.csv"], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(
+        folder, inventory, output_spec, run_dir, "failed", "model exited with code 2."
+    )
+
+    assert status == "failed"
+    assert error.startswith("model exited with code 2.")
+    assert "nonexistent/*.csv" in error
+    assert curated == []
+
+
+def test_curate_fails_when_curation_itself_raises(tmp_path):
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": ["skims/*.mtx"], "max_file_size_mb": 1}  # big.mtx is 2 MB
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "failed"
+    assert "exceed the 1 MB limit" in error
+    assert curated == []

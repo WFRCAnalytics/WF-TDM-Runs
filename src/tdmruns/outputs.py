@@ -180,3 +180,47 @@ def copy_selected(
             }
         )
     return curated
+
+
+def curate(
+    scenario_folder: Path,
+    full_inventory: list,
+    output_spec: dict,
+    run_dir: Path,
+    status: str,
+    error: str,
+) -> tuple:
+    """Selects+copies whatever outputs.include matches out of full_inventory
+    (already produced by inventory(scenario_folder) -- passed in rather than
+    recomputed here, since the caller also needs it for the aggregate
+    inventory_count/inventory_total_bytes in run metadata, and a scenario
+    folder can hold thousands of files, not worth walking twice). Folds the
+    result into the execution status/error decided so far (e.g. from the
+    TDM's exit code, or "success"/None for a manual import). Returns
+    (status, error, curated) for the caller to pass straight into
+    metadata.build().
+
+    An exit code of 0 (or a manual import) alone isn't "success" if
+    outputs.include declared patterns but none of them matched anything on
+    disk -- e.g. the model didn't reach the step that produces them. That's
+    treated as a failure here rather than passed through unexamined.
+    """
+    selected = select(full_inventory, output_spec["include"])
+    curated = []
+    if selected:
+        try:
+            validate_size_limit(selected, output_spec["max_file_size_mb"])
+            curated = copy_selected(
+                scenario_folder, selected, run_dir / "outputs", output_spec["max_file_size_mb"]
+            )
+        except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently
+            status = "failed"
+            error = (error + " " if error else "") + f"Output curation failed: {e}"
+    elif output_spec["include"]:
+        status = "failed"
+        error = (
+            (error + " " if error else "")
+            + f"No files under {scenario_folder} matched outputs.include "
+            f"{output_spec['include']!r}."
+        )
+    return status, error, curated

@@ -199,18 +199,8 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
 
     # --- inventory + curate outputs (best effort even on failure) ---
     full_inventory = out.inventory(folder)
-    selected = out.select(full_inventory, output_spec["include"])
-    curated = []
-    if selected:
-        try:
-            out.validate_size_limit(selected, output_spec["max_file_size_mb"])
-            run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
-            curated = out.copy_selected(
-                folder, selected, run_dir / "outputs", output_spec["max_file_size_mb"]
-            )
-        except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently
-            status = "failed"
-            error = (error + " " if error else "") + f"Output curation failed: {e}"
+    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+    status, error, curated = out.curate(folder, full_inventory, output_spec, run_dir, status, error)
 
     run_metadata = md.build(
         schema_version=framework["run_metadata_schema_version"],
@@ -237,7 +227,6 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
         finished_at=md.utc_now_iso(),
         error=error,
     )
-    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
     md.write(run_dir, run_metadata)
     return run_metadata
 
@@ -294,23 +283,10 @@ def import_manual_run(
     version_state = sub.current_state(tdm_path, requested_ref)
 
     full_inventory = out.inventory(scenario_folder)
-    selected = out.select(full_inventory, output_spec["include"])
-    curated = []
-    status, error = "success", None
-    if selected:
-        try:
-            out.validate_size_limit(selected, output_spec["max_file_size_mb"])
-            run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
-            curated = out.copy_selected(
-                scenario_folder, selected, run_dir / "outputs", output_spec["max_file_size_mb"]
-            )
-        except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently
-            status, error = "failed", f"Output curation failed: {e}"
-    else:
-        status = "failed"
-        error = (
-            f"No files under {scenario_folder} matched outputs.include {output_spec['include']!r}."
-        )
+    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+    status, error, curated = out.curate(
+        scenario_folder, full_inventory, output_spec, run_dir, "success", None
+    )
 
     run_metadata = md.build(
         schema_version=framework["run_metadata_schema_version"],
@@ -332,7 +308,6 @@ def import_manual_run(
         error=error,
         execution_mode="manual",
     )
-    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
     md.write(run_dir, run_metadata)
     return run_metadata
 
