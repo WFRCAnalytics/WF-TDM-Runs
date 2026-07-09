@@ -12,6 +12,7 @@ The base year (test_id 0) and the TAZ/district shapefiles are always read live
 from the (gitignored) tdm/ working tree, never frozen -- see CLAUDE.md's note
 on this run set's retirement for why that's an accepted limitation.
 """
+import glob
 import os
 import sys
 
@@ -66,8 +67,26 @@ def series_label(row):
     return "HH + EMP"
 
 
+def _taz_shapefile() -> str:
+    """The TAZ shapefile's name embeds the TDM version (e.g. WFv910_TAZ.shp,
+    WFv1000_TAZ.shp) and changes whenever the tdm/ submodule is synced to a
+    different ref, so it's globbed rather than hardcoded to one version."""
+    matches = glob.glob(os.path.join(TDM_ROOT, "1_Inputs", "1_TAZ", "WFv*_TAZ.shp"))
+    if not matches:
+        raise FileNotFoundError(
+            f"No WFv*_TAZ.shp found under {os.path.join(TDM_ROOT, '1_Inputs', '1_TAZ')} "
+            "-- is the tdm/ submodule checked out?"
+        )
+    if len(matches) > 1:
+        raise FileNotFoundError(
+            f"Multiple WFv*_TAZ.shp found under {os.path.join(TDM_ROOT, '1_Inputs', '1_TAZ')}: "
+            f"{matches} -- expected exactly one."
+        )
+    return matches[0]
+
+
 def smldst_tazs() -> set:
-    taz_gdf = gpd.read_file(os.path.join(TDM_ROOT, "1_Inputs", "1_TAZ", "WFv910_TAZ.shp"))
+    taz_gdf = gpd.read_file(_taz_shapefile())
     return set(taz_gdf[taz_gdf["DISTSML"].isin(SMLDST_LST)]["TAZID"].astype(int).tolist())
 
 

@@ -1,6 +1,8 @@
 ---
 title: "Non-Motorized Travel Sensitivity"
 subtitle: "WF-TDM Non-Motorized Enhancement"
+metadata-files:
+  - _title_metadata.yml
 format:
   revealjs:
     theme: simple
@@ -46,15 +48,6 @@ label_order = loader.LABEL_ORDER
 series_label = loader.series_label
 
 COLORS = {'HH only': '#1f77b4', 'EMP only': '#e6550d', 'HH + EMP': '#31a354'}
-```
-
-```{python}
-#| echo: false
-#| output: asis
-from IPython.display import Markdown, display
-byline = loader.rd.run_set_byline(loader.RUN_SET_ID)
-if byline:
-    display(Markdown(f"*{byline}*"))
 ```
 
 ## Why This Matters
@@ -138,7 +131,7 @@ fig.update_xaxes(tickvals=[1, 2, 4, 12], tickfont_size=13, title_font_size=14)
 fig.update_yaxes(tickfont_size=13, title_font_size=14)
 fig.update_layout(
     height=430, width=1100, margin=dict(t=20, b=20, l=20, r=20),
-    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
 )
 fig.show()
 ```
@@ -228,7 +221,7 @@ fig.update_yaxes(tickfont_size=12)
 fig.for_each_annotation(lambda a: a.update(text=a.text.split('=')[-1], font_size=14))
 fig.update_layout(
     height=400, width=1100, margin=dict(t=40, b=20, l=20, r=20),
-    legend=dict(orientation='h', yanchor='bottom', y=1.08, xanchor='right', x=1, font_size=12),
+    legend=dict(orientation='h', yanchor='bottom', y=1.08, xanchor='left', x=0, font_size=12),
 )
 fig.show()
 ```
@@ -275,7 +268,7 @@ fig = px.bar(
 fig.update_layout(
     height=390, width=1100, margin=dict(t=20, b=20, l=20, r=20),
     xaxis_tickangle=-30, xaxis_tickfont_size=12,
-    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
 )
 fig.show()
 ```
@@ -318,7 +311,7 @@ fig.update_traces(textposition='outside', textfont_size=13)
 fig.update_layout(
     height=400, width=1100, margin=dict(t=30, b=20, l=20, r=20),
     yaxis_range=[0, 25], xaxis_tickfont_size=13,
-    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
 )
 fig.show()
 ```
@@ -353,7 +346,7 @@ fig.add_hline(y=0, line_dash='dash', line_color='gray', line_width=1)
 fig.add_vline(x=0, line_dash='dash', line_color='gray', line_width=1)
 fig.update_layout(
     height=390, width=1100, margin=dict(t=20, b=20, l=20, r=20),
-    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1, font_size=13),
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
     xaxis_title_font_size=13, yaxis_title_font_size=13,
 )
 fig.show()
@@ -365,7 +358,7 @@ Districts **gaining** households (blue) → Non-Motorized share rises. &nbsp; Di
 Ogden Core gains +3.0 percentage points with 13,500 more households — the strongest single-district signal. North Ogden loses 0.5 percentage points with 6,600 fewer. The aggregate test-district comparison looked flat because those 4 focal TAZs happened to sit in areas little affected by the redistribution. At the district and region-wide level, the model correctly captures the effect: denser areas get more walking and biking.
 :::
 
-## Non-Motorized (NM) Key Takeaways {background-color="#2c3e50" style="color: white;"}
+## Non-Motorized (NM) Key Takeaways
 
 ::: {.incremental}
 1. **The model passes the test** — NM mode share increases consistently and proportionally with density increases in the expected direction.
@@ -383,7 +376,7 @@ Ogden Core gains +3.0 percentage points with 13,500 more households — the stro
 Final message: The model is behaving as expected. These results support using the enhanced non-motorized component in planning applications. The full technical report with interactive charts is available as a companion document.
 :::
 
-## Summary {background-color="#1a252f" style="color: white; text-align: center;"}
+## Summary
 
 <br><br>
 
