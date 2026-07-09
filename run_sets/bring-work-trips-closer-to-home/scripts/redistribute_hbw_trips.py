@@ -7,12 +7,27 @@
 #     CloseXX.yaml `variables:` block (these are documentation-only to the
 #     framework -- this script is the thing that actually consumes them).
 #
-#     Operates on the HBW core of pa_AllPurp.2.DestChoice.mtx (Cube's native
-#     TPP format). Converts to OMX and back via CONVERTMAT the same way
+#     Operates on pa_HBW_NumVeh_noXI.mtx's vehicle-ownership-segmented HBW
+#     cores (HBW0/HBW1/HBW2) -- NOT pa_AllPurp.2.DestChoice.mtx's aggregate
+#     "HBW" core, which an earlier version of this script edited. That was a
+#     bug: 08_TripTablesByPeriod.s (and everything after it -- mode choice,
+#     assignment) reads pa_HBW_NumVeh_noXI.mtx's HBW0/HBW1/HBW2 directly and
+#     never re-derives them from pa_AllPurp.2.DestChoice.mtx, so editing only
+#     the DestChoice core had no effect on any downstream zone metric. See
+#     08_TripTablesByPeriod.s:94-96, 09_Segmnt_PA_HBbyMC.s:45,
+#     10_ConvertSomeXI2HBW.s:17-18, 11_MC_HBW_HBO_NHB_HBC.s:33-38,90-92.
+#
+#     pa_AllPurp.2.DestChoice.mtx's own "HBW" core is still updated afterward
+#     (recomputed as HBW0+HBW1+HBW2) purely so its P/A-balance reporting
+#     (_checkPABalance.dbf, _LogFile.txt via 10_ConvertSomeXI2HBW.s) reflects
+#     the same numbers mode choice actually uses, even though nothing reads
+#     that core back into the model stream.
+#
+#     Converts to OMX and back via CONVERTMAT the same way
 #     mc_HBW_dest_choice.py does -- writing a small .s + .bat and shelling
 #     out to VOYAGER.EXE -- since numpy/openmatrix can't read TPP directly.
-#     Every core in the file is carried through to the output, with only the
-#     target core adjusted, so nothing downstream loses the other
+#     Every core in each file is carried through to the output, with only
+#     the target cores adjusted, so nothing downstream loses the other
 #     purposes/segments carried in the same matrix file.
 
 import argparse
@@ -35,6 +50,10 @@ VOYAGER_DIR = r"C:\Program Files\Citilabs\CubeVoyager"
 # WFv1000_TAZ.dbf field name. Guards against a typo in geography_type that
 # would otherwise silently match some unrelated dbf column (e.g. TAZID).
 KNOWN_GEOGRAPHY_TYPES = {"CITY_UGRC", "DISTMED", "CITYGRP"}
+
+# The three vehicle-ownership-segmented HBW cores in pa_HBW_NumVeh_noXI.mtx
+# that 08_TripTablesByPeriod.s actually reads forward into mode choice.
+VEHICLE_CORES = ["HBW0", "HBW1", "HBW2"]
 
 
 def _run_convertmat(script_path: Path, bat_path: Path):
@@ -171,21 +190,77 @@ def redistribute_hbw_trips(matrix: np.ndarray, geography: np.ndarray, pct: float
     return adjusted, summary
 
 
+def redistribute_matrix_file(
+    mtx_path: Path, taz_dbf_path: Path, field_name: str, pct: float, core_names: list
+) -> tuple:
+    """
+    Converts mtx_path to OMX, redistributes the named cores in place
+    (every other core is carried through unchanged), converts back to the
+    same mtx_path. Returns ({core_name: summary}, cores) for the
+    redistributed cores. Builds the geography lookup itself, once the
+    converted OMX file's zone count is known -- the raw .mtx is Cube's
+    native TPP format and can't be opened directly to peek at it.
+    """
+    work_dir = mtx_path.parent
+    input_omx = work_dir / f"{mtx_path.stem}_redistribute_in.omx"
+    output_omx = work_dir / f"{mtx_path.stem}_redistribute_out.omx"
+
+    print(f"Converting {mtx_path.name} to OMX...")
+    convert_mtx_to_omx(mtx_path, input_omx)
+
+    with omx.open_file(input_omx, "r") as f_in:
+        available = f_in.list_matrices()
+        for core_name in core_names:
+            if core_name not in available:
+                message = f"Core '{core_name}' not found in {input_omx} (found: {available})"
+                raise KeyError(message)
+        cores = {name: np.array(f_in[name][:]) for name in available}
+
+    num_zones = cores[core_names[0]].shape[0]
+    geography = load_geography_lookup(taz_dbf_path, field_name, num_zones)
+
+    summaries = {}
+    for core_name in core_names:
+        adjusted, summary = redistribute_hbw_trips(cores[core_name], geography, pct)
+        cores[core_name] = adjusted
+        summaries[core_name] = summary
+        print(
+            f"  {core_name}: rows adjusted: {summary['rows_adjusted']}, "
+            f"skipped (no geography): {summary['rows_skipped_no_geography']}, "
+            f"skipped (no inside pattern): {summary['rows_skipped_no_inside_pattern']}, "
+            f"trips moved: {summary['total_trips_moved']:.1f}"
+        )
+
+    with omx.open_file(output_omx, "w") as f_out:
+        for name, data in cores.items():
+            f_out[name] = data
+
+    print(f"Converting adjusted matrix back to {mtx_path.name}...")
+    convert_omx_to_mtx(output_omx, mtx_path)
+    return summaries, cores
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-set-dir", required=True, type=Path)
     parser.add_argument("--scenario-id", required=True)
-    parser.add_argument("--input-mtx", required=True, type=Path)
-    parser.add_argument("--output-mtx", type=Path, help="Defaults to --input-mtx (in place).")
-    parser.add_argument("--core", default="HBW", help="Matrix core to redistribute. Default: HBW.")
+    parser.add_argument(
+        "--numveh-mtx", required=True, type=Path,
+        help="pa_HBW_NumVeh_noXI.mtx -- the file 08_TripTablesByPeriod.s actually "
+             "reads forward into mode choice/assignment.",
+    )
+    parser.add_argument(
+        "--destchoice-mtx", required=True, type=Path,
+        help="pa_AllPurp.2.DestChoice.mtx -- its aggregate HBW core is recomputed "
+             "as HBW0+HBW1+HBW2 afterward so P/A-balance reporting stays consistent; "
+             "nothing downstream reads it back into the model.",
+    )
     parser.add_argument("--taz-dbf", required=True, type=Path)
     parser.add_argument(
         "--geography-field",
         help="Override the TAZ dbf field name to use instead of geography_type.",
     )
     args = parser.parse_args()
-
-    output_mtx = args.output_mtx or args.input_mtx
 
     variables = load_scenario_variables(args.run_set_dir, args.scenario_id)
     pct = float(variables.get("hbw_trip_redistribution_portion", 0))
@@ -194,10 +269,8 @@ def main():
     if pct <= 0 or not geography_type:
         print(
             f"{args.scenario_id}: hbw_trip_redistribution_portion={pct}, "
-            f"geography_type='{geography_type}' -- nothing to redistribute, leaving matrix unchanged."
+            f"geography_type='{geography_type}' -- nothing to redistribute, leaving matrices unchanged."
         )
-        if output_mtx != args.input_mtx:
-            output_mtx.write_bytes(args.input_mtx.read_bytes())
         sys.exit(0)
 
     if not args.geography_field and geography_type not in KNOWN_GEOGRAPHY_TYPES:
@@ -209,46 +282,38 @@ def main():
 
     field_name = args.geography_field or geography_type
 
-    work_dir = args.input_mtx.parent
-    input_omx = work_dir / f"{args.input_mtx.stem}_redistribute_in.omx"
-    output_omx = work_dir / f"{args.input_mtx.stem}_redistribute_out.omx"
+    print(
+        f"{args.scenario_id}: redistributing {pct:.0%} of outside-{geography_type} HBW trips "
+        f"toward home {geography_type} for each origin, per vehicle-ownership segment."
+    )
+    numveh_summaries, numveh_cores = redistribute_matrix_file(
+        args.numveh_mtx, args.taz_dbf, field_name, pct, VEHICLE_CORES
+    )
+    hbw_total_adjusted = sum(numveh_cores[core] for core in VEHICLE_CORES)
 
-    print(f"Converting {args.input_mtx.name} to OMX...")
-    convert_mtx_to_omx(args.input_mtx, input_omx)
-
-    with omx.open_file(input_omx, "r") as f_in:
-        core_names = f_in.list_matrices()
-        if args.core not in core_names:
-            message = f"Core '{args.core}' not found in {input_omx} (found: {core_names})"
+    # Sync pa_AllPurp.2.DestChoice.mtx's aggregate "HBW" core (reporting only --
+    # nothing downstream of 07_HBW_dest_choice.s reads this file's HBW core back
+    # into the model; see module docstring).
+    work_dir = args.destchoice_mtx.parent
+    dc_input_omx = work_dir / f"{args.destchoice_mtx.stem}_redistribute_in.omx"
+    dc_output_omx = work_dir / f"{args.destchoice_mtx.stem}_redistribute_out.omx"
+    print(f"Converting {args.destchoice_mtx.name} to OMX...")
+    convert_mtx_to_omx(args.destchoice_mtx, dc_input_omx)
+    with omx.open_file(dc_input_omx, "r") as f_in:
+        dc_available = f_in.list_matrices()
+        if "HBW" not in dc_available:
+            message = f"Core 'HBW' not found in {dc_input_omx} (found: {dc_available})"
             raise KeyError(message)
-        cores = {name: np.array(f_in[name][:]) for name in core_names}
-        num_zones = cores[args.core].shape[0]
-
-    geography = load_geography_lookup(args.taz_dbf, field_name, num_zones)
-    adjusted, summary = redistribute_hbw_trips(cores[args.core], geography, pct)
-    cores[args.core] = adjusted
-
-    print(
-        f"{args.scenario_id}: redistributed {pct:.0%} of outside-{geography_type} HBW trips "
-        f"toward home {geography_type} for each origin."
-    )
-    print(
-        f"  rows adjusted: {summary['rows_adjusted']}, "
-        f"skipped (no geography): {summary['rows_skipped_no_geography']}, "
-        f"skipped (no inside pattern): {summary['rows_skipped_no_inside_pattern']}"
-    )
-    print(
-        f"  trips moved: {summary['total_trips_moved']:.1f} "
-        f"(total before: {summary['total_trips_before']:.1f}, "
-        f"total after: {summary['total_trips_after']:.1f})"
-    )
-
-    with omx.open_file(output_omx, "w") as f_out:
-        for name, data in cores.items():
+        dc_cores = {name: np.array(f_in[name][:]) for name in dc_available}
+    dc_cores["HBW"] = hbw_total_adjusted
+    with omx.open_file(dc_output_omx, "w") as f_out:
+        for name, data in dc_cores.items():
             f_out[name] = data
+    print(f"Converting adjusted matrix back to {args.destchoice_mtx.name}...")
+    convert_omx_to_mtx(dc_output_omx, args.destchoice_mtx)
 
-    print(f"Converting adjusted matrix back to {output_mtx.name}...")
-    convert_omx_to_mtx(output_omx, output_mtx)
+    total_moved = sum(summary["total_trips_moved"] for summary in numveh_summaries.values())
+    print(f"{args.scenario_id}: done. total HBW trips moved across all vehicle segments: {total_moved:.1f}")
 
 
 if __name__ == "__main__":

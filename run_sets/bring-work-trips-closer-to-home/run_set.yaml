@@ -7,7 +7,7 @@ description: >
   Sketch-level test of localized HBW trip redistribution. For each of three geography types (City Area ~55, Medium District ~35, Workshop Area 8), 10% of home-based work trips currently ending outside the target geography are proportionally redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern), applied before mode choice. Three scenarios total, one per geography type, each applied region-wide (all areas of that type adjusted simultaneously). Base year 2023, model v10.0.0-beta.1 (updated household/transit on-board survey data). Outputs: VMT, VHD, traffic volume, and transit/corridor effects vs. base.
 
 tdm_ref: "v10.0.0-beta.1-closer-to-home"
-baseline_control_center: "_ControlCenter - BY_2023.block"
+baseline_control_center: "_ControlCenter - OY_2027.block"
 
 # prep_script:   # optional: path to a Python script relative to this run_set dir
                  # run once per scenario before model execution

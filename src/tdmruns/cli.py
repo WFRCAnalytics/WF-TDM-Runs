@@ -153,7 +153,8 @@ def run_set_cmd(run_set_id, only, force):
     type=click.Path(exists=True, file_okay=False, path_type=Path),
     help=(
         "Raw output folder from a scenario run outside the CLI (e.g. Cube Voyager invoked "
-        "directly). Defaults to the scenario's manual_scenario_folder in its YAML."
+        "directly). Defaults to the scenario's manual_scenario_folder in its YAML, or, if "
+        "undeclared, Scenarios/<run-set>/<scenario> (the same convention CLI-driven runs use)."
     ),
 )
 @click.pass_context
@@ -188,9 +189,10 @@ def import_manual_run_cmd(ctx, run_set_id, scenario_id, scenario_folder):
 @click.option("--only", "only", default=None, help="Comma-separated scenario IDs to import.")
 def import_manual_run_set_cmd(run_set_id, only):
     """Curate outputs for every scenario in a run set that was run manually,
-    using each scenario's declared manual_scenario_folder. A failed or
-    undeclared scenario does not stop the rest of the run set. Always
-    creates a new timestamped run per scenario -- see import-manual-run."""
+    using each scenario's declared manual_scenario_folder, or, if undeclared,
+    Scenarios/<run-set>/<scenario>. A failed scenario does not stop the rest
+    of the run set. Always creates a new timestamped run per scenario -- see
+    import-manual-run."""
     repo_root = find_repo_root()
     only_list = only.split(",") if only else None
     results = ex.import_manual_run_set(repo_root, run_set_id, only=only_list)

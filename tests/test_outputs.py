@@ -106,8 +106,7 @@ def test_copy_selected_writes_column_filtered_csv(tmp_path):
     _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv")
     entries = out.inventory(folder)
     selected = out.select(
-        entries,
-        [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
+        entries, [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
     )
     dest = tmp_path / "curated"
     curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
@@ -138,8 +137,7 @@ def test_copy_selected_raises_and_cleans_up_when_filtered_output_still_too_big(t
     _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv", rows=1000)
     entries = out.inventory(folder)
     selected = out.select(
-        entries,
-        [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
+        entries, [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
     )
     dest = tmp_path / "curated"
     with pytest.raises(OutputCollectionError):
@@ -152,8 +150,7 @@ def test_copy_selected_raises_when_declared_column_missing(tmp_path):
     _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv")
     entries = out.inventory(folder)
     selected = out.select(
-        entries,
-        [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "NoSuchColumn"]}],
+        entries, [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "NoSuchColumn"]}]
     )
     dest = tmp_path / "curated"
     with pytest.raises(OutputCollectionError, match="NoSuchColumn"):
@@ -196,7 +193,7 @@ def test_curate_stays_success_when_no_outputs_declared(tmp_path):
 
 
 def test_curate_fails_when_declared_patterns_match_nothing(tmp_path):
-    # Regression test: Close00's exit code was 0 but outputs.include's
+    # Regression test: Closer00's exit code was 0 but outputs.include's
     # patterns matched nothing (the model hadn't reached that step yet) --
     # this used to be silently recorded as "success" with curated: [].
     folder = _make_scenario_folder(tmp_path)

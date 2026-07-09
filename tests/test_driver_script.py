@@ -43,7 +43,7 @@ def test_stage_uses_declared_custom_script_keeping_its_own_filename(tmp_path):
 
 
 def test_stage_removes_stale_driver_scripts_from_a_prior_attempt(tmp_path):
-    """Regression test: Close00's scenario folder is reused across every run
+    """Regression test: Closer00's scenario folder is reused across every run
     attempt (no run_id in scenario_folder_template). An earlier attempt's
     staged driver script must not be left behind once a later attempt stages
     a different one -- RunModel.bat globs scenario_folder for *.s and picks
@@ -62,9 +62,7 @@ def test_stage_removes_stale_driver_scripts_from_a_prior_attempt(tmp_path):
 
     # Second attempt: scenario now declares a custom driver_script.
     scenario = {"driver_script": "hail-mary/_HailMary_1Subfolder_closer.s"}
-    ds.stage(
-        run_set_dir, tdm_path, defaults_dir, default_filename, {}, scenario, scenario_folder
-    )
+    ds.stage(run_set_dir, tdm_path, defaults_dir, default_filename, {}, scenario, scenario_folder)
 
     remaining = sorted(p.name for p in scenario_folder.glob("*.s"))
     assert remaining == ["_HailMary_1Subfolder_closer.s"]
@@ -78,4 +76,6 @@ def test_stage_raises_when_declared_script_missing(tmp_path):
 
     scenario = {"driver_script": "hail-mary/does_not_exist.s"}
     with pytest.raises(DriverScriptError, match="driver_script not found"):
-        ds.stage(run_set_dir, tdm_path, defaults_dir, default_filename, {}, scenario, scenario_folder)
+        ds.stage(
+            run_set_dir, tdm_path, defaults_dir, default_filename, {}, scenario, scenario_folder
+        )

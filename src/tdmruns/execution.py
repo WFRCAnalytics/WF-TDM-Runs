@@ -21,7 +21,7 @@ from tdmruns import outputs as out
 from tdmruns import prep
 from tdmruns import scenario_seed as seed
 from tdmruns import submodule as sub
-from tdmruns.exceptions import ConfigValidationError, ExecutionError
+from tdmruns.exceptions import ExecutionError
 
 
 def generate_run_id() -> str:
@@ -246,8 +246,13 @@ def import_manual_run(
     not reflect what was actually used for this manual run anyway.
 
     scenario_folder defaults to the scenario's declared manual_scenario_folder
-    (relative to the TDM submodule root) when not passed explicitly -- lets
-    import_manual_run_set() drive a whole run set without per-scenario paths.
+    (relative to the TDM submodule root) when not passed explicitly, falling
+    back further to the scenario_folder_template convention
+    (Scenarios/<run_set_id>/<scenario_id>) already used for CLI-driven runs
+    when the scenario doesn't declare one at all -- lets import_manual_run_set()
+    drive a whole run set without per-scenario paths, and lets a scenario
+    whose raw folder happens to follow that naming convention (e.g. Closer00)
+    skip declaring manual_scenario_folder entirely.
 
     Unlike run_scenario(), there's no skip-if-already-successful check: this
     is only ever invoked deliberately (there's no automatic trigger for a
@@ -262,12 +267,9 @@ def import_manual_run(
 
     tdm_path = repo_root / framework["tdm_submodule_path"]
     if scenario_folder is None:
-        scenario_folder = cfg.resolved_manual_scenario_folder(tdm_path, scenario)
-        if scenario_folder is None:
-            raise ConfigValidationError(
-                f"scenario '{scenario_id}' has no --scenario-folder given and no "
-                "manual_scenario_folder declared in its YAML -- nothing to import from."
-            )
+        scenario_folder = cfg.resolved_manual_scenario_folder(
+            tdm_path, framework, run_set_id, scenario_id, scenario
+        )
 
     requested_ref = cfg.resolved_tdm_ref(run_set, scenario)
     baseline_filename = cfg.resolved_baseline_filename(run_set, scenario)
@@ -314,9 +316,12 @@ def import_manual_run(
 
 def import_manual_run_set(repo_root: Path, run_set_id: str, only: list = None) -> list:
     """
-    Runs import_manual_run() for every scenario in a run set that declares
-    a manual_scenario_folder. A scenario missing that field is recorded as a
-    skipped result rather than stopping the rest of the run set -- mirrors
+    Runs import_manual_run() for every scenario in the run set, resolving
+    each one's raw folder via resolved_manual_scenario_folder() (declared
+    manual_scenario_folder, or the scenario_folder_template convention if
+    not declared). A scenario whose resolved folder doesn't actually hold
+    the declared outputs.include patterns is recorded as a failed result
+    rather than stopping the rest of the run set -- mirrors
     run_scenarios()'s per-scenario failure isolation.
     """
     scenario_ids = cfg.list_scenario_ids(repo_root, run_set_id)

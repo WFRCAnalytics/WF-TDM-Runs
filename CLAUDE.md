@@ -175,7 +175,7 @@ tdmruns import-manual-run --run-set <id> --scenario <id> [--scenario-folder <pat
                                                      # curate outputs for a scenario run
                                                      # outside the CLI (see below)
 tdmruns import-manual-run-set --run-set <id>        # same, for every scenario in a run
-                                                     # set that declares manual_scenario_folder
+                                                     # set (see below for folder resolution)
 tdmruns snapshot-run-set --run-set <id>             # freeze a report snapshot (see below)
 tdmruns purge-run-set-outputs --run-set <id>        # delete curated outputs once retired
 tdmruns status                                      # show latest result per scenario
@@ -193,7 +193,14 @@ desired. It applies the scenario's `outputs.include` selection and size
 ceiling exactly like a real run would, curates into `runs/<run_set>/<scenario>/
 <run_id>/outputs/`, and records `run_metadata.json` with `execution_mode:
 "manual"`. `--scenario-folder` defaults to the scenario's declared
-`manual_scenario_folder` (relative to the TDM submodule root) when omitted.
+`manual_scenario_folder` (relative to the TDM submodule root) when omitted,
+falling back further to the `scenario_folder_template` convention
+(`Scenarios/<run_set_id>/<scenario_id>`) already used for CLI-driven runs if
+the scenario doesn't declare one at all — a scenario whose raw folder happens
+to follow that naming (e.g. `bring-work-trips-closer-to-home`'s Closer00–Closer09)
+doesn't need `manual_scenario_folder` declared; one is still required when the
+raw folder's name departs from it (e.g. non-motorized-2023's
+`BY_2019_SensitivityTest_NN` naming — see below).
 It does not check out, fetch, or otherwise touch the TDM submodule — only
 its current state is read for the record. There is no skip-if-unchanged
 logic and no `--force`: every invocation creates a fresh timestamped run,
@@ -610,20 +617,20 @@ right after `start /w`, propagated by `RunModel.bat` and read by
 `_TimeStamp_ModelSuccess.block` / `_TimeStamp_ModelCrashed.block` convention.
 
 **7. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
-`Close00` (`Close01`/`Close02`/`Close03` all declare `start_from_copy:
-Close00`) has recorded successful runs now that `RunModel.bat` works
+`Closer00` (`Closer01`/`Closer02`/`Closer03` all declare `start_from_copy:
+Closer00`) has recorded successful runs now that `RunModel.bat` works
 end-to-end, so the copy source resolves. Fixed a real bug in
 `scenario_seed.seed()` this session: it used to require the single most
-recent recorded run to have `status: "success"`, so Close00's frequent
+recent recorded run to have `status: "success"`, so Closer00's frequent
 unrelated re-run failures (block-format/exit-code issues while iterating,
-output curation tripping the 45 MB ceiling) would wrongly block Close01/02/03
-from copying, even with an earlier Close00 success on record. It now calls
+output curation tripping the 45 MB ceiling) would wrongly block Closer01/02/03
+from copying, even with an earlier Closer00 success on record. It now calls
 the new `metadata.latest_successful_run()`, which skips past newer failures
 to find the most recent success. Also added `lock_down_copy: true` (scenario
 YAML), since the raw scenario folder is reused across every retry of a given
-scenario_id — without it, every Close01 retry would re-`shutil.copytree()`
-Close00's entire raw folder (currently ~34 GB) again. Declare it on
-Close01/02/03 once each has been seeded once and doesn't need Close00's
+scenario_id — without it, every Closer01 retry would re-`shutil.copytree()`
+Closer00's entire raw folder (currently ~34 GB) again. Declare it on
+Closer01/02/03 once each has been seeded once and doesn't need Closer00's
 folder re-copied on further retries. Covered by new unit tests in
 `tests/test_scenario_seed.py`; still not exercised end-to-end via a live
 `run-scenario` invocation against the real TDM.

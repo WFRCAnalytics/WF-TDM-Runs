@@ -86,6 +86,6 @@ the expensive ones.
 The cost: this can't be exercised yet for any real run_set. It requires (a)
 `RunModel.bat` to exist so `run-scenario` can execute at all, and (b) the
 source scenario to already have a successful recorded run -- for
-`bring-work-trips-closer-to-home`, that means `Close00` needs a run_metadata
-record before `Close01`'s `start_from_copy: Close00` can resolve to
+`bring-work-trips-closer-to-home`, that means `Closer00` needs a run_metadata
+record before `Closer01`'s `start_from_copy: Closer00` can resolve to
 anything. Until both are true, this mechanism is dormant but ready.
