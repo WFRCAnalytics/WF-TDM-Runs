@@ -76,19 +76,18 @@
     endif
     
     READ FILE = '..\..\..\2_ModelScripts\3_Distribute\_TimeStamp_DS.block' ;report model step run time
-    
+*/
 :STEP4
     ModelStep = 'STEP 4 - Mode Choice'
     BegTime_MC = currenttime() ;get timestamp
     
-    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\01_Segmnt_TripsByDetailed.s'
-    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\02_Segmnt_TransitAccessMarkets.s'
-    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\03_Skim_auto.s'
-    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\04_Create_drive_access_links.s'
-    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\05_Skim_Tran.s'
-    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\06_HBW_logsums.s'
-    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\07_HBW_dest_choice.s'
-*/
+;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\01_Segmnt_TripsByDetailed.s'
+;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\02_Segmnt_TransitAccessMarkets.s'
+;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\03_Skim_auto.s'
+;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\04_Create_drive_access_links.s'
+;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\05_Skim_Tran.s'
+;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\06_HBW_logsums.s'
+;    READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\07_HBW_dest_choice.s'
     READ FILE = '..\..\..\..\run_sets\bring-work-trips-closer-to-home\scripts\redistribute_hbw_trips.s'
     READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\08_TripTablesByPeriod.s'
     READ FILE = '..\..\..\2_ModelScripts\4_ModeChoice\09_Segmnt_PA_HBbyMC.s'
@@ -147,7 +146,7 @@
         READ FILE = '..\..\..\2_ModelScripts\6_REMM\6_Run_Parcel_Vol_Python_Script.s'
     endif
     READ FILE = '..\..\..\2_ModelScripts\6_REMM\_TimeStamp_RM.block' ;report model step run time
-
+/*
 :STEP7
     ModelStep = 'STEP 7 - Post Processing'
     BegTime_PP = currenttime() ;get timestamp
@@ -157,16 +156,16 @@
         ;READ FILE = '..\..\..\2_ModelScripts\7_PostProcessing\1_VMTproducedByTAZ.s'  
     endif
     READ FILE = '..\..\..\2_ModelScripts\7_PostProcessing\_TimeStamp_PP.block' ;report model step run time
-
+*/
 :ENDMODEL
     ;close Cube Cluster widows (if using more than 100 cores, update index below)
     if (UseCubeCluster=1)
         *(Cluster.EXE  ClusterNodeID 2-100 CLOSE EXIT)
     endif
     READ FILE = '..\..\..\2_ModelScripts\_TimeStamp_ModelSuccess.block' ;report model step run time
-    if (Run_vizTool=1)
-        READ FILE = '..\..\..\2_ModelScripts\7_PostProcessing\2_OpenVizTool.s'
-    endif
+;    if (Run_vizTool=1)
+;        READ FILE = '..\..\..\2_ModelScripts\7_PostProcessing\2_OpenVizTool.s'
+;    endif
     Exit ;quit model run
     
 ;if an error occurs the process jumps to this location
