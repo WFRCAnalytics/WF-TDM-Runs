@@ -7,10 +7,23 @@ the gitignored working folder. Scenario folders can hold thousands of files
 and tens of gigabytes, so this listing is stat()-only and never reads file
 contents. A declared, glob-based selection then determines which files
 actually get copied into this repo; only those get a checksum (computed at
-copy time), and every selected file is checked against a hard size ceiling
-before the copy happens.
+copy time), and every selected file is checked against a hard size ceiling.
+
+An outputs.include entry is normally just a glob pattern string, copied
+byte-for-byte. It may instead be a mapping {"pattern": ..., "columns": [...]}
+-- e.g. Cube Voyager's "TAZ-Based Metrics.csv" summaries carry ~18 columns
+and run ~200 MB, comfortably over any reasonable size ceiling, when the
+handful of columns a report actually reads (e.g. TAZID/Metric/Purpose/
+Period/PA/Total) would be a fraction of that. For a pattern like this,
+copy_selected() writes a column-filtered copy (named "<stem>_filtered.csv")
+instead of copying the file whole. The size ceiling is enforced against the
+bytes actually written to the repo -- the filtered size for these entries,
+the source size for a plain copy -- not the raw source size in both cases,
+since the raw size of a to-be-filtered file says nothing about what's
+actually committed.
 """
 
+import csv
 import fnmatch
 import hashlib
 import shutil
@@ -43,47 +56,98 @@ def inventory(scenario_folder: Path) -> list:
     return entries
 
 
+def _dest_filename(entry: dict) -> str:
+    src_name = Path(entry["relative_path"])
+    if entry.get("columns"):
+        return f"{src_name.stem}_filtered{src_name.suffix}"
+    return src_name.name
+
+
 def select(entries: list, include_patterns: list) -> list:
     """Filters the full inventory down to entries matching at least one glob
-    pattern, evaluated against each file's path relative to the scenario folder."""
+    pattern, evaluated against each file's path relative to the scenario
+    folder. A pattern is normally a plain string; it may instead be a mapping
+    {"pattern": ..., "columns": [...]} declaring that the matched file(s)
+    should be column-filtered rather than copied whole -- the resulting
+    selected entries carry a "columns" key (None for a plain-string pattern)
+    that copy_selected() acts on."""
     if not include_patterns:
         return []
+    normalized = [
+        (p, None) if isinstance(p, str) else (p["pattern"], p["columns"])
+        for p in include_patterns
+    ]
     selected = []
     for entry in entries:
-        if any(fnmatch.fnmatch(entry["relative_path"], pat) for pat in include_patterns):
-            selected.append(entry)
+        for pattern, columns in normalized:
+            if fnmatch.fnmatch(entry["relative_path"], pattern):
+                selected.append({**entry, "columns": columns})
+                break
     return selected
 
 
+def _raise_too_big(entries: list, max_file_size_mb: float):
+    lines = [
+        f"{len(entries)} selected output file(s) exceed the "
+        f"{max_file_size_mb} MB limit and cannot be committed to the repo:"
+    ]
+    for e in entries:
+        mb = e["size_bytes"] / (1024 * 1024)
+        lines.append(f"  - {e['relative_path']} ({mb:.1f} MB)")
+    lines.append(
+        "Exclude this file from the output selection, or have the model "
+        "produce a smaller summary instead of the full file."
+    )
+    raise OutputCollectionError("\n".join(lines))
+
+
 def validate_size_limit(selected: list, max_file_size_mb: float):
+    """Checks selected entries against the size ceiling using each entry's
+    (pre-copy) size_bytes. Only meaningful for plain, unfiltered entries --
+    a to-be-filtered entry's raw source size says nothing about what will
+    actually be committed, so those are skipped here and checked instead
+    against the actual written size inside copy_selected()."""
     max_bytes = int(max_file_size_mb * 1024 * 1024)
-    too_big = [e for e in selected if e["size_bytes"] > max_bytes]
+    too_big = [
+        e for e in selected if not e.get("columns") and e["size_bytes"] > max_bytes
+    ]
     if too_big:
-        lines = [
-            f"{len(too_big)} selected output file(s) exceed the "
-            f"{max_file_size_mb} MB limit and cannot be committed to the repo:"
-        ]
-        for e in too_big:
-            mb = e["size_bytes"] / (1024 * 1024)
-            lines.append(f"  - {e['relative_path']} ({mb:.1f} MB)")
-        lines.append(
-            "Exclude this file from the output selection, or have the model "
-            "produce a smaller summary instead of the full file."
-        )
-        raise OutputCollectionError("\n".join(lines))
+        _raise_too_big(too_big, max_file_size_mb)
 
 
-def copy_selected(scenario_folder: Path, selected: list, dest_dir: Path) -> list:
+def _write_filtered_csv(src: Path, dst: Path, columns: list):
+    with open(src, newline="") as fin, open(dst, "w", newline="") as fout:
+        reader = csv.DictReader(fin)
+        missing = [c for c in columns if c not in (reader.fieldnames or [])]
+        if missing:
+            raise OutputCollectionError(
+                f"columns {missing} not found in {src.name} "
+                f"(available: {reader.fieldnames})"
+            )
+        writer = csv.DictWriter(fout, fieldnames=columns, extrasaction="ignore")
+        writer.writeheader()
+        for row in reader:
+            writer.writerow(row)
+
+
+def copy_selected(
+    scenario_folder: Path, selected: list, dest_dir: Path, max_file_size_mb: float
+) -> list:
     """Copies each selected file directly into dest_dir, flattened to just
     its filename -- curated outputs don't preserve the model's internal
-    folder structure. Returns the manifest entries augmented with a sha256
-    checksum and the repo-relative destination path -- computed here, not in
-    inventory(), since only the (typically handful of) selected files ever
-    need one. Raises OutputCollectionError if flattening would collide two
-    selected files onto the same filename."""
+    folder structure. An entry with a "columns" list (see select()) is
+    written as a column-filtered copy ("<stem>_filtered.csv") instead of a
+    byte-for-byte copy. Returns the manifest entries augmented with a sha256
+    checksum, the repo-relative destination path, and size_bytes updated to
+    the actual bytes written (only these, the ones actually committed, get a
+    checksum -- computed here, not in inventory(), since only the typically
+    handful of selected files ever need one). Raises OutputCollectionError
+    if flattening would collide two selected files onto the same filename,
+    or if any file, once actually written to dest_dir, exceeds
+    max_file_size_mb -- deleting that file before raising."""
     seen = {}
     for entry in selected:
-        name = Path(entry["relative_path"]).name
+        name = _dest_filename(entry)
         if name in seen:
             raise OutputCollectionError(
                 f"Selected outputs '{seen[name]}' and '{entry['relative_path']}' both "
@@ -96,7 +160,23 @@ def copy_selected(scenario_folder: Path, selected: list, dest_dir: Path) -> list
     curated = []
     for entry in selected:
         src = scenario_folder / entry["relative_path"]
-        dst = dest_dir / Path(entry["relative_path"]).name
-        shutil.copy2(src, dst)
-        curated.append({**entry, "sha256": _sha256(src), "repo_path": dst.as_posix()})
+        dst = dest_dir / _dest_filename(entry)
+        if entry.get("columns"):
+            _write_filtered_csv(src, dst, entry["columns"])
+        else:
+            shutil.copy2(src, dst)
+
+        size_bytes = dst.stat().st_size
+        if size_bytes > int(max_file_size_mb * 1024 * 1024):
+            dst.unlink()
+            _raise_too_big([{**entry, "size_bytes": size_bytes}], max_file_size_mb)
+
+        curated.append(
+            {
+                **entry,
+                "size_bytes": size_bytes,
+                "sha256": _sha256(dst),
+                "repo_path": dst.as_posix(),
+            }
+        )
     return curated

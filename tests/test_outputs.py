@@ -53,7 +53,7 @@ def test_copy_selected_flattens_to_dest_dir(tmp_path):
     entries = out.inventory(folder)
     selected = out.select(entries, ["reports/*.csv"])
     dest = tmp_path / "curated"
-    curated = out.copy_selected(folder, selected, dest)
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
     assert (dest / "a.csv").is_file()
     assert not (dest / "reports").exists()
     assert curated[0]["repo_path"] == (dest / "a.csv").as_posix()
@@ -70,4 +70,91 @@ def test_copy_selected_raises_on_filename_collision(tmp_path):
     selected = out.select(entries, ["*/a.csv"])
     assert len(selected) == 2
     with pytest.raises(OutputCollectionError):
-        out.copy_selected(folder, selected, tmp_path / "curated")
+        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
+
+
+# ---------------------------------------------------------------------------
+# column-filtered outputs.include entries ({"pattern": ..., "columns": [...]})
+# ---------------------------------------------------------------------------
+
+
+def _make_wide_csv(folder, rel_path, rows=3):
+    path = folder / rel_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["TAZID,Metric,Purpose,Total,DriveAlone,SharedRide"]
+    for i in range(rows):
+        lines.append(f"{i},PMT,HBW,{i * 10},{i},{i}")
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def test_select_attaches_columns_from_pattern_mapping():
+    entries = [{"relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv", "size_bytes": 1}]
+    include = [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
+    selected = out.select(entries, include)
+    assert selected[0]["columns"] == ["TAZID", "Total"]
+
+
+def test_select_plain_string_pattern_has_no_columns():
+    entries = [{"relative_path": "reports/a.csv", "size_bytes": 1}]
+    selected = out.select(entries, ["reports/*.csv"])
+    assert selected[0]["columns"] is None
+
+
+def test_copy_selected_writes_column_filtered_csv(tmp_path):
+    folder = tmp_path / "scenario"
+    _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv")
+    entries = out.inventory(folder)
+    selected = out.select(
+        entries,
+        [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
+    )
+    dest = tmp_path / "curated"
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
+
+    out_path = dest / "TAZ-Based Metrics_filtered.csv"
+    assert out_path.is_file()
+    assert out_path.read_text().splitlines()[0] == "TAZID,Total"
+    assert curated[0]["repo_path"] == out_path.as_posix()
+    assert curated[0]["size_bytes"] == out_path.stat().st_size
+
+
+def test_validate_size_limit_skips_filtered_entries():
+    # Raw size is huge, but this entry is destined to be filtered -- its raw
+    # size says nothing about what actually gets committed, so the pre-copy
+    # check must not reject it here (copy_selected checks the real bytes).
+    entries = [
+        {
+            "relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv",
+            "size_bytes": 200 * 1024 * 1024,
+            "columns": ["TAZID", "Total"],
+        }
+    ]
+    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
+
+
+def test_copy_selected_raises_and_cleans_up_when_filtered_output_still_too_big(tmp_path):
+    folder = tmp_path / "scenario"
+    _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv", rows=1000)
+    entries = out.inventory(folder)
+    selected = out.select(
+        entries,
+        [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
+    )
+    dest = tmp_path / "curated"
+    with pytest.raises(OutputCollectionError):
+        out.copy_selected(folder, selected, dest, max_file_size_mb=0.0001)
+    assert not (dest / "TAZ-Based Metrics_filtered.csv").exists()
+
+
+def test_copy_selected_raises_when_declared_column_missing(tmp_path):
+    folder = tmp_path / "scenario"
+    _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv")
+    entries = out.inventory(folder)
+    selected = out.select(
+        entries,
+        [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "NoSuchColumn"]}],
+    )
+    dest = tmp_path / "curated"
+    with pytest.raises(OutputCollectionError, match="NoSuchColumn"):
+        out.copy_selected(folder, selected, dest, max_file_size_mb=1)

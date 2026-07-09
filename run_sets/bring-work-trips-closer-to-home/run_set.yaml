@@ -18,11 +18,15 @@ overrides:
 
 outputs:
   include:
-    - "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
-    - "4_ModeChoice/4_Shares/*_RegionShares_Daily.csv"
-    - "4_ModeChoice/4_Shares/*_RegionShares_Ok.csv"
-    - "4_ModeChoice/4_Shares/*_RegionShares_Pk.csv"
-    - "5_AssignHwy/4_Summaries/*_Summary_SEGID.csv"
+    - "4_ModeChoice/2_DetailedTripMatrices/*ZoneSummary_TripsByMode.csv"
+    - "4_ModeChoice/4_Shares/*RegionShares_Daily.csv"
+    - "4_ModeChoice/4_Shares/*RegionShares_Ok.csv"
+    - "4_ModeChoice/4_Shares/*RegionShares_Pk.csv"
+    - "5_AssignHwy/4_Summaries/*Summary_SEGID.csv"
+    - pattern: "5_AssignHwy/4_Summaries/*TAZ-Based Metrics.csv"
+      # full file runs ~200 MB across ~18 columns; these 6 are what reports
+      # actually read, comfortably under max_file_size_mb once filtered
+      columns: [TAZID, Metric, Purpose, Period, PA, Total]
   max_file_size_mb: 95
 
 report_snapshot_script: report_snapshot.py

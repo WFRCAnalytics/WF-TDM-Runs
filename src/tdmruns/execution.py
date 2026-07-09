@@ -205,7 +205,9 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
         try:
             out.validate_size_limit(selected, output_spec["max_file_size_mb"])
             run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
-            curated = out.copy_selected(folder, selected, run_dir / "outputs")
+            curated = out.copy_selected(
+                folder, selected, run_dir / "outputs", output_spec["max_file_size_mb"]
+            )
         except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently
             status = "failed"
             error = (error + " " if error else "") + f"Output curation failed: {e}"
@@ -299,7 +301,9 @@ def import_manual_run(
         try:
             out.validate_size_limit(selected, output_spec["max_file_size_mb"])
             run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
-            curated = out.copy_selected(scenario_folder, selected, run_dir / "outputs")
+            curated = out.copy_selected(
+                scenario_folder, selected, run_dir / "outputs", output_spec["max_file_size_mb"]
+            )
         except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently
             status, error = "failed", f"Output curation failed: {e}"
     else:
