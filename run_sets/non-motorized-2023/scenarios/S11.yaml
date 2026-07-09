@@ -14,8 +14,8 @@ overrides:
 # scenario also needs its SE_File for the district-level centerization chart.
 outputs:
   include:
-    - "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
-    - "0_InputProcessing/SE_File_*.dbf"
+    - file: "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
+    - file: "0_InputProcessing/SE_File_*.dbf"
   max_file_size_mb: 45
 
 # Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by

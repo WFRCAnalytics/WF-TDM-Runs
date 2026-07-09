@@ -79,7 +79,10 @@ def test_unknown_override_key_fails_before_execution(framework_repo):
 def test_output_size_limit_violation_fails_run_cleanly(framework_repo):
     run_set_path = framework_repo / "run_sets" / "test-run-set" / "run_set.yaml"
     data = yaml.safe_load(run_set_path.read_text())
-    data["outputs"] = {"include": ["reports/*.csv", "skims/*.mtx"], "max_file_size_mb": 1}
+    data["outputs"] = {
+        "include": [{"file": "reports/*.csv"}, {"file": "skims/*.mtx"}],
+        "max_file_size_mb": 1,
+    }
     run_set_path.write_text(yaml.safe_dump(data, sort_keys=False))
 
     result = ex.run_scenario(framework_repo, "test-run-set", "S01")

@@ -88,7 +88,10 @@ def framework_repo(tmp_path, tdm_repo):
         "tdm_ref": "v1.0",
         "baseline_control_center": "1ControlCenter - BY_2023.block",
         "overrides": {"Run_Documentation": 0},
-        "outputs": {"include": ["reports/*.csv", "logs/RunModel.log"], "max_file_size_mb": 10},
+        "outputs": {
+            "include": [{"file": "reports/*.csv"}, {"file": "logs/RunModel.log"}],
+            "max_file_size_mb": 10,
+        },
     }
     with open(repo / "run_sets" / "test-run-set" / "run_set.yaml", "w") as f:
         yaml.safe_dump(run_set_yaml, f, sort_keys=False)

@@ -9,18 +9,18 @@ contents. A declared, glob-based selection then determines which files
 actually get copied into this repo; only those get a checksum (computed at
 copy time), and every selected file is checked against a hard size ceiling.
 
-An outputs.include entry is normally just a glob pattern string, copied
-byte-for-byte. It may instead be a mapping {"pattern": ..., "columns": [...]}
--- e.g. Cube Voyager's "TAZ-Based Metrics.csv" summaries carry ~18 columns
-and run ~200 MB, comfortably over any reasonable size ceiling, when the
-handful of columns a report actually reads (e.g. TAZID/Metric/Purpose/
-Period/PA/Total) would be a fraction of that. For a pattern like this,
-copy_selected() writes a column-filtered copy (named "<stem>_filtered.csv")
-instead of copying the file whole. The size ceiling is enforced against the
-bytes actually written to the repo -- the filtered size for these entries,
-the source size for a plain copy -- not the raw source size in both cases,
-since the raw size of a to-be-filtered file says nothing about what's
-actually committed.
+Each outputs.include entry is a mapping {"file": <glob pattern>, "columns":
+[...]}, "columns" optional. Declaring "columns" means the matched file(s)
+should be column-filtered rather than copied whole -- e.g. Cube Voyager's
+"TAZ-Based Metrics.csv" summaries carry ~18 columns and run ~200 MB,
+comfortably over any reasonable size ceiling, when the handful of columns a
+report actually reads (e.g. TAZID/Metric/Purpose/Period/PA/Total) would be a
+fraction of that. For an entry like this, copy_selected() writes a
+column-filtered copy (named "<stem>_filtered.csv") instead of copying the
+file whole. The size ceiling is enforced against the bytes actually written
+to the repo -- the filtered size for these entries, the source size for a
+plain copy -- not the raw source size in both cases, since the raw size of a
+to-be-filtered file says nothing about what's actually committed.
 """
 
 import csv
@@ -64,19 +64,14 @@ def _dest_filename(entry: dict) -> str:
 
 
 def select(entries: list, include_patterns: list) -> list:
-    """Filters the full inventory down to entries matching at least one glob
-    pattern, evaluated against each file's path relative to the scenario
-    folder. A pattern is normally a plain string; it may instead be a mapping
-    {"pattern": ..., "columns": [...]} declaring that the matched file(s)
-    should be column-filtered rather than copied whole -- the resulting
-    selected entries carry a "columns" key (None for a plain-string pattern)
-    that copy_selected() acts on."""
+    """Filters the full inventory down to entries matching at least one
+    declared {"file": <glob pattern>, "columns": [...]} entry, the glob
+    evaluated against each file's path relative to the scenario folder.
+    "columns" is optional -- the resulting selected entries carry a
+    "columns" key (None when not declared) that copy_selected() acts on."""
     if not include_patterns:
         return []
-    normalized = [
-        (p, None) if isinstance(p, str) else (p["pattern"], p["columns"])
-        for p in include_patterns
-    ]
+    normalized = [(p["file"], p.get("columns")) for p in include_patterns]
     selected = []
     for entry in entries:
         for pattern, columns in normalized:

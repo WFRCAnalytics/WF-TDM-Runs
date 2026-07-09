@@ -44,6 +44,6 @@ def test_output_spec_cannot_exceed_framework_ceiling(framework_repo):
     framework = cfg.load_framework_config(framework_repo)
     run_set = cfg.load_run_set(framework_repo, "test-run-set")
     scenario = cfg.load_scenario(framework_repo, "test-run-set", "S01")
-    scenario["outputs"] = {"include": ["*"], "max_file_size_mb": 999999}
+    scenario["outputs"] = {"include": [{"file": "*"}], "max_file_size_mb": 999999}
     with pytest.raises(ConfigValidationError):
         cfg.resolved_output_spec(framework, run_set, scenario)

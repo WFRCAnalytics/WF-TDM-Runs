@@ -28,7 +28,7 @@ def test_select_matches_glob_only():
         {"relative_path": "reports/a.csv", "size_bytes": 1},
         {"relative_path": "skims/big.mtx", "size_bytes": 1},
     ]
-    selected = out.select(entries, ["reports/*.csv"])
+    selected = out.select(entries, [{"file": "reports/*.csv"}])
     assert [e["relative_path"] for e in selected] == ["reports/a.csv"]
 
 
@@ -51,7 +51,7 @@ def test_validate_size_limit_passes_when_under_limit():
 def test_copy_selected_flattens_to_dest_dir(tmp_path):
     folder = _make_scenario_folder(tmp_path)
     entries = out.inventory(folder)
-    selected = out.select(entries, ["reports/*.csv"])
+    selected = out.select(entries, [{"file": "reports/*.csv"}])
     dest = tmp_path / "curated"
     curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
     assert (dest / "a.csv").is_file()
@@ -67,14 +67,14 @@ def test_copy_selected_raises_on_filename_collision(tmp_path):
     (folder / "reports" / "a.csv").write_text("x,y\n1,2\n")
     (folder / "skims" / "a.csv").write_text("x,y\n3,4\n")
     entries = out.inventory(folder)
-    selected = out.select(entries, ["*/a.csv"])
+    selected = out.select(entries, [{"file": "*/a.csv"}])
     assert len(selected) == 2
     with pytest.raises(OutputCollectionError):
         out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
 
 
 # ---------------------------------------------------------------------------
-# column-filtered outputs.include entries ({"pattern": ..., "columns": [...]})
+# column-filtered outputs.include entries ({"file": ..., "columns": [...]})
 # ---------------------------------------------------------------------------
 
 
@@ -88,16 +88,16 @@ def _make_wide_csv(folder, rel_path, rows=3):
     return path
 
 
-def test_select_attaches_columns_from_pattern_mapping():
+def test_select_attaches_columns_from_file_mapping():
     entries = [{"relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv", "size_bytes": 1}]
-    include = [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
+    include = [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
     selected = out.select(entries, include)
     assert selected[0]["columns"] == ["TAZID", "Total"]
 
 
-def test_select_plain_string_pattern_has_no_columns():
+def test_select_without_columns_key_has_no_columns():
     entries = [{"relative_path": "reports/a.csv", "size_bytes": 1}]
-    selected = out.select(entries, ["reports/*.csv"])
+    selected = out.select(entries, [{"file": "reports/*.csv"}])
     assert selected[0]["columns"] is None
 
 
@@ -107,7 +107,7 @@ def test_copy_selected_writes_column_filtered_csv(tmp_path):
     entries = out.inventory(folder)
     selected = out.select(
         entries,
-        [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
+        [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
     )
     dest = tmp_path / "curated"
     curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
@@ -139,7 +139,7 @@ def test_copy_selected_raises_and_cleans_up_when_filtered_output_still_too_big(t
     entries = out.inventory(folder)
     selected = out.select(
         entries,
-        [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
+        [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}],
     )
     dest = tmp_path / "curated"
     with pytest.raises(OutputCollectionError):
@@ -153,7 +153,7 @@ def test_copy_selected_raises_when_declared_column_missing(tmp_path):
     entries = out.inventory(folder)
     selected = out.select(
         entries,
-        [{"pattern": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "NoSuchColumn"]}],
+        [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "NoSuchColumn"]}],
     )
     dest = tmp_path / "curated"
     with pytest.raises(OutputCollectionError, match="NoSuchColumn"):
@@ -169,7 +169,7 @@ def test_copy_selected_raises_when_declared_column_missing(tmp_path):
 def test_curate_stays_success_when_something_matches(tmp_path):
     folder = _make_scenario_folder(tmp_path)
     inventory = out.inventory(folder)
-    output_spec = {"include": ["reports/*.csv"], "max_file_size_mb": 1}
+    output_spec = {"include": [{"file": "reports/*.csv"}], "max_file_size_mb": 1}
     run_dir = tmp_path / "run"
 
     status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
@@ -201,7 +201,7 @@ def test_curate_fails_when_declared_patterns_match_nothing(tmp_path):
     # this used to be silently recorded as "success" with curated: [].
     folder = _make_scenario_folder(tmp_path)
     inventory = out.inventory(folder)
-    output_spec = {"include": ["nonexistent/*.csv"], "max_file_size_mb": 1}
+    output_spec = {"include": [{"file": "nonexistent/*.csv"}], "max_file_size_mb": 1}
     run_dir = tmp_path / "run"
 
     status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
@@ -214,7 +214,7 @@ def test_curate_fails_when_declared_patterns_match_nothing(tmp_path):
 def test_curate_preserves_and_appends_to_existing_error_on_no_match(tmp_path):
     folder = _make_scenario_folder(tmp_path)
     inventory = out.inventory(folder)
-    output_spec = {"include": ["nonexistent/*.csv"], "max_file_size_mb": 1}
+    output_spec = {"include": [{"file": "nonexistent/*.csv"}], "max_file_size_mb": 1}
     run_dir = tmp_path / "run"
 
     status, error, curated = out.curate(
@@ -230,7 +230,7 @@ def test_curate_preserves_and_appends_to_existing_error_on_no_match(tmp_path):
 def test_curate_fails_when_curation_itself_raises(tmp_path):
     folder = _make_scenario_folder(tmp_path)
     inventory = out.inventory(folder)
-    output_spec = {"include": ["skims/*.mtx"], "max_file_size_mb": 1}  # big.mtx is 2 MB
+    output_spec = {"include": [{"file": "skims/*.mtx"}], "max_file_size_mb": 1}  # big.mtx is 2 MB
     run_dir = tmp_path / "run"
 
     status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)

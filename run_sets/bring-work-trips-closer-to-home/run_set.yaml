@@ -18,14 +18,12 @@ overrides:
 
 outputs:
   include:
-    - "4_ModeChoice/2_DetailedTripMatrices/*ZoneSummary_TripsByMode.csv"
-    - "4_ModeChoice/4_Shares/*RegionShares_Daily.csv"
-    - "4_ModeChoice/4_Shares/*RegionShares_Ok.csv"
-    - "4_ModeChoice/4_Shares/*RegionShares_Pk.csv"
-    - "5_AssignHwy/4_Summaries/*Summary_SEGID.csv"
-    - pattern: "5_AssignHwy/4_Summaries/*TAZ-Based Metrics.csv"
-      # full file runs ~200 MB across ~18 columns; these 6 are what reports
-      # actually read, comfortably under max_file_size_mb once filtered
+    - file: "4_ModeChoice/2_DetailedTripMatrices/*ZoneSummary_TripsByMode.csv"
+      columns: [Purpose, Period, PA, TAZID, All, Auto, Bike, Moto, NonM, Walk, tTrn]
+    - file: "4_ModeChoice/4_Shares/*Shares_Summary_long.csv"
+    - file: "5_AssignHwy/4_Summaries/*Summary_SEGID.csv"
+      columns: [SEGID, DISTANCE, LANES, LANEMILES, FTCLASS, CAP1HL, AM_Vol, MD_Vol, PM_Vol, EV_Vol, DY_Vol, FF_Spd, AM_Spd, MD_Spd, PM_Spd, EV_Spd, DY_Spd, FF_Tme, AM_Tme, MD_Tme, PM_Tme, EV_Tme, DY_Tme, AM_CAP, MD_CAP, PM_CAP, EV_CAP, DY_CAP, AM_VC, MD_VC, PM_VC, EV_VC, MAX_VC, AM_VMT, MD_VMT, PM_VMT, EV_VMT, DY_VMT, AM_VMT_PC, MD_VMT_PC, PM_VMT_PC, EV_VMT_PC, DY_VMT_PC, AM_VMT_LT, MD_VMT_LT, PM_VMT_LT, EV_VMT_LT, DY_VMT_LT, AM_VMT_MD, MD_VMT_MD, PM_VMT_MD, EV_VMT_MD, DY_VMT_MD, AM_VMT_HV, MD_VMT_HV, PM_VMT_HV, EV_VMT_HV, DY_VMT_HV, FF_VHT, AM_VHT, MD_VHT, PM_VHT, EV_VHT, DY_VHT, AM_VHD, MD_VHD, PM_VHD, EV_VHD, DY_VHD]
+    - file: "5_AssignHwy/4_Summaries/*TAZ-Based Metrics.csv"
       columns: [TAZID, Metric, Purpose, Period, PA, Total]
   max_file_size_mb: 95
 
