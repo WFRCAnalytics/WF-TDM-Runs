@@ -9,25 +9,34 @@ contents. A declared, glob-based selection then determines which files
 actually get copied into this repo; only those get a checksum (computed at
 copy time), and every selected file is checked against a hard size ceiling.
 
-Each outputs.include entry is one of two shapes (config/schemas/*.schema.json
-enforces exactly one): {"file": <glob pattern>, "columns": [...]}, "columns"
-optional, or {"matrix": <glob pattern>, "tabs": [...]}. Declaring "columns"
-means the matched file(s) should be column-filtered rather than copied whole
--- e.g. Cube Voyager's "TAZ-Based Metrics.csv" summaries carry ~18 columns and
-run ~200 MB, comfortably over any reasonable size ceiling, when the handful of
-columns a report actually reads (e.g. TAZID/Metric/Purpose/Period/PA/Total)
-would be a fraction of that. For an entry like this, copy_selected() writes a
+Each outputs.include entry is one of three shapes (config/schemas/*.schema.json
+enforces exactly one): {"datafile": <glob pattern>, "columns": [...]}, "columns"
+optional, {"matrix": <glob pattern>, "tabs": [...]}, or {"network": <glob
+pattern>, "fields": [...]}. Declaring "columns" means the matched file(s)
+should be column-filtered rather than copied whole -- e.g. Cube Voyager's
+"TAZ-Based Metrics.csv" summaries carry ~18 columns and run ~200 MB,
+comfortably over any reasonable size ceiling, when the handful of columns a
+report actually reads (e.g. TAZID/Metric/Purpose/Period/PA/Total) would be a
+fraction of that. For an entry like this, copy_selected() writes a
 column-filtered copy (named "<stem>_filtered.csv") instead of copying the
 file whole. A "matrix" entry matches a Cube Voyager .mtx file and extracts
-only the named "tabs" tables into a small "<stem>.omx" file via CONVERTMAT
-(matrix_utils.extract_matrix_tabs) -- for large multi-table matrices (skims,
-trip tables) where only one or two tables are actually needed downstream, and
-the full file would be hundreds of MB. This is the one curation path that
-needs Cube Voyager itself (a voyager_exe path) -- plain file/column entries
-never do. The size ceiling is enforced against the bytes actually written to
-the repo -- the filtered/extracted size for these entries, the source size
-for a plain copy -- not the raw source size in all cases, since the raw size
-of a to-be-transformed file says nothing about what's actually committed.
+only the named "tabs" tables via CONVERTMAT (matrix_utils.extract_matrix_tabs)
+-- for large multi-table matrices (skims, trip tables) where only one or two
+tables are actually needed downstream, and the full file would be hundreds of
+MB. Its optional "format" is "omx" (default, Python-readable) or "mtx" (Cube's
+own native format), written as "<stem>.<format>". A "network" entry matches a
+Cube Voyager .net file and exports the named "fields" via
+network_utils.export_network_fields() -- same rationale, a .net file is also
+Voyager's proprietary binary format and typically carries far more link/node
+attributes than a report needs. Its optional "format" is "geojson" (default),
+"shp" (zipped as a single "<stem>.shp.zip"), or "net" (Cube's own native
+format, field-filtered via NETWORK's EXCLUDE=). Matrix and network entries are
+the two curation paths that need Cube Voyager itself (a voyager_exe path) --
+plain datafile/column entries never do. The size ceiling is enforced against
+the bytes actually written to the repo -- the filtered/extracted/exported size
+for these entries, the source size for a plain copy -- not the raw source
+size in all cases, since the raw size of a to-be-transformed file says
+nothing about what's actually committed.
 """
 
 import csv
@@ -36,7 +45,7 @@ import hashlib
 import shutil
 from pathlib import Path
 
-from tdmruns import matrix_utils
+from tdmruns import matrix_utils, network_utils
 from tdmruns.exceptions import OutputCollectionError
 
 CHECKSUM_CHUNK_BYTES = 1024 * 1024
@@ -64,10 +73,19 @@ def inventory(scenario_folder: Path) -> list:
     return entries
 
 
+# Default output format per entry_type when a "format" key isn't declared --
+# also the full set of extensions _dest_filename() ever produces.
+_DEFAULT_FORMAT = {"matrix": "omx", "network": "geojson"}
+
+
 def _dest_filename(entry: dict) -> str:
     src_name = Path(entry["relative_path"])
-    if entry.get("entry_type") == "matrix":
-        return f"{src_name.stem}.omx"
+    entry_type = entry.get("entry_type")
+    if entry_type == "matrix":
+        return f"{src_name.stem}.{entry.get('format') or 'omx'}"
+    if entry_type == "network":
+        fmt = entry.get("format") or "geojson"
+        return f"{src_name.stem}.shp.zip" if fmt == "shp" else f"{src_name.stem}.{fmt}"
     if entry.get("columns"):
         return f"{src_name.stem}_filtered{src_name.suffix}"
     return src_name.name
@@ -75,19 +93,33 @@ def _dest_filename(entry: dict) -> str:
 
 def select(entries: list, include_patterns: list) -> list:
     """Filters the full inventory down to entries matching at least one
-    declared {"file": <glob>, "columns": [...]} or {"matrix": <glob>,
-    "tabs": [...]} entry, the glob evaluated against each file's path
+    declared {"datafile": <glob>, "columns": [...]}, {"matrix": <glob>,
+    "tabs": [...], "format": ...}, or {"network": <glob>, "fields": [...],
+    "format": ...} entry, the glob evaluated against each file's path
     relative to the scenario folder. The resulting selected entries carry
-    an "entry_type" ("file" or "matrix") plus whichever of "columns"/"tabs"
-    applies, that copy_selected() acts on."""
+    an "entry_type" ("datafile", "matrix", or "network") plus whichever of
+    "columns"/"tabs"/"fields" applies (and "format", for matrix/network),
+    that copy_selected() acts on."""
     if not include_patterns:
         return []
     normalized = []
     for p in include_patterns:
         if "matrix" in p:
-            normalized.append((p["matrix"], {"entry_type": "matrix", "tabs": p["tabs"]}))
+            normalized.append((
+                p["matrix"],
+                {"entry_type": "matrix", "tabs": p["tabs"], "format": p.get("format", _DEFAULT_FORMAT["matrix"])},
+            ))
+        elif "network" in p:
+            normalized.append((
+                p["network"],
+                {
+                    "entry_type": "network",
+                    "fields": p.get("fields"),
+                    "format": p.get("format", _DEFAULT_FORMAT["network"]),
+                },
+            ))
         else:
-            normalized.append((p["file"], {"entry_type": "file", "columns": p.get("columns")}))
+            normalized.append((p["datafile"], {"entry_type": "datafile", "columns": p.get("columns")}))
     selected = []
     for entry in entries:
         for pattern, tags in normalized:
@@ -114,16 +146,17 @@ def _raise_too_big(entries: list, max_file_size_mb: float):
 
 def validate_size_limit(selected: list, max_file_size_mb: float):
     """Checks selected entries against the size ceiling using each entry's
-    (pre-copy) size_bytes. Only meaningful for plain, unfiltered file
-    entries -- a to-be-filtered CSV's or a matrix entry's raw source size
-    says nothing about what will actually be committed (a matrix entry's
-    source is typically hundreds of MB by design), so those are skipped
-    here and checked instead against the actual written size inside
-    copy_selected()."""
+    (pre-copy) size_bytes. Only meaningful for plain, unfiltered datafile
+    entries -- a to-be-filtered CSV's, a matrix entry's, or a network
+    entry's raw source size says nothing about what will actually be
+    committed (matrix/network sources are typically hundreds of MB by
+    design), so those are skipped here and checked instead against the
+    actual written size inside copy_selected()."""
     max_bytes = int(max_file_size_mb * 1024 * 1024)
     too_big = [
         e for e in selected
-        if e.get("entry_type") != "matrix" and not e.get("columns") and e["size_bytes"] > max_bytes
+        if e.get("entry_type") not in ("matrix", "network")
+        and not e.get("columns") and e["size_bytes"] > max_bytes
     ]
     if too_big:
         _raise_too_big(too_big, max_file_size_mb)
@@ -153,11 +186,13 @@ def copy_selected(
 ) -> list:
     """Copies each selected file directly into dest_dir, flattened to just
     its filename -- curated outputs don't preserve the model's internal
-    folder structure. An entry with a "columns" list (see select()) is
-    written as a column-filtered copy ("<stem>_filtered.csv") instead of a
-    byte-for-byte copy; a "matrix" entry (entry_type=="matrix") is extracted
-    via matrix_utils.extract_matrix_tabs() into a small "<stem>.omx" instead,
-    which requires voyager_exe to be set. Returns the manifest entries
+    folder structure. A datafile entry with a "columns" list (see select())
+    is written as a column-filtered copy ("<stem>_filtered.csv") instead of
+    a byte-for-byte copy; a "matrix" entry is extracted via
+    matrix_utils.extract_matrix_tabs() in its declared format (omx/mtx); a
+    "network" entry is exported via network_utils.export_network_fields()
+    in its declared format (geojson/shp/net) -- both matrix and network
+    entries require voyager_exe to be set. Returns the manifest entries
     augmented with a sha256 checksum, the repo-relative destination path,
     and size_bytes updated to the actual bytes written (only these, the ones
     actually committed, get a checksum -- computed here, not in inventory(),
@@ -188,7 +223,20 @@ def copy_selected(
                     "executable is configured (config/local.yaml's Voyager_EXE) -- "
                     "required to extract matrix tabs at curation time."
                 )
-            matrix_utils.extract_matrix_tabs(src, entry["tabs"], dst, voyager_exe)
+            matrix_utils.extract_matrix_tabs(
+                src, entry["tabs"], dst, voyager_exe, output_format=entry["format"]
+            )
+        elif entry.get("entry_type") == "network":
+            if not voyager_exe:
+                raise OutputCollectionError(
+                    f"'{entry['relative_path']}' is a network output but no Voyager "
+                    "executable is configured (config/local.yaml's Voyager_EXE) -- "
+                    "required to export network fields at curation time."
+                )
+            geometry_shp = network_utils.find_geometry_shapefile(scenario_folder)
+            network_utils.export_network_fields(
+                src, geometry_shp, entry["fields"], dst, voyager_exe, output_format=entry["format"]
+            )
         elif entry.get("columns"):
             _write_filtered_csv(src, dst, entry["columns"])
         else:

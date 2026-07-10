@@ -35,21 +35,36 @@ import report_loader as loader
 frames = loader.load()
 scenario_ids = frames['scenario_ids']
 scenario_meta = frames['scenario_meta']
-corridor_volumes = frames['corridor_volumes']
-vmt_vhd = frames['vmt_vhd_by_county_facility']
-vht_hh = frames['vht_per_household']
-transit = frames['transit_ridership']
-trip_length = frames['hbw_trip_length']
-trip_length_dist = frames['hbw_trip_length_distribution']
-trip_length_avg = frames['hbw_trip_length_weighted_average']
-mode_share = frames['mode_share']
+
+# This report's main narrative is written around the 10% shift level (every
+# chart title says so) -- now that 5%/25% scenarios exist too (Closer04-09),
+# every table keyed by geography_label alone would otherwise carry more than
+# one row per geography type. Filtering to shift_pct in {0 (baseline), 10}
+# right here keeps every existing chart/section below unchanged; a
+# dedicated shift-level comparison is a separate addition, not implicit in
+# these tables.
+PRIMARY_SHIFT_PCT = 10
+
+def _primary(df):
+    return df[df['shift_pct'].isin([0, PRIMARY_SHIFT_PCT])]
+
+corridor_volumes = _primary(frames['corridor_volumes'])
+vmt_vhd = _primary(frames['vmt_vhd_by_county_facility'])
+vht_hh = _primary(frames['vht_per_household'])
+transit = _primary(frames['transit_ridership'])
+trip_length = _primary(frames['hbw_trip_length'])
+trip_length_dist = _primary(frames['hbw_trip_length_distribution'])
+trip_length_avg = _primary(frames['hbw_trip_length_weighted_average'])
+mode_share = _primary(frames['mode_share'])
 
 GEO_ORDER = loader.GEO_ORDER  # City Area, Medium District, Workshop Area (City Area leads)
 GEO_COLORS = {'City Area': '#2a78d6', 'Medium District': '#1baf7a', 'Workshop Area': '#eda100'}
 COUNTY_ORDER = ['Salt Lake', 'Davis', 'Utah', 'Weber', 'Box Elder', 'Region']
 
 # Scenarios actually run so far, beyond the no-shift baseline -- drives the
-# "data completeness" note throughout this document.
+# "data completeness" note throughout this document. Deliberately the full
+# set (not _primary()-filtered) since this is meant to reflect everything
+# that's landed, not just the 10% level the charts below focus on.
 shifted_ids = [s for s in scenario_ids if s != loader.BASELINE_SCENARIO]
 n_expected = len(loader.SCENARIO_META) - 1  # 9 shift scenarios by design
 ```
@@ -72,9 +87,10 @@ display(Markdown(
     "::: {.callout-note}\n"
     "## Data completeness as of this rendering\n"
     f"**{len(shifted_ids)}** of **{n_expected}** planned shift scenarios have a verified run: "
-    f"{', '.join(shifted_ids)} — covering City Area, Medium District, and Workshop Area, "
-    "each at the 10% shift level. The 5% and 25% levels are not yet run; this page will "
-    "extend automatically as they complete. See this run set's `REPORT_PLAN.md`.\n"
+    f"{', '.join(shifted_ids)} — covering City Area, Medium District, and Workshop Area at both "
+    f"the 5% and 10% shift levels. This page's main charts/tables focus on the **{PRIMARY_SHIFT_PCT}% "
+    "shift level** specifically; the 25% level and a dedicated 5%-vs-10% comparison are not yet "
+    "shown. Extends automatically as more scenarios complete — see this run set's `REPORT_PLAN.md`.\n"
     ":::"
 ))
 ```
@@ -115,8 +131,8 @@ display(Markdown(
     "- **Transit ridership on TRAX and FrontRunner declines slightly** under all three geography types — "
     "shortening commutes reduces the number of trips long enough for transit to compete on, an "
     "important, non-obvious side effect (see [Transit Ridership](#transit-ridership)).\n"
-    "- These are **sketch-level, order-of-magnitude results** from a single shift level per geography "
-    "type so far — see [Caveats](#caveats-and-interpretation) before drawing conclusions."
+    f"- These are **sketch-level, order-of-magnitude results** at the {PRIMARY_SHIFT_PCT}% shift level "
+    "shown here — see [Caveats](#caveats-and-interpretation) before drawing conclusions."
 ))
 ```
 
@@ -124,7 +140,7 @@ display(Markdown(
 
 ## How the Test Works {#how-the-test-works}
 
-Home-based-work trips starting inside a target area but ending outside it are identified in the model's trip table. A share of those trips (5%, 10%, or 25% — only 10% has been run so far) is proportionally redistributed to end inside the target area instead, following the *existing* internal destination pattern (a location that already attracts 15% of work trips into the area gets 15% of the newly shifted trips too). This redistribution is applied to the HBW destination-choice matrix **before mode choice**; everything downstream (mode choice, assignment) runs normally on the adjusted trip pattern. Everything else about the region — total trips, population, other destinations — is unchanged.
+Home-based-work trips starting inside a target area but ending outside it are identified in the model's trip table. A share of those trips (5%, 10%, or 25% — 25% not yet run) is proportionally redistributed to end inside the target area instead, following the *existing* internal destination pattern (a location that already attracts 15% of work trips into the area gets 15% of the newly shifted trips too). This redistribution is applied to the HBW destination-choice matrix **before mode choice**; everything downstream (mode choice, assignment) runs normally on the adjusted trip pattern. Everything else about the region — total trips, population, other destinations — is unchanged.
 
 ```{python}
 #| label: tbl-scenarios
@@ -460,7 +476,7 @@ HBW mode share barely moves at this shift level — consistent with the mechanis
 
 ## Cross-Scale Comparison {#cross-scale-comparison}
 
-All three geography types, side by side, at the 10% shift level (the only level run so far). Region-wide figures.
+All three geography types, side by side, at the 10% shift level (this page's primary comparison; 5% has also run but isn't broken out here yet). Region-wide figures.
 
 ```{python}
 #| label: tbl-cross-scale

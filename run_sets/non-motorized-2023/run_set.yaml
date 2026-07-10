@@ -22,7 +22,7 @@ overrides:
 
 outputs:
   include:
-    - file: "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
+    - datafile: "4_ModeChoice/2_DetailedTripMatrices/*_ZoneSummary_TripsByMode.csv"
   max_file_size_mb: 45
 
 report_snapshot_script: report_snapshot.py

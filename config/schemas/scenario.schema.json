@@ -64,9 +64,9 @@
             "oneOf": [
               {
                 "additionalProperties": false,
-                "required": ["file"],
+                "required": ["datafile"],
                 "properties": {
-                  "file": { "type": "string", "description": "Glob pattern, evaluated against each output file's path relative to the scenario folder." },
+                  "datafile": { "type": "string", "description": "Glob pattern, evaluated against each output file's path relative to the scenario folder." },
                   "columns": {
                     "type": "array",
                     "items": { "type": "string" },
@@ -84,7 +84,32 @@
                     "type": "array",
                     "items": { "type": "string" },
                     "minItems": 1,
-                    "description": "Table/core names to extract from the matched .mtx file. The matrix is converted via CONVERTMAT and only these named tables are kept, written as a small OMX file named '<stem>.omx' -- for large multi-table Cube matrices (e.g. skims, several hundred MB) where only one or two tables are actually needed downstream. Requires Voyager to be available at curation time (config/local.yaml's Voyager_EXE)."
+                    "description": "Table/core names to extract from the matched .mtx file. Only these named tables are kept -- for large multi-table Cube matrices (e.g. skims, several hundred MB) where only one or two tables are actually needed downstream. Requires Voyager to be available at curation time (config/local.yaml's Voyager_EXE)."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": ["omx", "mtx"],
+                    "default": "omx",
+                    "description": "Output format for the extracted tables, written as '<stem>.<format>'. 'omx' (default): an OMX file, readable directly in Python via the openmatrix package. 'mtx': converted back to Cube's own native TPP matrix format via CONVERTMAT -- for when the curated output is meant to be read by Cube Voyager itself, not Python."
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "required": ["network", "fields"],
+                "properties": {
+                  "network": { "type": "string", "description": "Glob pattern, evaluated against each output file's path relative to the scenario folder, matching a Cube Voyager .net network file." },
+                  "fields": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "description": "Link attribute field names to keep from the matched .net file (plus geometry, for shp/geojson formats) -- a .net file is Voyager's proprietary format and typically carries far more link attributes than a report needs. Requires Voyager to be available at curation time (config/local.yaml's Voyager_EXE)."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": ["net", "shp", "geojson"],
+                    "default": "geojson",
+                    "description": "Output format for the field-filtered network, written as '<stem>.<format>' ('shp' is written as a single '<stem>.shp.zip' bundling the shapefile's sidecar files). 'geojson' (default): readable directly in Python via geopandas, reprojected to EPSG:4326 (WGS84) to match GeoJSON convention and this codebase's own vt_CreateGeoJsons.py precedent. 'shp': a field-filtered Esri shapefile, zipped, kept in the source geometry's native CRS (no reprojection). 'net': Cube's own native .net format, field-filtered via NETWORK's EXCLUDE= -- for when the curated output is meant to be read by Cube Voyager itself, not Python/GIS tools."
                   }
                 }
               }
