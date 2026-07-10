@@ -1,6 +1,6 @@
 import pytest
 
-from tdmruns import outputs as out
+from tdmruns import matrix_utils, outputs as out
 from tdmruns.exceptions import OutputCollectionError
 
 
@@ -235,3 +235,69 @@ def test_curate_fails_when_curation_itself_raises(tmp_path):
     assert status == "failed"
     assert "exceed the 1 MB limit" in error
     assert curated == []
+
+
+# ---------------------------------------------------------------------------
+# matrix-type outputs.include entries ({"matrix": ..., "tabs": [...]})
+# ---------------------------------------------------------------------------
+
+
+def test_select_attaches_tabs_from_matrix_mapping():
+    entries = [{"relative_path": "skims/Skm_DY.mtx", "size_bytes": 1}]
+    include = [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}]
+    selected = out.select(entries, include)
+    assert selected[0]["entry_type"] == "matrix"
+    assert selected[0]["tabs"] == ["GP_Dist"]
+
+
+def test_dest_filename_for_matrix_entry_is_omx():
+    entry = {"relative_path": "skims/Skm_DY.mtx", "entry_type": "matrix", "tabs": ["GP_Dist"]}
+    assert out._dest_filename(entry) == "Skm_DY.omx"
+
+
+def test_validate_size_limit_skips_matrix_entries():
+    # Raw .mtx size is routinely hundreds of MB by design -- the pre-copy
+    # check must not reject it; only the extracted OMX's actual size matters.
+    entries = [
+        {
+            "relative_path": "skims/Skm_DY.mtx",
+            "size_bytes": 400 * 1024 * 1024,
+            "entry_type": "matrix",
+            "tabs": ["GP_Dist"],
+        }
+    ]
+    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
+
+
+def test_copy_selected_matrix_entry_requires_voyager_exe(tmp_path):
+    folder = tmp_path / "scenario"
+    (folder / "skims").mkdir(parents=True)
+    (folder / "skims" / "Skm_DY.mtx").write_bytes(b"fake")
+    entries = out.inventory(folder)
+    selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}])
+    with pytest.raises(OutputCollectionError, match="Voyager"):
+        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
+
+
+def test_copy_selected_matrix_entry_extracts_and_checksums(tmp_path, monkeypatch):
+    def fake_extract(source_mtx, tabs, dest_omx, voyager_exe):
+        dest_omx.parent.mkdir(parents=True, exist_ok=True)
+        dest_omx.write_bytes(b"tiny omx payload")
+
+    monkeypatch.setattr(matrix_utils, "extract_matrix_tabs", fake_extract)
+
+    folder = tmp_path / "scenario"
+    (folder / "skims").mkdir(parents=True)
+    (folder / "skims" / "Skm_DY.mtx").write_bytes(b"0" * (2 * 1024 * 1024))
+    entries = out.inventory(folder)
+    selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}])
+    dest = tmp_path / "curated"
+
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, voyager_exe="fake.exe")
+
+    out_path = dest / "Skm_DY.omx"
+    assert out_path.is_file()
+    assert curated[0]["repo_path"] == out_path.as_posix()
+    assert len(curated[0]["sha256"]) == 64
+    # the small extracted OMX is checked, not the huge source .mtx
+    assert curated[0]["size_bytes"] == out_path.stat().st_size

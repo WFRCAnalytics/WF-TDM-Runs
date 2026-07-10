@@ -4,7 +4,7 @@
 run_set_id: bring-work-trips-closer-to-home
 author: "Bill Hereth"
 description: >
-  Sketch-level test of localized HBW trip redistribution. For each of three geography types (City Area ~55, Medium District ~35, Workshop Area 8), 10% of home-based work trips currently ending outside the target geography are proportionally redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern), applied before mode choice. Three scenarios total, one per geography type, each applied region-wide (all areas of that type adjusted simultaneously). Base year 2023, model v10.0.0-beta.1 (updated household/transit on-board survey data). Outputs: VMT, VHD, traffic volume, and transit/corridor effects vs. base.
+  Sketch-level test of localized HBW trip redistribution. For each of three geography types (City Area ~55, Medium District ~35, Workshop Area 8), 5/10/25% of home-based work trips currently ending outside the target geography are proportionally redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern), applied before mode choice. Nine scenarios total (3 geography types x 3 shift levels) plus a no-shift baseline, each applied region-wide (all areas of that type adjusted simultaneously). 2027 RTP adoption year, model v10.0.0-beta.1 (updated household/transit on-board survey data). Outputs: VMT, VHD, traffic volume, and transit/corridor effects vs. base.
 
 tdm_ref: "v10.0.0-beta.1-closer-to-home"
 baseline_control_center: "_ControlCenter - OY_2027.block"
@@ -22,9 +22,15 @@ outputs:
       columns: [Purpose, Period, PA, TAZID, All, Auto, Bike, Moto, NonM, Walk, tTrn]
     - file: "4_ModeChoice/4_Shares/*Shares_Summary_long.csv"
     - file: "5_AssignHwy/4_Summaries/*Summary_SEGID.csv"
-      columns: [SEGID, DISTANCE, LANES, LANEMILES, FTCLASS, CAP1HL, AM_Vol, MD_Vol, PM_Vol, EV_Vol, DY_Vol, FF_Spd, AM_Spd, MD_Spd, PM_Spd, EV_Spd, DY_Spd, FF_Tme, AM_Tme, MD_Tme, PM_Tme, EV_Tme, DY_Tme, AM_CAP, MD_CAP, PM_CAP, EV_CAP, DY_CAP, AM_VC, MD_VC, PM_VC, EV_VC, MAX_VC, AM_VMT, MD_VMT, PM_VMT, EV_VMT, DY_VMT, AM_VMT_PC, MD_VMT_PC, PM_VMT_PC, EV_VMT_PC, DY_VMT_PC, AM_VMT_LT, MD_VMT_LT, PM_VMT_LT, EV_VMT_LT, DY_VMT_LT, AM_VMT_MD, MD_VMT_MD, PM_VMT_MD, EV_VMT_MD, DY_VMT_MD, AM_VMT_HV, MD_VMT_HV, PM_VMT_HV, EV_VMT_HV, DY_VMT_HV, FF_VHT, AM_VHT, MD_VHT, PM_VHT, EV_VHT, DY_VHT, AM_VHD, MD_VHD, PM_VHD, EV_VHD, DY_VHD]
+      columns: [SEGID, DISTANCE, DIRECTION, FUNCGROUP, SUBAREAID, CO_FIPS, LANES, LANEMILES, FTCLASS, CAP1HL, AM_Vol, MD_Vol, PM_Vol, EV_Vol, DY_Vol, FF_Spd, AM_Spd, MD_Spd, PM_Spd, EV_Spd, DY_Spd, FF_Tme, AM_Tme, MD_Tme, PM_Tme, EV_Tme, DY_Tme, AM_CAP, MD_CAP, PM_CAP, EV_CAP, DY_CAP, AM_VC, MD_VC, PM_VC, EV_VC, MAX_VC, AM_VMT, MD_VMT, PM_VMT, EV_VMT, DY_VMT, AM_VMT_PC, MD_VMT_PC, PM_VMT_PC, EV_VMT_PC, DY_VMT_PC, AM_VMT_LT, MD_VMT_LT, PM_VMT_LT, EV_VMT_LT, DY_VMT_LT, AM_VMT_MD, MD_VMT_MD, PM_VMT_MD, EV_VMT_MD, DY_VMT_MD, AM_VMT_HV, MD_VMT_HV, PM_VMT_HV, EV_VMT_HV, DY_VMT_HV, FF_VHT, AM_VHT, MD_VHT, PM_VHT, EV_VHT, DY_VHT, AM_VHD, MD_VHD, PM_VHD, EV_VHD, DY_VHD]
     - file: "5_AssignHwy/4_Summaries/*TAZ-Based Metrics.csv"
       columns: [TAZID, Metric, Purpose, Period, PA, Total]
+    - file: "4_ModeChoice/3_TransitAssign/*_transit_brding_summary_route.csv"
+    - file: "0_InputProcessing/*SE_File.dbf"
+    - matrix: "5_AssignHwy/5_FinalNetSkims/*Skm_DY.mtx"
+      tabs: [GP_Dist]
+    - matrix: "4_ModeChoice/2_DetailedTripMatrices/*HBW_trips_allsegs_pkok.mtx"
+      tabs: [motor, nonmotor]
   max_file_size_mb: 95
 
 report_snapshot_script: report_snapshot.py

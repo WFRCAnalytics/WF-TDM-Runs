@@ -200,7 +200,10 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     # --- inventory + curate outputs (best effort even on failure) ---
     full_inventory = out.inventory(folder)
     run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
-    status, error, curated = out.curate(folder, full_inventory, output_spec, run_dir, status, error)
+    status, error, curated = out.curate(
+        folder, full_inventory, output_spec, run_dir, status, error,
+        voyager_exe=local_layer.get("Voyager_EXE"),
+    )
 
     run_metadata = md.build(
         schema_version=framework["run_metadata_schema_version"],
@@ -284,10 +287,12 @@ def import_manual_run(
     fw_commit = md.framework_commit(repo_root)
     version_state = sub.current_state(tdm_path, requested_ref)
 
+    local_layer = framework.get("_local", {})
     full_inventory = out.inventory(scenario_folder)
     run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
     status, error, curated = out.curate(
-        scenario_folder, full_inventory, output_spec, run_dir, "success", None
+        scenario_folder, full_inventory, output_spec, run_dir, "success", None,
+        voyager_exe=local_layer.get("Voyager_EXE"),
     )
 
     run_metadata = md.build(
