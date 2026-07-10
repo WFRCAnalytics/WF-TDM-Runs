@@ -75,20 +75,62 @@ HBW_MATRIX_SCALE = 100
 # of technically-unconnected cells can't masquerade as extreme-long trips.
 SKIM_NOACCESS_SENTINEL = 9999
 
-DISTANCE_BIN_EDGES = [0, 1, 2, 3, 5, 7, 10, 15, 20, 30, float("inf")]
-DISTANCE_BIN_LABELS = [
-    "0-1 mi", "1-2 mi", "2-3 mi", "3-5 mi", "5-7 mi", "7-10 mi",
-    "10-15 mi", "15-20 mi", "20-30 mi", "30+ mi",
-]
+DISTANCE_BIN_EDGES = [0, 5, 10, 15, 20, 25, 30, float("inf")]
+DISTANCE_BIN_LABELS = ["0-5 mi", "5-10 mi", "10-15 mi", "15-20 mi", "20-25 mi", "25-30 mi", "30+ mi"]
 
-# Only routes the scoping memo asks for (TRAX lines + FrontRunner) -- the
-# route file itself carries ~170 route codes, most of them local/express bus.
+# Named routes the scoping memo specifically asks for (TRAX lines +
+# FrontRunner) -- the route file itself carries ~170 route codes, most of
+# them local/express bus. RAIL_MODES are the route file's own "Mode" codes
+# for TRAX/streetcar (7) and FrontRunner commuter rail (8); every other
+# mode (4=local bus, 5=BRT, 6=express, 9=premium/other) gets rolled into
+# one "Bus" aggregate in build_transit_ridership(), rather than enumerating
+# ~160 individual bus route codes by name.
 TRANSIT_ROUTE_LABELS = {
     "Blue": "TRAX Blue Line",
     "Green": "TRAX Green Line",
     "Red": "TRAX Red Line",
     "RCRT_OGPN": "FrontRunner",
 }
+RAIL_MODES = {7, 8}
+BUS_LABEL = "Bus (all non-rail)"
+
+# Manual classification of each named corridor's predominant real-world
+# orientation -- not derivable from Summary_SEGID itself (its own
+# "DIRECTION" field is always "Both", a region-wide aggregate artifact,
+# not a per-link heading). I-215 loops around Salt Lake County and doesn't
+# fit either category cleanly, so it gets its own "Loop" bucket instead of
+# being forced into N/S or E/W.
+CORRIDOR_ORIENTATION = {
+    "I-15": "N/S", "Redwood Road": "N/S", "State Street": "N/S",
+    "Legacy Parkway": "N/S", "Mountain View Corridor": "N/S",
+    "Bangerter Highway": "N/S", "US-89 (north Davis)": "N/S",
+    "I-80": "E/W", "SR-201": "E/W", "West Davis Corridor": "E/W",
+    "5600 South": "E/W", "Antelope Dr": "E/W", "3300 South": "E/W",
+    "9000 South": "E/W", "12300 South": "E/W", "Porter Rockwell": "E/W",
+    "2100 N Lehi": "E/W", "SR-73": "E/W", "University Pkwy": "E/W",
+    "I-215": "Loop",
+}
+
+# Corridors carrying regional freeway/expressway traffic (FTCLASS in
+# {Freeway, Expressway} for most of their length -- verified against
+# Summary_SEGID; matches the scoping memo's own grouping, which lists
+# these separately from its "N/S arterials"/"E/W arterials"). "2100 N
+# Lehi" has a couple of Freeway-classified interchange segments but is
+# listed as an arterial in the memo and stays there.
+FREEWAY_CORRIDORS = {
+    "I-15", "I-80", "I-215", "US-89 (north Davis)", "Legacy Parkway",
+    "Mountain View Corridor", "Bangerter Highway", "SR-201", "West Davis Corridor",
+}
+
+# The 5 cities picked out for city-level results -> their WFv1000_TAZ.dbf
+# CITY_UGRC code. Only meaningful under the City Area scenarios: that's the
+# one geography type whose redistribution is actually scoped by these same
+# city boundaries.
+TARGET_CITIES = {
+    "Ogden": "OGD", "Layton": "LAY", "Salt Lake City": "SLC",
+    "West Jordan": "WJC", "Saratoga Springs": "SAR",
+}
+TAZ_DBF = os.path.join(REPO_ROOT, "tdm", "1_Inputs", "1_TAZ", "WFv1000_TAZ.dbf")
 
 # "Free time added back to households" (memo section 6) is scoped to the two
 # peak periods, not the full day.
@@ -213,6 +255,20 @@ def load_hh() -> pd.DataFrame:
 
 def load_corridor_crosswalk() -> pd.DataFrame:
     return pd.read_csv(CORRIDOR_CROSSWALK_CSV, dtype={"SEGID": str})
+
+
+def load_city_taz_lookup() -> pd.DataFrame:
+    """TAZID -> city_label for TARGET_CITIES only, via WFv1000_TAZ.dbf's
+    CITY_UGRC code -- always read live from tdm/ (static model geometry
+    input, not a per-run output), matching non-motorized-2023's TAZ/district
+    shapefile precedent and this run set's own corridor-geometry lookup."""
+    import geopandas as gpd
+    gdf = gpd.read_file(TAZ_DBF)
+    out = pd.DataFrame(gdf[["TAZID", "CITY_UGRC"]])
+    out["TAZID"] = out["TAZID"].astype(int)
+    code_to_label = {code: label for label, code in TARGET_CITIES.items()}
+    out["city_label"] = out["CITY_UGRC"].map(code_to_label)
+    return out[out["city_label"].notna()][["TAZID", "city_label"]]
 
 
 def load_distance_skim_from_runs(scenario_id: str) -> np.ndarray:
@@ -340,8 +396,9 @@ def _segid_by_county(segid_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_corridor_volumes(segid_df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.DataFrame:
-    """Volume/VMT/VHD by named corridor and scenario -- memo section 6's
-    corridor detail. Only SEGIDs matched to a named corridor are kept."""
+    """Volume/VMT/VHD by named corridor and scenario, region-wide (summed
+    across whichever counties a corridor passes through) -- memo section
+    6's corridor detail. Only SEGIDs matched to a named corridor are kept."""
     merged = segid_df.merge(crosswalk[["SEGID", "corridor_label"]], on="SEGID", how="inner")
     agg = merged.groupby(["scenario_id", "corridor_label"], as_index=False).agg(
         AM_Vol=("AM_Vol", "sum"), MD_Vol=("MD_Vol", "sum"), PM_Vol=("PM_Vol", "sum"),
@@ -350,6 +407,37 @@ def build_corridor_volumes(segid_df: pd.DataFrame, crosswalk: pd.DataFrame) -> p
     )
     agg = _with_meta(agg)
     return _add_delta(agg, ["corridor_label"], ["AM_Vol", "MD_Vol", "PM_Vol", "EV_Vol", "DY_Vol", "DY_VMT", "DY_VHD"])
+
+
+def build_freeway_corridors_by_county(segid_df: pd.DataFrame, crosswalk: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
+    """Volume/VMT/VHD for the named freeway/expressway corridors
+    (FREEWAY_CORRIDORS), broken out by the county each segment actually
+    sits in -- e.g. I-15 in Salt Lake County vs. I-15 in Davis County --
+    rather than build_corridor_volumes()'s single region-wide total per
+    corridor."""
+    fips_to_name = hh_df[["CO_FIPS", "CO_NAME"]].drop_duplicates().set_index("CO_FIPS")["CO_NAME"]
+    merged = segid_df.merge(crosswalk[["SEGID", "corridor_label"]], on="SEGID", how="inner")
+    merged = merged[merged["corridor_label"].isin(FREEWAY_CORRIDORS)].copy()
+    merged["CO_NAME"] = merged["CO_FIPS"].map(fips_to_name)
+    agg = merged.groupby(["scenario_id", "corridor_label", "CO_NAME"], as_index=False).agg(
+        DY_Vol=("DY_Vol", "sum"), DY_VMT=("DY_VMT", "sum"), DY_VHD=("DY_VHD", "sum"),
+    )
+    agg = _with_meta(agg)
+    return _add_delta(agg, ["corridor_label", "CO_NAME"], ["DY_Vol", "DY_VMT", "DY_VHD"])
+
+
+def build_corridor_orientation_summary(segid_df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.DataFrame:
+    """VMT/VHD summed across all named corridors sharing the same
+    predominant orientation (CORRIDOR_ORIENTATION: N/S, E/W, or Loop for
+    I-215 specifically) -- a region-wide rollup, not broken out by
+    individual corridor or county."""
+    merged = segid_df.merge(crosswalk[["SEGID", "corridor_label"]], on="SEGID", how="inner")
+    merged["orientation"] = merged["corridor_label"].map(CORRIDOR_ORIENTATION)
+    agg = merged.groupby(["scenario_id", "orientation"], as_index=False).agg(
+        DY_Vol=("DY_Vol", "sum"), DY_VMT=("DY_VMT", "sum"), DY_VHD=("DY_VHD", "sum"),
+    )
+    agg = _with_meta(agg)
+    return _add_delta(agg, ["orientation"], ["DY_Vol", "DY_VMT", "DY_VHD"])
 
 
 def build_vmt_vhd_by_county_facility(segid_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
@@ -392,10 +480,17 @@ def build_vht_per_household(segid_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.D
 
 
 def build_transit_ridership(route_df: pd.DataFrame) -> pd.DataFrame:
-    """Daily (pk+ok) boardings for TRAX + FrontRunner -- memo's transit
-    ridership deliverable."""
-    df = route_df[route_df["Name"].isin(TRANSIT_ROUTE_LABELS)].copy()
-    df["line_label"] = df["Name"].map(TRANSIT_ROUTE_LABELS)
+    """Daily (pk+ok) boardings for TRAX + FrontRunner (memo's original ask)
+    plus a "Bus" aggregate summing every route whose Mode isn't one of
+    RAIL_MODES -- i.e. every local/BRT/express/premium route, without
+    enumerating ~160 individual bus route codes by name."""
+    named = route_df[route_df["Name"].isin(TRANSIT_ROUTE_LABELS)].copy()
+    named["line_label"] = named["Name"].map(TRANSIT_ROUTE_LABELS)
+
+    bus = route_df[~route_df["Mode"].round().astype(int).isin(RAIL_MODES)].copy()
+    bus["line_label"] = BUS_LABEL
+
+    df = pd.concat([named, bus], ignore_index=True)
     agg = df.groupby(["scenario_id", "line_label"], as_index=False)["Boardings"].sum()
     agg = _with_meta(agg)
     return _add_delta(agg, ["line_label"], ["Boardings"])
@@ -429,6 +524,58 @@ def build_hbw_trip_length(taz_metrics_df: pd.DataFrame, trips_df: pd.DataFrame, 
     return _add_delta(combined, ["CO_NAME"], ["trip_length"])
 
 
+def build_city_results(
+    taz_metrics_df: pd.DataFrame, trips_df: pd.DataFrame, hh_df: pd.DataFrame, city_lookup: pd.DataFrame
+) -> pd.DataFrame:
+    """Production-side daily VMT, peak-period VHT/household, and average
+    HBW trip length for TARGET_CITIES, under the City Area scenarios only
+    -- the one geography type whose redistribution is actually scoped by
+    these same city boundaries (CITY_UGRC). Available at whichever City
+    Area shift levels (5%/10%/25%) have a curated run, same as everywhere
+    else in this module."""
+    city_scenarios = SCENARIO_META[
+        (SCENARIO_META["geography_label"] == "City Area") | (SCENARIO_META["scenario_id"] == BASELINE_SCENARIO)
+    ]["scenario_id"].tolist()
+
+    vmt = taz_metrics_df[
+        (taz_metrics_df["Metric"] == "VMT") & (taz_metrics_df["Purpose"] == "HBW") & (taz_metrics_df["PA"] == "P")
+    ]
+    vmt_daily = vmt.groupby(["scenario_id", "TAZID"], as_index=False)["Total"].sum().rename(columns={"Total": "VMT"})
+
+    vht = taz_metrics_df[
+        (taz_metrics_df["Metric"] == "VHT") & (taz_metrics_df["Purpose"] == "HBW") &
+        (taz_metrics_df["PA"] == "P") & (taz_metrics_df["Period"].isin(PEAK_PERIODS))
+    ]
+    vht_peak = vht.groupby(["scenario_id", "TAZID"], as_index=False)["Total"].sum().rename(columns={"Total": "PEAK_VHT"})
+
+    pmt = taz_metrics_df[
+        (taz_metrics_df["Metric"] == "PMT") & (taz_metrics_df["Purpose"] == "HBW") & (taz_metrics_df["PA"] == "P")
+    ]
+    pmt_daily = pmt.groupby(["scenario_id", "TAZID"], as_index=False)["Total"].sum().rename(columns={"Total": "PMT"})
+
+    trips = trips_df[
+        (trips_df["Purpose"] == "HBW") & (trips_df["Period"] == "Dy") & (trips_df["PA"] == "P")
+    ][["scenario_id", "TAZID", "All"]].rename(columns={"All": "Trips"})
+
+    df = (
+        vmt_daily.merge(vht_peak, on=["scenario_id", "TAZID"], how="outer")
+        .merge(pmt_daily, on=["scenario_id", "TAZID"], how="outer")
+        .merge(trips, on=["scenario_id", "TAZID"], how="outer")
+    )
+    df = df[df["scenario_id"].isin(city_scenarios)]
+    df = df.merge(city_lookup, on="TAZID", how="inner")  # only TARGET_CITIES' TAZs survive
+    df = df.merge(hh_df[["TAZID", "TOTHH"]], on="TAZID", how="left")
+
+    agg = df.groupby(["scenario_id", "city_label"], as_index=False).agg(
+        VMT=("VMT", "sum"), PEAK_VHT=("PEAK_VHT", "sum"), PMT=("PMT", "sum"),
+        Trips=("Trips", "sum"), TOTHH=("TOTHH", "sum"),
+    )
+    agg["VHT_PER_HH"] = agg["PEAK_VHT"] / agg["TOTHH"]
+    agg["trip_length"] = agg["PMT"] / agg["Trips"]
+    agg = _with_meta(agg)
+    return _add_delta(agg, ["city_label"], ["VMT", "VHT_PER_HH", "trip_length"])
+
+
 def build_mode_share(shares_df: pd.DataFrame) -> pd.DataFrame:
     """Supporting context only (not a memo-mandated headline) -- daily
     (pk+ok) mode share by trip purpose, region-wide (Shares_Summary_long
@@ -452,17 +599,21 @@ def load() -> dict:
     transit_route_df = pd.concat([load_transit_route(s) for s in scenario_ids], ignore_index=True)
     hh_df = load_hh()
     crosswalk = load_corridor_crosswalk()
+    city_lookup = load_city_taz_lookup()
     trip_length_dist = build_hbw_trip_length_distribution(scenario_ids)
 
     return {
         "scenario_ids": scenario_ids,
         "scenario_meta": SCENARIO_META[SCENARIO_META["scenario_id"].isin(scenario_ids)],
         "corridor_volumes": build_corridor_volumes(segid_df, crosswalk),
+        "freeway_by_county": build_freeway_corridors_by_county(segid_df, crosswalk, hh_df),
+        "corridor_orientation": build_corridor_orientation_summary(segid_df, crosswalk),
         "vmt_vhd_by_county_facility": build_vmt_vhd_by_county_facility(segid_df, hh_df),
         "vht_per_household": build_vht_per_household(segid_df, hh_df),
         "transit_ridership": build_transit_ridership(transit_route_df),
         "hbw_trip_length": build_hbw_trip_length(taz_metrics_df, trips_df, hh_df),
         "hbw_trip_length_distribution": trip_length_dist["distribution"],
         "hbw_trip_length_weighted_average": trip_length_dist["average"],
+        "city_results": build_city_results(taz_metrics_df, trips_df, hh_df, city_lookup),
         "mode_share": build_mode_share(shares_df),
     }
