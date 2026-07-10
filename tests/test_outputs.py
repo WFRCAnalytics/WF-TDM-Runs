@@ -1,6 +1,6 @@
 import pytest
 
-from tdmruns import outputs as out
+from tdmruns import matrix_utils, outputs as out
 from tdmruns.exceptions import OutputCollectionError
 
 
@@ -28,7 +28,7 @@ def test_select_matches_glob_only():
         {"relative_path": "reports/a.csv", "size_bytes": 1},
         {"relative_path": "skims/big.mtx", "size_bytes": 1},
     ]
-    selected = out.select(entries, ["reports/*.csv"])
+    selected = out.select(entries, [{"file": "reports/*.csv"}])
     assert [e["relative_path"] for e in selected] == ["reports/a.csv"]
 
 
@@ -51,9 +51,9 @@ def test_validate_size_limit_passes_when_under_limit():
 def test_copy_selected_flattens_to_dest_dir(tmp_path):
     folder = _make_scenario_folder(tmp_path)
     entries = out.inventory(folder)
-    selected = out.select(entries, ["reports/*.csv"])
+    selected = out.select(entries, [{"file": "reports/*.csv"}])
     dest = tmp_path / "curated"
-    curated = out.copy_selected(folder, selected, dest)
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
     assert (dest / "a.csv").is_file()
     assert not (dest / "reports").exists()
     assert curated[0]["repo_path"] == (dest / "a.csv").as_posix()
@@ -67,7 +67,237 @@ def test_copy_selected_raises_on_filename_collision(tmp_path):
     (folder / "reports" / "a.csv").write_text("x,y\n1,2\n")
     (folder / "skims" / "a.csv").write_text("x,y\n3,4\n")
     entries = out.inventory(folder)
-    selected = out.select(entries, ["*/a.csv"])
+    selected = out.select(entries, [{"file": "*/a.csv"}])
     assert len(selected) == 2
     with pytest.raises(OutputCollectionError):
-        out.copy_selected(folder, selected, tmp_path / "curated")
+        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
+
+
+# ---------------------------------------------------------------------------
+# column-filtered outputs.include entries ({"file": ..., "columns": [...]})
+# ---------------------------------------------------------------------------
+
+
+def _make_wide_csv(folder, rel_path, rows=3):
+    path = folder / rel_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["TAZID,Metric,Purpose,Total,DriveAlone,SharedRide"]
+    for i in range(rows):
+        lines.append(f"{i},PMT,HBW,{i * 10},{i},{i}")
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def test_select_attaches_columns_from_file_mapping():
+    entries = [{"relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv", "size_bytes": 1}]
+    include = [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
+    selected = out.select(entries, include)
+    assert selected[0]["columns"] == ["TAZID", "Total"]
+
+
+def test_select_without_columns_key_has_no_columns():
+    entries = [{"relative_path": "reports/a.csv", "size_bytes": 1}]
+    selected = out.select(entries, [{"file": "reports/*.csv"}])
+    assert selected[0]["columns"] is None
+
+
+def test_copy_selected_writes_column_filtered_csv(tmp_path):
+    folder = tmp_path / "scenario"
+    _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv")
+    entries = out.inventory(folder)
+    selected = out.select(
+        entries, [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
+    )
+    dest = tmp_path / "curated"
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
+
+    out_path = dest / "TAZ-Based Metrics_filtered.csv"
+    assert out_path.is_file()
+    assert out_path.read_text().splitlines()[0] == "TAZID,Total"
+    assert curated[0]["repo_path"] == out_path.as_posix()
+    assert curated[0]["size_bytes"] == out_path.stat().st_size
+
+
+def test_validate_size_limit_skips_filtered_entries():
+    # Raw size is huge, but this entry is destined to be filtered -- its raw
+    # size says nothing about what actually gets committed, so the pre-copy
+    # check must not reject it here (copy_selected checks the real bytes).
+    entries = [
+        {
+            "relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv",
+            "size_bytes": 200 * 1024 * 1024,
+            "columns": ["TAZID", "Total"],
+        }
+    ]
+    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
+
+
+def test_copy_selected_raises_and_cleans_up_when_filtered_output_still_too_big(tmp_path):
+    folder = tmp_path / "scenario"
+    _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv", rows=1000)
+    entries = out.inventory(folder)
+    selected = out.select(
+        entries, [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
+    )
+    dest = tmp_path / "curated"
+    with pytest.raises(OutputCollectionError):
+        out.copy_selected(folder, selected, dest, max_file_size_mb=0.0001)
+    assert not (dest / "TAZ-Based Metrics_filtered.csv").exists()
+
+
+def test_copy_selected_raises_when_declared_column_missing(tmp_path):
+    folder = tmp_path / "scenario"
+    _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv")
+    entries = out.inventory(folder)
+    selected = out.select(
+        entries, [{"file": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "NoSuchColumn"]}]
+    )
+    dest = tmp_path / "curated"
+    with pytest.raises(OutputCollectionError, match="NoSuchColumn"):
+        out.copy_selected(folder, selected, dest, max_file_size_mb=1)
+
+
+# ---------------------------------------------------------------------------
+# curate() -- shared status/error/curated resolution for run_scenario() and
+# import_manual_run()
+# ---------------------------------------------------------------------------
+
+
+def test_curate_stays_success_when_something_matches(tmp_path):
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": [{"file": "reports/*.csv"}], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "success"
+    assert error is None
+    assert len(curated) == 1
+
+
+def test_curate_stays_success_when_no_outputs_declared(tmp_path):
+    # A run set legitimately declaring no outputs.include shouldn't be
+    # penalized for curating nothing -- only a declared-but-unmatched
+    # pattern is a red flag.
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": [], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "success"
+    assert error is None
+    assert curated == []
+
+
+def test_curate_fails_when_declared_patterns_match_nothing(tmp_path):
+    # Regression test: Closer00's exit code was 0 but outputs.include's
+    # patterns matched nothing (the model hadn't reached that step yet) --
+    # this used to be silently recorded as "success" with curated: [].
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": [{"file": "nonexistent/*.csv"}], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "failed"
+    assert "nonexistent/*.csv" in error
+    assert curated == []
+
+
+def test_curate_preserves_and_appends_to_existing_error_on_no_match(tmp_path):
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": [{"file": "nonexistent/*.csv"}], "max_file_size_mb": 1}
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(
+        folder, inventory, output_spec, run_dir, "failed", "model exited with code 2."
+    )
+
+    assert status == "failed"
+    assert error.startswith("model exited with code 2.")
+    assert "nonexistent/*.csv" in error
+    assert curated == []
+
+
+def test_curate_fails_when_curation_itself_raises(tmp_path):
+    folder = _make_scenario_folder(tmp_path)
+    inventory = out.inventory(folder)
+    output_spec = {"include": [{"file": "skims/*.mtx"}], "max_file_size_mb": 1}  # big.mtx is 2 MB
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+
+    assert status == "failed"
+    assert "exceed the 1 MB limit" in error
+    assert curated == []
+
+
+# ---------------------------------------------------------------------------
+# matrix-type outputs.include entries ({"matrix": ..., "tabs": [...]})
+# ---------------------------------------------------------------------------
+
+
+def test_select_attaches_tabs_from_matrix_mapping():
+    entries = [{"relative_path": "skims/Skm_DY.mtx", "size_bytes": 1}]
+    include = [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}]
+    selected = out.select(entries, include)
+    assert selected[0]["entry_type"] == "matrix"
+    assert selected[0]["tabs"] == ["GP_Dist"]
+
+
+def test_dest_filename_for_matrix_entry_is_omx():
+    entry = {"relative_path": "skims/Skm_DY.mtx", "entry_type": "matrix", "tabs": ["GP_Dist"]}
+    assert out._dest_filename(entry) == "Skm_DY.omx"
+
+
+def test_validate_size_limit_skips_matrix_entries():
+    # Raw .mtx size is routinely hundreds of MB by design -- the pre-copy
+    # check must not reject it; only the extracted OMX's actual size matters.
+    entries = [
+        {
+            "relative_path": "skims/Skm_DY.mtx",
+            "size_bytes": 400 * 1024 * 1024,
+            "entry_type": "matrix",
+            "tabs": ["GP_Dist"],
+        }
+    ]
+    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
+
+
+def test_copy_selected_matrix_entry_requires_voyager_exe(tmp_path):
+    folder = tmp_path / "scenario"
+    (folder / "skims").mkdir(parents=True)
+    (folder / "skims" / "Skm_DY.mtx").write_bytes(b"fake")
+    entries = out.inventory(folder)
+    selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}])
+    with pytest.raises(OutputCollectionError, match="Voyager"):
+        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
+
+
+def test_copy_selected_matrix_entry_extracts_and_checksums(tmp_path, monkeypatch):
+    def fake_extract(source_mtx, tabs, dest_omx, voyager_exe):
+        dest_omx.parent.mkdir(parents=True, exist_ok=True)
+        dest_omx.write_bytes(b"tiny omx payload")
+
+    monkeypatch.setattr(matrix_utils, "extract_matrix_tabs", fake_extract)
+
+    folder = tmp_path / "scenario"
+    (folder / "skims").mkdir(parents=True)
+    (folder / "skims" / "Skm_DY.mtx").write_bytes(b"0" * (2 * 1024 * 1024))
+    entries = out.inventory(folder)
+    selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}])
+    dest = tmp_path / "curated"
+
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, voyager_exe="fake.exe")
+
+    out_path = dest / "Skm_DY.omx"
+    assert out_path.is_file()
+    assert curated[0]["repo_path"] == out_path.as_posix()
+    assert len(curated[0]["sha256"]) == 64
+    # the small extracted OMX is checked, not the huge source .mtx
+    assert curated[0]["size_bytes"] == out_path.stat().st_size

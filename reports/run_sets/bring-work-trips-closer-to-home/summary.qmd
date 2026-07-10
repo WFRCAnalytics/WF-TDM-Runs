@@ -1,0 +1,525 @@
+---
+title: "Bringing Work Trips Closer to Home"
+subtitle: "Wasatch Front Regional Travel Demand Model — Sketch-Level HBW Trip Redistribution Test"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-title: "Contents"
+    embed-resources: true
+    theme: flatly
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
+---
+
+```{python}
+#| label: setup
+
+import pandas as pd
+import plotly.express as px
+import os
+import sys
+
+# All data loading/aggregation lives in
+# run_sets/bring-work-trips-closer-to-home/report_loader.py, shared with
+# slides.qmd. It reads from a frozen snapshot once this run set is retired
+# (tdmruns snapshot-run-set / purge-run-set-outputs), falling back to
+# whatever tdmruns import-manual-run most recently curated under runs/
+# otherwise. See CLAUDE.md and this run set's REPORT_PLAN.md.
+sys.path.insert(0, os.path.join('..', '..', '..', 'run_sets', 'bring-work-trips-closer-to-home'))
+import report_loader as loader
+
+frames = loader.load()
+scenario_ids = frames['scenario_ids']
+scenario_meta = frames['scenario_meta']
+corridor_volumes = frames['corridor_volumes']
+vmt_vhd = frames['vmt_vhd_by_county_facility']
+vht_hh = frames['vht_per_household']
+transit = frames['transit_ridership']
+trip_length = frames['hbw_trip_length']
+trip_length_dist = frames['hbw_trip_length_distribution']
+trip_length_avg = frames['hbw_trip_length_weighted_average']
+mode_share = frames['mode_share']
+
+GEO_ORDER = loader.GEO_ORDER  # City Area, Medium District, Workshop Area (City Area leads)
+GEO_COLORS = {'City Area': '#2a78d6', 'Medium District': '#1baf7a', 'Workshop Area': '#eda100'}
+COUNTY_ORDER = ['Salt Lake', 'Davis', 'Utah', 'Weber', 'Box Elder', 'Region']
+
+# Scenarios actually run so far, beyond the no-shift baseline -- drives the
+# "data completeness" note throughout this document.
+shifted_ids = [s for s in scenario_ids if s != loader.BASELINE_SCENARIO]
+n_expected = len(loader.SCENARIO_META) - 1  # 9 shift scenarios by design
+```
+
+**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Slides view](slides.html)
+
+```{python}
+#| echo: false
+#| output: asis
+from IPython.display import Markdown, display
+byline = loader.rd.run_set_byline(loader.RUN_SET_ID)
+if byline:
+    display(Markdown(f"*{byline}*"))
+```
+
+```{python}
+#| echo: false
+#| output: asis
+display(Markdown(
+    "::: {.callout-note}\n"
+    "## Data completeness as of this rendering\n"
+    f"**{len(shifted_ids)}** of **{n_expected}** planned shift scenarios have a verified run: "
+    f"{', '.join(shifted_ids)} — covering City Area, Medium District, and Workshop Area, "
+    "each at the 10% shift level. The 5% and 25% levels are not yet run; this page will "
+    "extend automatically as they complete. See this run set's `REPORT_PLAN.md`.\n"
+    ":::"
+))
+```
+
+## The Question
+
+What would it look like, in rough terms, if more people who live in an area of our region also worked in that area — instead of commuting elsewhere? This sketch-level test asks: if 10% of home-based-work (HBW) trips that currently start inside a target area but end outside it instead ended inside the target area — following today's existing internal destination pattern — what would change at the corridor and regional level?
+
+Three geography types are tested, each applied region-wide (every area of that type shifted simultaneously): **City Area** (roughly a city boundary, ~55 areas), **Medium District** (~35 areas), and **Workshop Area** (~8 multi-city groupings). Per the approved scoping memo, **City Area is the lead geography for this write-up**; Medium District and Workshop Area are shown throughout as a robustness check across scales. The model basis is the **2027 RTP adoption year** network and land use, model version **v10.0.0-beta.1**.
+
+This is not a land-use forecast. It is a directional, order-of-magnitude check on whether "closer jobs-housing balance" is worth studying further — see [Caveats](#caveats-and-interpretation).
+
+---
+
+## Plain-Language Takeaways
+
+```{python}
+#| echo: false
+#| output: asis
+
+def _row(geo):
+    v = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['geography_label'] == geo)]
+    vhd = v['delta_DY_VHD'].sum()
+    vmt = v['delta_DY_VMT'].sum()
+    hh = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['geography_label'] == geo)]['delta_VHT_PER_HH'].iloc[0]
+    return vhd, vmt, hh
+
+city_vhd, city_vmt, city_hh = _row('City Area')
+display(Markdown(
+    f"- At a **10% shift**, **City Area** redistribution reduces region-wide daily vehicle-hours of "
+    f"delay (VHD) by roughly **{abs(city_vhd):,.0f} hours/day** and daily VMT by roughly "
+    f"**{abs(city_vmt):,.0f} miles/day** — a small fraction of regional totals, but directionally "
+    "consistent with what the mechanism should produce.\n"
+    f"- Peak-period vehicle-hours of travel per household falls by about **{abs(city_hh)*60:.1f} minutes/day** "
+    "region-wide under the City Area scenario — the closest read on \"time given back to households.\"\n"
+    "- Medium District and Workshop Area shifts produce **similar-direction, somewhat smaller** reductions "
+    "at this shift level — see the [cross-scale comparison](#cross-scale-comparison).\n"
+    "- **Transit ridership on TRAX and FrontRunner declines slightly** under all three geography types — "
+    "shortening commutes reduces the number of trips long enough for transit to compete on, an "
+    "important, non-obvious side effect (see [Transit Ridership](#transit-ridership)).\n"
+    "- These are **sketch-level, order-of-magnitude results** from a single shift level per geography "
+    "type so far — see [Caveats](#caveats-and-interpretation) before drawing conclusions."
+))
+```
+
+---
+
+## How the Test Works {#how-the-test-works}
+
+Home-based-work trips starting inside a target area but ending outside it are identified in the model's trip table. A share of those trips (5%, 10%, or 25% — only 10% has been run so far) is proportionally redistributed to end inside the target area instead, following the *existing* internal destination pattern (a location that already attracts 15% of work trips into the area gets 15% of the newly shifted trips too). This redistribution is applied to the HBW destination-choice matrix **before mode choice**; everything downstream (mode choice, assignment) runs normally on the adjusted trip pattern. Everything else about the region — total trips, population, other destinations — is unchanged.
+
+```{python}
+#| label: tbl-scenarios
+
+scenario_table = scenario_meta.merge(
+    pd.DataFrame({'scenario_id': scenario_ids}), on='scenario_id'
+).sort_values(['shift_pct', 'geography_label'])
+scenario_table = scenario_table.rename(columns={
+    'scenario_id': 'Scenario', 'geography_label': 'Geography Type', 'shift_pct': 'Shift Level (%)'
+})
+
+display(scenario_table.style
+    .set_caption('Scenarios with a verified run as of this rendering')
+    .set_table_styles([
+        {'selector': 'caption', 'props': [('font-size', '0.9em'), ('font-style', 'italic')]},
+        {'selector': 'th', 'props': [('background-color', '#2a78d6'), ('color', 'white'), ('font-weight', 'bold')]},
+        {'selector': 'tr:nth-child(even)', 'props': [('background-color', '#eef4fc')]},
+    ])
+    .hide(axis='index')
+)
+```
+
+---
+
+## Congestion: Vehicle-Hours of Delay {#congestion-vehicle-hours-of-delay}
+
+This is the headline metric — congestion is what people actually feel, more than raw traffic volume. Vehicle-hours of delay (VHD) is summed across all facility types and shown by county and region, for the 10% shift level across all three geography types.
+
+```{python}
+#| label: fig-vhd-county
+
+vhd_df = vmt_vhd.copy()
+vhd_df['CO_NAME'] = pd.Categorical(vhd_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
+vhd_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
+    ['CO_NAME', 'geography_label'], as_index=False, observed=True
+)['delta_DY_VHD'].sum()
+
+fig = px.bar(
+    vhd_by_county, x='CO_NAME', y='delta_DY_VHD', color='geography_label',
+    barmode='group',
+    category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER},
+    color_discrete_map=GEO_COLORS,
+    labels={'CO_NAME': 'County', 'delta_DY_VHD': 'Change in Daily VHD (hours/day)', 'geography_label': 'Geography Type'},
+)
+fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+fig.update_layout(
+    title=dict(text='Change in Daily Vehicle-Hours of Delay vs. Baseline<br><sup>10% shift level, all facility types</sup>', font_size=15),
+    height=460, margin=dict(t=80),
+    legend_title_text='Geography Type',
+)
+fig.show()
+```
+
+Salt Lake and Utah counties see the largest absolute VHD reductions under every geography type, consistent with where the region's congestion (and therefore its redistribution opportunity) is concentrated. **City Area** produces the largest region-wide VHD reduction of the three geography types at this shift level, though the gap to Medium District is small.
+
+### By Facility Type
+
+```{python}
+#| label: fig-vhd-facility
+
+vhd_ft = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)]
+ft_order = vhd_ft.groupby('FTCLASS')['delta_DY_VHD'].sum().sort_values().index.tolist()
+
+fig = px.bar(
+    vhd_ft, x='FTCLASS', y='delta_DY_VHD', color='geography_label',
+    barmode='group',
+    category_orders={'FTCLASS': ft_order, 'geography_label': GEO_ORDER},
+    color_discrete_map=GEO_COLORS,
+    labels={'FTCLASS': 'Facility Type', 'delta_DY_VHD': 'Change in Daily VHD (hours/day), Region', 'geography_label': 'Geography Type'},
+)
+fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+fig.update_layout(
+    title=dict(text='Region-Wide Change in Daily VHD by Facility Type<br><sup>10% shift level</sup>', font_size=15),
+    height=460, margin=dict(t=80), xaxis_tickangle=-15,
+    legend_title_text='Geography Type',
+)
+fig.show()
+```
+
+Freeways carry most of the region's delay reduction in absolute terms — expected, since that's where most of the region's VHD sits today. Arterial and collector reductions are smaller but consistent in direction.
+
+---
+
+## Why VHD Moved: Vehicle Miles Traveled {#why-vhd-moved-vehicle-miles-traveled}
+
+VMT is explanatory here, not the headline: shorter commutes mean less driving, and less driving on congested facilities is why delay falls.
+
+```{python}
+#| label: fig-vmt-county
+
+vmt_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
+    ['CO_NAME', 'geography_label'], as_index=False, observed=True
+)['delta_DY_VMT'].sum()
+
+fig = px.bar(
+    vmt_by_county, x='CO_NAME', y='delta_DY_VMT', color='geography_label',
+    barmode='group',
+    category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER},
+    color_discrete_map=GEO_COLORS,
+    labels={'CO_NAME': 'County', 'delta_DY_VMT': 'Change in Daily VMT (miles/day)', 'geography_label': 'Geography Type'},
+)
+fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+fig.update_layout(
+    title=dict(text='Change in Daily Vehicle Miles Traveled vs. Baseline<br><sup>10% shift level, all facility types</sup>', font_size=15),
+    height=460, margin=dict(t=80),
+    legend_title_text='Geography Type',
+)
+fig.show()
+```
+
+Region-wide, the 10% shift reduces daily VMT by roughly 1.3–1.7 million miles/day depending on geography type — City Area and Medium District produce similar-sized reductions; Workshop Area's is somewhat smaller, consistent with it being the coarsest geography (fewer, larger areas mean some "shifted" trips were already relatively close by).
+
+---
+
+## Corridor Detail {#corridor-detail}
+
+Volume and delay change on the region's major corridors, City Area first (the lead geography), 10% shift level. Corridors are ranked by City Area's VHD impact.
+
+```{python}
+#| label: tbl-corridor-city
+
+city_corr = corridor_volumes[corridor_volumes['geography_label'] == 'City Area'].sort_values('delta_DY_VHD')
+corr_order = city_corr['corridor_label'].tolist()
+
+tbl = city_corr[['corridor_label', 'DY_Vol', 'delta_DY_Vol', 'DY_VHD', 'delta_DY_VHD']].rename(columns={
+    'corridor_label': 'Corridor', 'DY_Vol': 'Daily Volume', 'delta_DY_Vol': 'Δ Volume',
+    'DY_VHD': 'Daily VHD (hrs)', 'delta_DY_VHD': 'Δ VHD (hrs)',
+})
+display(tbl.style
+    .format({'Daily Volume': '{:,.0f}', 'Δ Volume': '{:+,.0f}', 'Daily VHD (hrs)': '{:,.0f}', 'Δ VHD (hrs)': '{:+,.0f}'})
+    .set_caption('City Area (10% shift) — corridor volume and delay change vs. baseline')
+    .set_table_styles([
+        {'selector': 'caption', 'props': [('font-size', '0.9em'), ('font-style', 'italic')]},
+        {'selector': 'th', 'props': [('background-color', '#2a78d6'), ('color', 'white'), ('font-weight', 'bold')]},
+    ])
+    .hide(axis='index')
+)
+```
+
+I-15 accounts for the largest single share of City Area's regional VHD reduction, followed by Redwood Road, Mountain View Corridor, I-215, and Bangerter Highway — the region's highest-volume, most delay-prone facilities.
+
+### Same Corridors, Medium District and Workshop Area
+
+```{python}
+#| label: fig-corridor-compare
+
+others = corridor_volumes[corridor_volumes['geography_label'] != 'City Area'].copy()
+others['corridor_label'] = pd.Categorical(others['corridor_label'], categories=corr_order, ordered=True)
+
+fig = px.bar(
+    others, x='corridor_label', y='delta_DY_VHD', color='geography_label',
+    barmode='group',
+    category_orders={'corridor_label': corr_order, 'geography_label': ['Medium District', 'Workshop Area']},
+    color_discrete_map=GEO_COLORS,
+    labels={'corridor_label': 'Corridor', 'delta_DY_VHD': 'Δ Daily VHD (hrs)', 'geography_label': 'Geography Type'},
+)
+fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+fig.update_layout(
+    title=dict(text='Corridor VHD Change — Medium District &amp; Workshop Area<br><sup>10% shift level, same corridor order as City Area above</sup>', font_size=14),
+    height=420, margin=dict(t=80), xaxis_tickangle=-45,
+)
+fig.show()
+```
+
+The same corridors move in the same direction under all three geography types, at broadly similar (though not identical) magnitudes — a useful robustness check on the City Area result above.
+
+---
+
+## Transit Ridership {#transit-ridership}
+
+```{python}
+#| label: fig-transit
+
+fig = px.bar(
+    transit[transit['scenario_id'] != loader.BASELINE_SCENARIO],
+    x='line_label', y='delta_Boardings', color='geography_label',
+    barmode='group',
+    category_orders={'line_label': ['FrontRunner', 'TRAX Blue Line', 'TRAX Green Line', 'TRAX Red Line'], 'geography_label': GEO_ORDER},
+    color_discrete_map=GEO_COLORS,
+    labels={'line_label': 'Line', 'delta_Boardings': 'Change in Daily Boardings', 'geography_label': 'Geography Type'},
+)
+fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+fig.update_layout(
+    title=dict(text='Change in Daily Boardings — FrontRunner &amp; TRAX<br><sup>10% shift level</sup>', font_size=15),
+    height=440, margin=dict(t=80),
+    legend_title_text='Geography Type',
+)
+fig.show()
+```
+
+Boardings decline slightly on every line under every geography type. This is a real, non-obvious mechanical effect: bringing work trips closer to home shortens the commutes most likely to have used transit in the first place, so some riders shift to shorter drives, walks, or bikes instead. FrontRunner sees the largest absolute decline, consistent with it serving the longest-distance commutes.
+
+---
+
+## Free Time Added Back: Peak-Period VHT per Household {#free-time-added-back}
+
+This metric deliberately uses **vehicle-hours of travel (VHT)**, not VHD. VHD (used in the [congestion section](#congestion-vehicle-hours-of-delay) above) only captures the delay component of travel time; VHT is the full realized travel time — free-flow time plus delay — so it also picks up the time households save simply because their trips are now *shorter*, not only because those trips hit less congestion. That's the more complete read on "time given back to households."
+
+```{python}
+#| label: fig-vht-hh
+
+vht_df = vht_hh.copy()
+vht_df['CO_NAME'] = pd.Categorical(vht_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
+vht_plot = vht_df[vht_df['scenario_id'] != loader.BASELINE_SCENARIO]
+
+fig = px.bar(
+    vht_plot, x='CO_NAME', y='delta_VHT_PER_HH', color='geography_label',
+    barmode='group',
+    category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER},
+    color_discrete_map=GEO_COLORS,
+    labels={'CO_NAME': 'County', 'delta_VHT_PER_HH': 'Change in Peak VHT / Household (hrs/day)', 'geography_label': 'Geography Type'},
+)
+fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+fig.update_layout(
+    title=dict(text='Change in Peak-Period Vehicle-Hours of Travel per Household<br><sup>10% shift level, AM + PM periods</sup>', font_size=15),
+    height=460, margin=dict(t=80),
+    legend_title_text='Geography Type',
+)
+fig.show()
+```
+
+Region-wide, peak VHT per household falls by roughly 2.6–3.2 minutes/day depending on geography type — a small but directionally meaningful amount of time given back to the average household, on top of whatever congestion relief accrues to specific corridors above.
+
+---
+
+## HBW Trip Length {#hbw-trip-length}
+
+```{python}
+#| label: fig-trip-length
+
+tl_df = trip_length.copy()
+tl_df['CO_NAME'] = pd.Categorical(tl_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
+tl_plot = tl_df[tl_df['scenario_id'] != loader.BASELINE_SCENARIO]
+
+fig = px.bar(
+    tl_plot, x='CO_NAME', y='delta_trip_length', color='geography_label',
+    barmode='group',
+    category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER},
+    color_discrete_map=GEO_COLORS,
+    labels={'CO_NAME': 'County', 'delta_trip_length': 'Change in Average HBW Trip Length (miles)', 'geography_label': 'Geography Type'},
+)
+fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+fig.update_layout(
+    title=dict(text='Change in Average Home-Based-Work Trip Length<br><sup>10% shift level, person-miles / trips</sup>', font_size=15),
+    height=460, margin=dict(t=80),
+    legend_title_text='Geography Type',
+)
+fig.show()
+```
+
+Average HBW trip length falls by roughly 0.7–1.0 miles region-wide at the 10% shift level — the most direct measure of the mechanism actually working as intended: trips that used to travel farther for work now travel a shorter distance, on average, across the whole region.
+
+### Trip Length Distribution {#trip-length-distribution}
+
+The average above is one number; the full distribution shows *how* the shift happens — fewer long-distance commutes, more short ones — built directly from the origin-destination trip matrix and distance skim (region-wide, all HBW trips regardless of mode), not the production-side estimate used for the average.
+
+```{python}
+#| label: fig-trip-length-dist
+
+td = trip_length_dist.copy()
+td['scenario_label'] = td['geography_label'].where(td['geography_label'] != 'Baseline', 'Baseline')
+
+fig = px.line(
+    td, x='bin_label', y='share_pct', color='scenario_label',
+    markers=True,
+    category_orders={'bin_label': loader.DISTANCE_BIN_LABELS, 'scenario_label': ['Baseline'] + GEO_ORDER},
+    color_discrete_map={**GEO_COLORS, 'Baseline': '#898781'},
+    labels={'bin_label': 'HBW Trip Length', 'share_pct': 'Share of Trips (%)', 'scenario_label': 'Scenario'},
+)
+fig.update_layout(
+    title=dict(text='HBW Trip Length Distribution, Baseline vs. 10% Shift<br><sup>Region-wide, weighted by O-D trip volume</sup>', font_size=15),
+    height=460, margin=dict(t=80),
+    legend_title_text='Scenario',
+)
+fig.show()
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+rows = []
+for geo in GEO_ORDER:
+    v = trip_length_avg[trip_length_avg['geography_label'] == geo]['delta_weighted_avg_trip_length']
+    if len(v):
+        rows.append(f"- **{geo}**: weighted-average trip length changes by **{v.iloc[0]:+.2f} miles**.")
+display(Markdown(
+    "Cross-check against the production-side average above (independent methodology — full O-D "
+    "skim × trip volume, not PMT/trips):\n\n" + "\n".join(rows)
+))
+```
+
+---
+
+## Mode Share {#mode-share}
+
+::: {.callout-note}
+Supplemental context, not a memo-mandated headline metric.
+:::
+
+```{python}
+#| label: fig-mode-share
+
+MODE_GROUPS = {
+    'Auto': ['Auto', 'RegAuto', 'IMZD2D'],
+    'Transit': ['LCL', 'COR', 'BRT', 'EXP', 'LRT', 'CRT'],
+    'Walk': ['Walk'], 'Bike': ['Bike'],
+}
+mode_to_group = {m: g for g, ms in MODE_GROUPS.items() for m in ms}
+
+hbw = mode_share[mode_share['TRIPPURP'] == 'HBW'].copy()
+hbw['group'] = hbw['MODE'].map(mode_to_group).fillna('Other')
+hbw_grp = hbw.groupby(['scenario_id', 'geography_label', 'group'], as_index=False)['share_pct'].sum()
+
+fig = px.bar(
+    hbw_grp, x='group', y='share_pct', color='geography_label',
+    barmode='group',
+    category_orders={'group': ['Auto', 'Transit', 'Walk', 'Bike', 'Other'], 'geography_label': ['Baseline'] + GEO_ORDER},
+    color_discrete_map={**GEO_COLORS, 'Baseline': '#898781'},
+    labels={'group': 'Mode', 'share_pct': 'Share of HBW Trips (%)', 'geography_label': 'Scenario'},
+)
+fig.update_layout(
+    title=dict(text='Home-Based-Work Mode Share, Baseline vs. 10% Shift<br><sup>Regionwide, peak + off-peak</sup>', font_size=15),
+    height=460, margin=dict(t=80),
+    legend_title_text='Scenario',
+)
+fig.show()
+```
+
+HBW mode share barely moves at this shift level — consistent with the mechanism only touching trip *destinations*, not the mode choice model's own logic. The small transit decline visible here matches the ridership drop discussed above.
+
+---
+
+## Cross-Scale Comparison {#cross-scale-comparison}
+
+All three geography types, side by side, at the 10% shift level (the only level run so far). Region-wide figures.
+
+```{python}
+#| label: tbl-cross-scale
+
+rows = []
+for geo in GEO_ORDER:
+    vhd = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['geography_label'] == geo)]['delta_DY_VHD'].sum()
+    vmt = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['geography_label'] == geo)]['delta_DY_VMT'].sum()
+    hh = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['geography_label'] == geo)]['delta_VHT_PER_HH'].iloc[0]
+    tl = trip_length[(trip_length['CO_NAME'] == 'Region') & (trip_length['geography_label'] == geo)]['delta_trip_length'].iloc[0]
+    board = transit[transit['geography_label'] == geo]['delta_Boardings'].sum()
+    rows.append({
+        'Geography Type': geo, 'Δ Daily VHD (hrs)': vhd, 'Δ Daily VMT (mi)': vmt,
+        'Δ Peak VHT/HH (hrs)': hh, 'Δ HBW Trip Length (mi)': tl, 'Δ Transit Boardings': board,
+    })
+cross = pd.DataFrame(rows)
+
+display(cross.style
+    .format({
+        'Δ Daily VHD (hrs)': '{:+,.0f}', 'Δ Daily VMT (mi)': '{:+,.0f}',
+        'Δ Peak VHT/HH (hrs)': '{:+.4f}', 'Δ HBW Trip Length (mi)': '{:+.3f}',
+        'Δ Transit Boardings': '{:+,.0f}',
+    })
+    .set_caption('Region-wide change vs. baseline, 10% shift level')
+    .set_table_styles([
+        {'selector': 'caption', 'props': [('font-size', '0.9em'), ('font-style', 'italic')]},
+        {'selector': 'th', 'props': [('background-color', '#2a78d6'), ('color', 'white'), ('font-weight', 'bold')]},
+    ])
+    .hide(axis='index')
+)
+```
+
+At the 10% shift level, City Area and Medium District produce broadly similar regional effects; Workshop Area's are consistently the smallest of the three — plausible given it's the coarsest geography (only 8 areas region-wide, so "outside the area" captures fewer actually-nearby destinations than City Area or Medium District would).
+
+---
+
+## Caveats and Interpretation {#caveats-and-interpretation}
+
+This is a **sketch-level, order-of-magnitude test**, not a land-use or economic forecast. Specifically:
+
+- **Not a real land-use or economic forecast.** No businesses actually relocate, no zoning changes, no job growth is simulated — the trip table is manually forced to behave as if that happened.
+- **Feasibility is not checked.** The model does not confirm the target area could physically hold the added jobs (land, buildings, parking).
+- **It's a sketch, not a precise estimate.** Trips are manually reallocated using today's existing destination pattern rather than letting the model's own distribution logic decide — results are order-of-magnitude, not precise numbers.
+- **Only home-based-work trips are touched.** Other trip purposes (shopping, school, etc.) are unchanged.
+- **No second-order effects.** Housing costs, people moving closer to new jobs, or businesses responding to changed traffic patterns are not captured.
+- **Three shift levels test sensitivity to size, not to method.** 5%, 10%, and 25% (once all are run) all use the same proportional redistribution logic — this is not a test of alternative ways to choose which trips move or where they land.
+
+---
+
+## Appendix {#appendix}
+
+**Mechanism.** Implemented in `run_sets/bring-work-trips-closer-to-home/scripts/redistribute_hbw_trips.py`, wired into the `__HailMary_1Subfolder_closer.s` driver script: the HBW destination-choice matrix is converted to OMX, redistributed using a TAZ-level geography lookup (`CITY_UGRC` / `DISTMED` / `CITYGRP` fields on `WFv1000_TAZ.dbf`), then converted back — applied before mode choice.
+
+**Model version and vintage.** `v10.0.0-beta.1-closer-to-home`, 2027 RTP adoption-year network and land use, baseline Control Center `_ControlCenter - OY_2027.block`.
+
+**Scenario design.** See [scenario table](#how-the-test-works) above; full config in `run_sets/bring-work-trips-closer-to-home/run_set.yaml` and `scenarios/`.
+
+**A note on run status.** Closer01–03's `run_metadata.json` originally recorded these runs as `failed` (Cube Voyager's cluster-shutdown step returned a nonzero exit code after the model had already completed and written all outputs) — verified by inspecting each run's Voyager print log, which shows every step completing and `TOTAL MODEL RUN TIME` logged before the exit-code issue. Outputs were re-curated via `tdmruns import-manual-run`, which recorded a clean `success` status against the same underlying model run.
+
+**Data completeness.** See the note at the top of this page for the current count of verified shift scenarios. Corridor definitions: `run_sets/bring-work-trips-closer-to-home/inputs/corridor_segid_crosswalk.csv`, built from the network's link file (`tdm/1_Inputs/3_Highway/GIS/WFv1000_MasterNet_*.dbf`) with manual keyword matching and priority tie-breaking at interchange segments — see `REPORT_PLAN.md` for the full method.
+
+**Trip length distribution data.** The distribution above (and its weighted-average cross-check) is built from two curated matrix extracts, not from a summary CSV: the `GP_Dist` table of the final daily highway skim (`5_AssignHwy/5_FinalNetSkims/Skm_DY.mtx`) and the `motor`/`nonmotor` tables of the post-mode-choice HBW trip matrix (`4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_pkok.mtx`) — both several hundred MB in full, curated down to small single/two-table OMX files via a new `outputs.include` `matrix:`/`tabs:` entry type (see `run_set.yaml`), which invokes Cube Voyager's CONVERTMAT at curation time. The trip matrix's raw values are stored at 100x scale (confirmed empirically against `_ZoneSummary_TripsByMode.csv`'s trusted total, within 0.001%) and divided back down in `report_loader.py`. Distance-skim cells at Cube's `NOACCESS` sentinel (9999, unconnected zone pairs) are excluded before binning.

@@ -106,7 +106,10 @@ def resolve_version(repo_root: Path, tdm_path: Path, ref: str) -> TdmVersionStat
         )
 
     try:
-        _git(["fetch", "--all", "--tags", "--quiet"], cwd=tdm_path)
+        # --force so a tag that was moved (force-pushed) on the remote --
+        # e.g. a fixup tag under active iteration -- is actually updated
+        # locally instead of silently left pointing at the old commit.
+        _git(["fetch", "--all", "--tags", "--force", "--quiet"], cwd=tdm_path)
     except VersionResolutionError:
         # Best effort: a local-path or offline remote may not support fetch
         # the same way a real remote does. Proceed with what's already local;

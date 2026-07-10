@@ -44,6 +44,28 @@ def test_output_spec_cannot_exceed_framework_ceiling(framework_repo):
     framework = cfg.load_framework_config(framework_repo)
     run_set = cfg.load_run_set(framework_repo, "test-run-set")
     scenario = cfg.load_scenario(framework_repo, "test-run-set", "S01")
-    scenario["outputs"] = {"include": ["*"], "max_file_size_mb": 999999}
+    scenario["outputs"] = {"include": [{"file": "*"}], "max_file_size_mb": 999999}
     with pytest.raises(ConfigValidationError):
         cfg.resolved_output_spec(framework, run_set, scenario)
+
+
+def test_resolved_manual_scenario_folder_defaults_to_convention(tmp_path):
+    # A scenario with no manual_scenario_folder declared (e.g. Closer00) falls
+    # back to the same Scenarios/<run_set_id>/<scenario_id> convention used
+    # for CLI-driven runs, instead of requiring every scenario to spell it out.
+    framework = {"scenario_folder_template": "Scenarios/{run_set_id}/{scenario_id}"}
+    result = cfg.resolved_manual_scenario_folder(
+        tmp_path, framework, "bring-work-trips-closer-to-home", "Closer00", {}
+    )
+    assert result == tmp_path / "Scenarios" / "bring-work-trips-closer-to-home" / "Closer00"
+
+
+def test_resolved_manual_scenario_folder_prefers_declared_value(tmp_path):
+    # non-motorized-2023's raw folders don't follow scenario_id naming
+    # (BY_2019_SensitivityTest_NN), so an explicit declaration must still win.
+    framework = {"scenario_folder_template": "Scenarios/{run_set_id}/{scenario_id}"}
+    scenario = {"manual_scenario_folder": "Scenarios/non-motorized-2023/BY_2019_SensitivityTest_01"}
+    result = cfg.resolved_manual_scenario_folder(
+        tmp_path, framework, "non-motorized-2023", "S01", scenario
+    )
+    assert result == tmp_path / "Scenarios" / "non-motorized-2023" / "BY_2019_SensitivityTest_01"

@@ -36,6 +36,10 @@
       "description": "Control Center key/value overrides shared by every scenario in this run set, applied before any scenario-specific overrides.",
       "additionalProperties": true
     },
+    "driver_script": {
+      "type": "string",
+      "description": "Path to a custom driver script (a _HailMary_1Subfolder.s variant), relative to the run_set directory, unless a scenario overrides it. When declared, this one file is staged (copied, keeping its own filename) into the per-run scenario folder before execution, in place of the framework's default (config/framework.yaml's default_driver_script, from the TDM's Scenarios/_default/). Companion/modified step scripts are NOT auto-staged and stay in place, referenced from this file by a relative path back to their own location. Must reference default TDM step scripts as '..\\..\\..\\2_ModelScripts\\...' (three levels up, matching the per-run scenario folder's depth)."
+    },
     "prep_script": {
       "type": "string",
       "description": "Path to a Python prep script, relative to the run_set directory. Run once per scenario before model execution. Receives --run-set-dir and --scenario-id as arguments."
@@ -48,7 +52,40 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "include": { "type": "array", "items": { "type": "string" } },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "description": "Glob pattern, evaluated against each output file's path relative to the scenario folder." },
+                  "columns": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "description": "Column names (matched against the CSV's header row) to keep. The matched file is written as a column-filtered copy named '<stem>_filtered.csv' instead of a byte-for-byte copy -- for a large summary CSV where only a handful of columns are actually read downstream (e.g. Cube Voyager's 'TAZ-Based Metrics.csv', ~18 columns and ~200 MB, comfortably over any reasonable size ceiling). Omit to copy the matched file(s) byte-for-byte."
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "required": ["matrix", "tabs"],
+                "properties": {
+                  "matrix": { "type": "string", "description": "Glob pattern, evaluated against each output file's path relative to the scenario folder, matching a Cube Voyager .mtx matrix file." },
+                  "tabs": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "description": "Table/core names to extract from the matched .mtx file. The matrix is converted via CONVERTMAT and only these named tables are kept, written as a small OMX file named '<stem>.omx' -- for large multi-table Cube matrices (e.g. skims, several hundred MB) where only one or two tables are actually needed downstream. Requires Voyager to be available at curation time (config/local.yaml's Voyager_EXE)."
+                  }
+                }
+              }
+            ]
+          }
+        },
         "max_file_size_mb": { "type": "number", "exclusiveMinimum": 0 }
       }
     }

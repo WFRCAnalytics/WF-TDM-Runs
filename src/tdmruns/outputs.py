@@ -7,15 +7,36 @@ the gitignored working folder. Scenario folders can hold thousands of files
 and tens of gigabytes, so this listing is stat()-only and never reads file
 contents. A declared, glob-based selection then determines which files
 actually get copied into this repo; only those get a checksum (computed at
-copy time), and every selected file is checked against a hard size ceiling
-before the copy happens.
+copy time), and every selected file is checked against a hard size ceiling.
+
+Each outputs.include entry is one of two shapes (config/schemas/*.schema.json
+enforces exactly one): {"file": <glob pattern>, "columns": [...]}, "columns"
+optional, or {"matrix": <glob pattern>, "tabs": [...]}. Declaring "columns"
+means the matched file(s) should be column-filtered rather than copied whole
+-- e.g. Cube Voyager's "TAZ-Based Metrics.csv" summaries carry ~18 columns and
+run ~200 MB, comfortably over any reasonable size ceiling, when the handful of
+columns a report actually reads (e.g. TAZID/Metric/Purpose/Period/PA/Total)
+would be a fraction of that. For an entry like this, copy_selected() writes a
+column-filtered copy (named "<stem>_filtered.csv") instead of copying the
+file whole. A "matrix" entry matches a Cube Voyager .mtx file and extracts
+only the named "tabs" tables into a small "<stem>.omx" file via CONVERTMAT
+(matrix_utils.extract_matrix_tabs) -- for large multi-table matrices (skims,
+trip tables) where only one or two tables are actually needed downstream, and
+the full file would be hundreds of MB. This is the one curation path that
+needs Cube Voyager itself (a voyager_exe path) -- plain file/column entries
+never do. The size ceiling is enforced against the bytes actually written to
+the repo -- the filtered/extracted size for these entries, the source size
+for a plain copy -- not the raw source size in all cases, since the raw size
+of a to-be-transformed file says nothing about what's actually committed.
 """
 
+import csv
 import fnmatch
 import hashlib
 import shutil
 from pathlib import Path
 
+from tdmruns import matrix_utils
 from tdmruns.exceptions import OutputCollectionError
 
 CHECKSUM_CHUNK_BYTES = 1024 * 1024
@@ -43,47 +64,110 @@ def inventory(scenario_folder: Path) -> list:
     return entries
 
 
+def _dest_filename(entry: dict) -> str:
+    src_name = Path(entry["relative_path"])
+    if entry.get("entry_type") == "matrix":
+        return f"{src_name.stem}.omx"
+    if entry.get("columns"):
+        return f"{src_name.stem}_filtered{src_name.suffix}"
+    return src_name.name
+
+
 def select(entries: list, include_patterns: list) -> list:
-    """Filters the full inventory down to entries matching at least one glob
-    pattern, evaluated against each file's path relative to the scenario folder."""
+    """Filters the full inventory down to entries matching at least one
+    declared {"file": <glob>, "columns": [...]} or {"matrix": <glob>,
+    "tabs": [...]} entry, the glob evaluated against each file's path
+    relative to the scenario folder. The resulting selected entries carry
+    an "entry_type" ("file" or "matrix") plus whichever of "columns"/"tabs"
+    applies, that copy_selected() acts on."""
     if not include_patterns:
         return []
+    normalized = []
+    for p in include_patterns:
+        if "matrix" in p:
+            normalized.append((p["matrix"], {"entry_type": "matrix", "tabs": p["tabs"]}))
+        else:
+            normalized.append((p["file"], {"entry_type": "file", "columns": p.get("columns")}))
     selected = []
     for entry in entries:
-        if any(fnmatch.fnmatch(entry["relative_path"], pat) for pat in include_patterns):
-            selected.append(entry)
+        for pattern, tags in normalized:
+            if fnmatch.fnmatch(entry["relative_path"], pattern):
+                selected.append({**entry, **tags})
+                break
     return selected
 
 
+def _raise_too_big(entries: list, max_file_size_mb: float):
+    lines = [
+        f"{len(entries)} selected output file(s) exceed the "
+        f"{max_file_size_mb} MB limit and cannot be committed to the repo:"
+    ]
+    for e in entries:
+        mb = e["size_bytes"] / (1024 * 1024)
+        lines.append(f"  - {e['relative_path']} ({mb:.1f} MB)")
+    lines.append(
+        "Exclude this file from the output selection, or have the model "
+        "produce a smaller summary instead of the full file."
+    )
+    raise OutputCollectionError("\n".join(lines))
+
+
 def validate_size_limit(selected: list, max_file_size_mb: float):
+    """Checks selected entries against the size ceiling using each entry's
+    (pre-copy) size_bytes. Only meaningful for plain, unfiltered file
+    entries -- a to-be-filtered CSV's or a matrix entry's raw source size
+    says nothing about what will actually be committed (a matrix entry's
+    source is typically hundreds of MB by design), so those are skipped
+    here and checked instead against the actual written size inside
+    copy_selected()."""
     max_bytes = int(max_file_size_mb * 1024 * 1024)
-    too_big = [e for e in selected if e["size_bytes"] > max_bytes]
+    too_big = [
+        e for e in selected
+        if e.get("entry_type") != "matrix" and not e.get("columns") and e["size_bytes"] > max_bytes
+    ]
     if too_big:
-        lines = [
-            f"{len(too_big)} selected output file(s) exceed the "
-            f"{max_file_size_mb} MB limit and cannot be committed to the repo:"
-        ]
-        for e in too_big:
-            mb = e["size_bytes"] / (1024 * 1024)
-            lines.append(f"  - {e['relative_path']} ({mb:.1f} MB)")
-        lines.append(
-            "Exclude this file from the output selection, or have the model "
-            "produce a smaller summary instead of the full file."
-        )
-        raise OutputCollectionError("\n".join(lines))
+        _raise_too_big(too_big, max_file_size_mb)
 
 
-def copy_selected(scenario_folder: Path, selected: list, dest_dir: Path) -> list:
+def _write_filtered_csv(src: Path, dst: Path, columns: list):
+    with open(src, newline="") as fin, open(dst, "w", newline="") as fout:
+        reader = csv.DictReader(fin)
+        missing = [c for c in columns if c not in (reader.fieldnames or [])]
+        if missing:
+            raise OutputCollectionError(
+                f"columns {missing} not found in {src.name} "
+                f"(available: {reader.fieldnames})"
+            )
+        writer = csv.DictWriter(fout, fieldnames=columns, extrasaction="ignore")
+        writer.writeheader()
+        for row in reader:
+            writer.writerow(row)
+
+
+def copy_selected(
+    scenario_folder: Path,
+    selected: list,
+    dest_dir: Path,
+    max_file_size_mb: float,
+    voyager_exe: str = None,
+) -> list:
     """Copies each selected file directly into dest_dir, flattened to just
     its filename -- curated outputs don't preserve the model's internal
-    folder structure. Returns the manifest entries augmented with a sha256
-    checksum and the repo-relative destination path -- computed here, not in
-    inventory(), since only the (typically handful of) selected files ever
-    need one. Raises OutputCollectionError if flattening would collide two
-    selected files onto the same filename."""
+    folder structure. An entry with a "columns" list (see select()) is
+    written as a column-filtered copy ("<stem>_filtered.csv") instead of a
+    byte-for-byte copy; a "matrix" entry (entry_type=="matrix") is extracted
+    via matrix_utils.extract_matrix_tabs() into a small "<stem>.omx" instead,
+    which requires voyager_exe to be set. Returns the manifest entries
+    augmented with a sha256 checksum, the repo-relative destination path,
+    and size_bytes updated to the actual bytes written (only these, the ones
+    actually committed, get a checksum -- computed here, not in inventory(),
+    since only the typically handful of selected files ever need one).
+    Raises OutputCollectionError if flattening would collide two selected
+    files onto the same filename, or if any file, once actually written to
+    dest_dir, exceeds max_file_size_mb -- deleting that file before raising."""
     seen = {}
     for entry in selected:
-        name = Path(entry["relative_path"]).name
+        name = _dest_filename(entry)
         if name in seen:
             raise OutputCollectionError(
                 f"Selected outputs '{seen[name]}' and '{entry['relative_path']}' both "
@@ -96,7 +180,80 @@ def copy_selected(scenario_folder: Path, selected: list, dest_dir: Path) -> list
     curated = []
     for entry in selected:
         src = scenario_folder / entry["relative_path"]
-        dst = dest_dir / Path(entry["relative_path"]).name
-        shutil.copy2(src, dst)
-        curated.append({**entry, "sha256": _sha256(src), "repo_path": dst.as_posix()})
+        dst = dest_dir / _dest_filename(entry)
+        if entry.get("entry_type") == "matrix":
+            if not voyager_exe:
+                raise OutputCollectionError(
+                    f"'{entry['relative_path']}' is a matrix output but no Voyager "
+                    "executable is configured (config/local.yaml's Voyager_EXE) -- "
+                    "required to extract matrix tabs at curation time."
+                )
+            matrix_utils.extract_matrix_tabs(src, entry["tabs"], dst, voyager_exe)
+        elif entry.get("columns"):
+            _write_filtered_csv(src, dst, entry["columns"])
+        else:
+            shutil.copy2(src, dst)
+
+        size_bytes = dst.stat().st_size
+        if size_bytes > int(max_file_size_mb * 1024 * 1024):
+            dst.unlink()
+            _raise_too_big([{**entry, "size_bytes": size_bytes}], max_file_size_mb)
+
+        curated.append(
+            {
+                **entry,
+                "size_bytes": size_bytes,
+                "sha256": _sha256(dst),
+                "repo_path": dst.as_posix(),
+            }
+        )
     return curated
+
+
+def curate(
+    scenario_folder: Path,
+    full_inventory: list,
+    output_spec: dict,
+    run_dir: Path,
+    status: str,
+    error: str,
+    voyager_exe: str = None,
+) -> tuple:
+    """Selects+copies whatever outputs.include matches out of full_inventory
+    (already produced by inventory(scenario_folder) -- passed in rather than
+    recomputed here, since the caller also needs it for the aggregate
+    inventory_count/inventory_total_bytes in run metadata, and a scenario
+    folder can hold thousands of files, not worth walking twice). Folds the
+    result into the execution status/error decided so far (e.g. from the
+    TDM's exit code, or "success"/None for a manual import). Returns
+    (status, error, curated) for the caller to pass straight into
+    metadata.build().
+
+    An exit code of 0 (or a manual import) alone isn't "success" if
+    outputs.include declared patterns but none of them matched anything on
+    disk -- e.g. the model didn't reach the step that produces them. That's
+    treated as a failure here rather than passed through unexamined.
+    """
+    selected = select(full_inventory, output_spec["include"])
+    curated = []
+    if selected:
+        try:
+            validate_size_limit(selected, output_spec["max_file_size_mb"])
+            curated = copy_selected(
+                scenario_folder,
+                selected,
+                run_dir / "outputs",
+                output_spec["max_file_size_mb"],
+                voyager_exe=voyager_exe,
+            )
+        except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently
+            status = "failed"
+            error = (error + " " if error else "") + f"Output curation failed: {e}"
+    elif output_spec["include"]:
+        status = "failed"
+        error = (
+            (error + " " if error else "")
+            + f"No files under {scenario_folder} matched outputs.include "
+            f"{output_spec['include']!r}."
+        )
+    return status, error, curated

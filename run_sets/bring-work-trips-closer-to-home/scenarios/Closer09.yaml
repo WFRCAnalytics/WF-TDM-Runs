@@ -1,0 +1,14 @@
+scenario_id: Closer09
+description: "Closer09 - 25% HBW trip redistribution by Workshop Area"
+driver_script: hail-mary/__HailMary_1Subfolder_closer.s
+start_from_copy: Closer00
+lock_down_copy: false
+
+variables:
+  # portion of HBW trips currently ending outside the target geography are redistributed to destinations inside that geography (redistributed proportional to existing internal trip pattern)
+  hbw_trip_redistribution_portion: 0.25
+  geography_type: "CITYGRP"
+
+overrides:
+  vizToolDir: 'M:\GitHub\WF-TDM-Runs\tdm\Scenarios\bring-work-trips-closer-to-home\.vizTool'
+  RunDescription: "Closer09 - Workshop Area 25% HBW trip redistribution"

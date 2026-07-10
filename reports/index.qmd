@@ -46,6 +46,15 @@ for rs_id in run_set_ids:
         ))
         continue
 
+    if rs_id == "bring-work-trips-closer-to-home":
+        description = rd.run_set_description(rs_id)
+        display(Markdown(
+            f"## bring-work-trips-closer-to-home\n\n{byline_md}{description}\n\n"
+            "- [Slides view](run_sets/bring-work-trips-closer-to-home/slides.html)\n"
+            "- [Summary view](run_sets/bring-work-trips-closer-to-home/summary.html)\n"
+        ))
+        continue
+
     if rd.has_custom_report_pages(rs_id):
         # A run set with its own hand-written pages that isn't one of the
         # special cases above -- link to its custom directory rather than

@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: _site
+  pre-render:
+    - generate_title_metadata.py
 
 website:
   title: "TDM Run Results"

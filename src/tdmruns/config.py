@@ -103,6 +103,14 @@ def resolved_baseline_filename(run_set: dict, scenario: dict) -> str:
     return scenario.get("baseline_control_center") or run_set["baseline_control_center"]
 
 
+def resolved_driver_script(run_set: dict, scenario: dict) -> str | None:
+    """Path (relative to the run_set directory) to a custom _HailMary.s
+    driver script, or None if neither the scenario nor the run set declares
+    one -- in which case the TDM's own default driver script is used
+    unmodified."""
+    return scenario.get("driver_script") or run_set.get("driver_script")
+
+
 def resolved_output_spec(framework: dict, run_set: dict, scenario: dict) -> dict:
     """Scenario output spec overrides the run set's; run set's overrides the
     framework default. include patterns are NOT merged across levels --
@@ -120,12 +128,28 @@ def resolved_output_spec(framework: dict, run_set: dict, scenario: dict) -> dict
     return {"include": spec.get("include", []), "max_file_size_mb": max_mb}
 
 
-def resolved_manual_scenario_folder(tdm_path: Path, scenario: dict) -> Path | None:
-    """Resolves a scenario's declared manual_scenario_folder (relative to the
-    TDM submodule root) to an absolute path, or None if the scenario doesn't
-    declare one -- e.g. because it has only ever been run through the CLI."""
-    rel = scenario.get("manual_scenario_folder")
-    return (tdm_path / rel) if rel else None
+def resolved_manual_scenario_folder(
+    tdm_path: Path,
+    framework: dict,
+    run_set_id: str,
+    scenario_id: str,
+    scenario: dict,
+) -> Path:
+    """Resolves the raw folder a manually-run scenario's outputs live in,
+    relative to the TDM submodule root. Uses the scenario's declared
+    manual_scenario_folder if present -- needed when the raw folder's name
+    doesn't follow scenario_id (e.g. non-motorized-2023's
+    BY_2019_SensitivityTest_NN naming). Otherwise falls back to the same
+    scenario_folder_template convention already used for CLI-driven runs
+    (Scenarios/<run_set_id>/<scenario_id>), since a manually-run scenario's
+    raw folder is reused across every run attempt exactly like a CLI-driven
+    one is -- so no per-scenario declaration is needed unless the naming
+    departs from that convention."""
+    rel = scenario.get("manual_scenario_folder") or framework["scenario_folder_template"].format(
+        run_set_id=run_set_id,
+        scenario_id=scenario_id,
+    )
+    return tdm_path / rel
 
 
 def _resolve_input_files(run_set_dir: Path, input_files: dict) -> dict:

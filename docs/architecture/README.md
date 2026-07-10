@@ -13,3 +13,5 @@ should.
 - [0004 - Flat, schema-versioned JSON files as the source of truth, not a database](0004-run-metadata-storage.md)
 - [0005 - GitHub Actions for validation and reporting only, never model execution](0005-ci-scope.md)
 - [0006 - What v1 leaves out, and why it should still be addable later](0006-future-scalability.md)
+- [0007 - Driver script staged every run, default or custom -- a second, narrow mechanism](0007-custom-driver-script.md)
+- [0008 - `start_from_copy` -- seed a scenario's raw folder from a prior run](0008-scenario-seeding.md)

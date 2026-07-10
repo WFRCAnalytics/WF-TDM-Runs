@@ -32,6 +32,23 @@
       "description": "Control Center key/value overrides specific to this scenario, applied on top of the run set's shared overrides.",
       "additionalProperties": true
     },
+    "variables": {
+      "type": "object",
+      "description": "Documentation-only scenario parameters (e.g. a custom driver/step script's inputs) that are not Control Center keys and are not applied by the framework -- unlike overrides, which are validated against the baseline and rendered into _ControlCenter.yaml, these are not read by anything yet. Record here what a custom driver_script's companion step script is meant to consume once it reads them itself.",
+      "additionalProperties": true
+    },
+    "driver_script": {
+      "type": "string",
+      "description": "Overrides the run set's driver_script for this scenario only (or the framework default, if the run set doesn't declare one). Path to a custom driver script, relative to the run_set directory. Staged keeping its own filename; companion scripts stay in place and must be referenced by a relative path back to their location."
+    },
+    "start_from_copy": {
+      "type": "string",
+      "description": "scenario_id of another scenario in this same run set whose most recent successful run's raw scenario folder should be copied (in full) into this scenario's folder before execution -- lets a scenario whose modification only affects a later model step skip recomputing everything upstream. Resolved via that scenario's run_metadata.json (works whether it was run via the CLI or imported from a manual run), skipping past any newer failed attempts to find the most recent success. Only used by run-scenario/run-set -- has no effect on manual execution."
+    },
+    "lock_down_copy": {
+      "type": "boolean",
+      "description": "When true, suppresses the start_from_copy copy for this scenario's runs, leaving its raw scenario folder untouched by seeding -- use once the folder already holds the seeded state it needs, since the raw folder is reused across every run attempt and would otherwise be re-copied (potentially tens of GB) on each retry. Has no effect unless start_from_copy is also declared; keep start_from_copy set for the record of where it was seeded from."
+    },
     "prep_script": {
       "type": "string",
       "description": "Path to a Python prep script, relative to the run_set directory. Run before this scenario's model execution. Receives --run-set-dir and --scenario-id as arguments. Runs after any run_set-level prep_script."
@@ -40,7 +57,40 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "include": { "type": "array", "items": { "type": "string" } },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "description": "Glob pattern, evaluated against each output file's path relative to the scenario folder." },
+                  "columns": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "description": "Column names (matched against the CSV's header row) to keep. The matched file is written as a column-filtered copy named '<stem>_filtered.csv' instead of a byte-for-byte copy -- for a large summary CSV where only a handful of columns are actually read downstream (e.g. Cube Voyager's 'TAZ-Based Metrics.csv', ~18 columns and ~200 MB, comfortably over any reasonable size ceiling). Omit to copy the matched file(s) byte-for-byte."
+                  }
+                }
+              },
+              {
+                "additionalProperties": false,
+                "required": ["matrix", "tabs"],
+                "properties": {
+                  "matrix": { "type": "string", "description": "Glob pattern, evaluated against each output file's path relative to the scenario folder, matching a Cube Voyager .mtx matrix file." },
+                  "tabs": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1,
+                    "description": "Table/core names to extract from the matched .mtx file. The matrix is converted via CONVERTMAT and only these named tables are kept, written as a small OMX file named '<stem>.omx' -- for large multi-table Cube matrices (e.g. skims, several hundred MB) where only one or two tables are actually needed downstream. Requires Voyager to be available at curation time (config/local.yaml's Voyager_EXE)."
+                  }
+                }
+              }
+            ]
+          }
+        },
         "max_file_size_mb": { "type": "number", "exclusiveMinimum": 0 }
       }
     },

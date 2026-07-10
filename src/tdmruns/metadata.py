@@ -31,6 +31,8 @@ def build(
     run_set_overrides: dict,
     scenario_overrides: dict,
     rendered_path: str = None,
+    driver_script: str = None,
+    seeded_from: dict = None,
     scenario_folder: str = None,
     command: list = None,
     exit_code: int = None,
@@ -42,10 +44,11 @@ def build(
     error: str = None,
     execution_mode: str = "cli",
 ) -> dict:
-    # rendered_path/command are only meaningful when the orchestrator itself
-    # rendered a Control Center and invoked the model (execution_mode "cli").
-    # Left out entirely rather than set to null for a manual import, since
-    # the schema types them as non-nullable.
+    # rendered_path/command/driver_script are only meaningful when the
+    # orchestrator itself rendered a Control Center, staged a driver script,
+    # and invoked the model (execution_mode "cli") -- always set together in
+    # that case, always absent for a manual import. Left out entirely rather
+    # than set to null, since the schema types them as non-nullable.
     control_center = {
         "baseline_file": baseline_file,
         "run_set_overrides": run_set_overrides,
@@ -53,6 +56,8 @@ def build(
     }
     if rendered_path is not None:
         control_center["rendered_path"] = rendered_path
+    if driver_script is not None:
+        control_center["driver_script"] = driver_script
 
     execution = {}
     if command is not None:
@@ -62,7 +67,7 @@ def build(
     if log_path is not None:
         execution["log_path"] = log_path
 
-    return {
+    result = {
         "schema_version": schema_version,
         "run_set_id": run_set_id,
         "scenario_id": scenario_id,
@@ -83,6 +88,11 @@ def build(
         },
         "error": error,
     }
+    # seeded_from is only set when start_from_copy was declared for this
+    # scenario -- absent otherwise, same "leave out entirely" convention.
+    if seeded_from is not None:
+        result["seeded_from"] = seeded_from
+    return result
 
 
 def write(run_dir: Path, metadata: dict):
@@ -111,3 +121,17 @@ def list_runs(repo_root: Path, run_set_id: str = None, scenario_id: str = None) 
 def latest_run(repo_root: Path, run_set_id: str, scenario_id: str) -> dict:
     runs = list_runs(repo_root, run_set_id, scenario_id)
     return runs[0] if runs else None
+
+
+def latest_successful_run(repo_root: Path, run_set_id: str, scenario_id: str) -> dict:
+    """
+    Like latest_run(), but skips past newer failed attempts.
+
+    Returns the most recent run with status "success" -- a scenario re-run
+    for an unrelated reason (e.g. a later attempt that failed) shouldn't
+    shadow an earlier successful one.
+    """
+    for run in list_runs(repo_root, run_set_id, scenario_id):
+        if run["status"] == "success":
+            return run
+    return None
