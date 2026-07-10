@@ -28,6 +28,10 @@ import plotly.express as px
 import os
 import sys
 
+sys.path.insert(0, os.path.join('..', '..'))
+from chart_utils import use_slide_chart_defaults
+use_slide_chart_defaults()
+
 # All data loading/aggregation lives in run_sets/non-motorized-2023/report_loader.py,
 # shared with summary.qmd. It reads test scenarios 1-13 from a frozen snapshot
 # once this run set is retired (tdmruns snapshot-run-set / purge-run-set-outputs),

@@ -26,17 +26,30 @@ import plotly.express as px
 import os
 import sys
 
+sys.path.insert(0, os.path.join('..', '..'))
+from chart_utils import use_slide_chart_defaults
+use_slide_chart_defaults()
+
 sys.path.insert(0, os.path.join('..', '..', '..', 'run_sets', 'bring-work-trips-closer-to-home'))
 import report_loader as loader
 
 frames = loader.load()
 scenario_ids = frames['scenario_ids']
-vmt_vhd = frames['vmt_vhd_by_county_facility']
-vht_hh = frames['vht_per_household']
-transit = frames['transit_ridership']
-trip_length = frames['hbw_trip_length']
-trip_length_dist = frames['hbw_trip_length_distribution']
-corridor_volumes = frames['corridor_volumes']
+
+# See summary.qmd's setup cell for why: 5%/25% scenarios (Closer04-09) now
+# coexist with the 10% ones this deck is built around, so every table keyed
+# by geography_label alone needs filtering to one shift level first.
+PRIMARY_SHIFT_PCT = 10
+
+def _primary(df):
+    return df[df['shift_pct'].isin([0, PRIMARY_SHIFT_PCT])]
+
+vmt_vhd = _primary(frames['vmt_vhd_by_county_facility'])
+vht_hh = _primary(frames['vht_per_household'])
+transit = _primary(frames['transit_ridership'])
+trip_length = _primary(frames['hbw_trip_length'])
+trip_length_dist = _primary(frames['hbw_trip_length_distribution'])
+corridor_volumes = _primary(frames['corridor_volumes'])
 
 GEO_ORDER = loader.GEO_ORDER
 GEO_COLORS = {'City Area': '#2a78d6', 'Medium District': '#1baf7a', 'Workshop Area': '#eda100'}
@@ -65,8 +78,8 @@ This is a directional, order-of-magnitude check, not a land-use forecast — see
 from IPython.display import Markdown, display
 display(Markdown(
     f"**{len(shifted_ids)} of 9** planned shift scenarios verified so far: "
-    f"{', '.join(shifted_ids)} — all three geography types at the **10% shift level**. "
-    "5% and 25% not yet run."
+    f"{', '.join(shifted_ids)} — all three geography types at **5% and 10%**. "
+    f"This deck focuses on the **{PRIMARY_SHIFT_PCT}% shift level**; 25% not yet run."
 ))
 ```
 
@@ -107,7 +120,9 @@ fig = px.bar(
     labels={'CO_NAME': 'County', 'delta_DY_VHD': 'Δ Daily VHD (hrs)', 'geography_label': 'Geography'},
 )
 fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
-fig.update_layout(height=460, title=dict(text='Change in Daily VHD by County', font_size=15))
+fig.update_layout(
+    height=460, title=dict(text='Change in Daily VHD by County', font_size=15),
+)
 fig.show()
 ```
 
@@ -125,7 +140,9 @@ fig = px.bar(
     labels={'CO_NAME': 'County', 'delta_DY_VMT': 'Δ Daily VMT (mi)', 'geography_label': 'Geography'},
 )
 fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
-fig.update_layout(height=460, title=dict(text='Change in Daily VMT by County', font_size=15))
+fig.update_layout(
+    height=460, title=dict(text='Change in Daily VMT by County', font_size=15),
+)
 fig.show()
 ```
 
@@ -162,7 +179,9 @@ fig = px.bar(
     labels={'line_label': 'Line', 'delta_Boardings': 'Δ Daily Boardings', 'geography_label': 'Geography'},
 )
 fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
-fig.update_layout(height=460, title=dict(text='Change in Daily Boardings — FrontRunner &amp; TRAX', font_size=15))
+fig.update_layout(
+    height=460, title=dict(text='Change in Daily Boardings — FrontRunner &amp; TRAX', font_size=15),
+)
 fig.show()
 ```
 
@@ -210,7 +229,9 @@ fig = px.line(
     color_discrete_map={**GEO_COLORS, 'Baseline': '#898781'},
     labels={'bin_label': 'HBW Trip Length', 'share_pct': 'Share of Trips (%)', 'geography_label': 'Scenario'},
 )
-fig.update_layout(height=460, title=dict(text='HBW Trip Length Distribution, Baseline vs. 10% Shift', font_size=15))
+fig.update_layout(
+    height=460, title=dict(text='HBW Trip Length Distribution, Baseline vs. 10% Shift', font_size=15),
+)
 fig.show()
 ```
 

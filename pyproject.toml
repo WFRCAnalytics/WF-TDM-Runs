@@ -12,6 +12,7 @@ dependencies = [
     "jsonschema>=4.0",
     "click>=8.0",
     "openmatrix>=0.3.5",
+    "geopandas>=0.13",
 ]
 
 [project.optional-dependencies]

@@ -65,3 +65,43 @@ def test_extract_matrix_tabs_raises_clearly_for_missing_tab(tmp_path, monkeypatc
     # nothing partially written, and the temp full conversion was cleaned up
     assert not dest_omx.exists()
     assert not (tmp_path / "_full_Skm_DY.omx").exists()
+
+
+def test_extract_matrix_tabs_mtx_format_roundtrips_through_omx_and_cleans_up(tmp_path, monkeypatch):
+    # output_format="mtx" should: convert source -> full omx (stubbed),
+    # trim to a temp omx, then convert THAT back to .mtx (also stubbed) --
+    # verify both stubs got called with the right intermediate paths, and
+    # that no temp .omx survives, only the final .mtx.
+    full = {"GP_Dist": np.array([[0.0, 1.5], [1.5, 0.0]], dtype="float32")}
+    convert_out_calls = []
+
+    def fake_convert_in(mtx_path, omx_path, voyager_exe):
+        _make_full_omx(omx_path, full)
+
+    def fake_convert_out(omx_path, mtx_path, voyager_exe):
+        convert_out_calls.append((omx_path, mtx_path))
+        # verify the trimmed omx handed to us really was trimmed
+        f = omx.open_file(str(omx_path), "r")
+        try:
+            assert f.list_matrices() == ["GP_Dist"]
+        finally:
+            f.close()
+        mtx_path.write_bytes(b"fake trimmed mtx")
+
+    monkeypatch.setattr(matrix_utils, "convert_mtx_to_omx", fake_convert_in)
+    monkeypatch.setattr(matrix_utils, "convert_omx_to_mtx", fake_convert_out)
+
+    source_mtx = tmp_path / "Skm_DY.mtx"
+    source_mtx.write_bytes(b"fake")
+    dest_mtx = tmp_path / "curated" / "Skm_DY.mtx"
+
+    matrix_utils.extract_matrix_tabs(
+        source_mtx, ["GP_Dist"], dest_mtx, voyager_exe="fake.exe", output_format="mtx"
+    )
+
+    assert dest_mtx.read_bytes() == b"fake trimmed mtx"
+    assert len(convert_out_calls) == 1
+    trimmed_omx_path, _ = convert_out_calls[0]
+    # the intermediate trimmed omx and the full omx must both be cleaned up
+    assert not trimmed_omx_path.exists()
+    assert not (tmp_path / "_full_Skm_DY.omx").exists()

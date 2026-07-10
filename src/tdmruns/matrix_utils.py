@@ -52,33 +52,51 @@ def convert_omx_to_mtx(omx_path: Path, mtx_path: Path, voyager_exe: str):
             raise RuntimeError(f"CONVERTMAT did not produce {mtx_path} -- check {bat_path} output")
 
 
-def extract_matrix_tabs(source_mtx: Path, tabs: list, dest_omx: Path, voyager_exe: str) -> None:
+def extract_matrix_tabs(
+    source_mtx: Path, tabs: list, dest_path: Path, voyager_exe: str, output_format: str = "omx"
+) -> None:
     """Converts source_mtx (a full, possibly huge, multi-table Cube matrix)
-    to a temporary full OMX via CONVERTMAT, then writes a new, small OMX at
-    dest_omx containing only the named tabs -- deleting the temporary full
-    conversion afterward regardless of outcome. Raises OutputCollectionError
-    naming the available tables if any requested tab isn't present, so a
-    typo'd tabs: entry in run_set.yaml fails clearly rather than silently."""
-    dest_omx.parent.mkdir(parents=True, exist_ok=True)
-    temp_omx = dest_omx.parent / f"_full_{source_mtx.stem}.omx"
-    convert_mtx_to_omx(source_mtx, temp_omx, voyager_exe)
+    to a temporary full OMX via CONVERTMAT, then keeps only the named tabs
+    -- deleting the temporary full conversion afterward regardless of
+    outcome. Raises OutputCollectionError naming the available tables if any
+    requested tab isn't present, so a typo'd tabs: entry in run_set.yaml
+    fails clearly rather than silently.
+
+    output_format="omx" (default) writes the trimmed tables directly to
+    dest_path as an OMX file. output_format="mtx" writes them to a small
+    temporary OMX first, then converts that back to Cube's own native TPP
+    matrix format at dest_path via CONVERTMAT -- for a curated output meant
+    to be read by Cube Voyager itself, not Python."""
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_full_omx = dest_path.parent / f"_full_{source_mtx.stem}.omx"
+    convert_mtx_to_omx(source_mtx, temp_full_omx, voyager_exe)
     try:
-        src = omx.open_file(str(temp_omx), "r")
+        trimmed_omx = dest_path if output_format == "omx" else (
+            dest_path.parent / f"_trimmed_{source_mtx.stem}.omx"
+        )
         try:
-            available = src.list_matrices()
-            missing = [t for t in tabs if t not in available]
-            if missing:
-                raise OutputCollectionError(
-                    f"tabs {missing} not found in {source_mtx.name} (available: {available})"
-                )
-            dst = omx.open_file(str(dest_omx), "w")
+            src = omx.open_file(str(temp_full_omx), "r")
             try:
-                for tab in tabs:
-                    dst[tab] = src[tab]
+                available = src.list_matrices()
+                missing = [t for t in tabs if t not in available]
+                if missing:
+                    raise OutputCollectionError(
+                        f"tabs {missing} not found in {source_mtx.name} (available: {available})"
+                    )
+                dst = omx.open_file(str(trimmed_omx), "w")
+                try:
+                    for tab in tabs:
+                        dst[tab] = src[tab]
+                finally:
+                    dst.close()
             finally:
-                dst.close()
+                src.close()
+
+            if output_format == "mtx":
+                convert_omx_to_mtx(trimmed_omx, dest_path, voyager_exe)
         finally:
-            src.close()
+            if output_format == "mtx" and trimmed_omx.exists():
+                trimmed_omx.unlink()
     finally:
-        if temp_omx.exists():
-            temp_omx.unlink()
+        if temp_full_omx.exists():
+            temp_full_omx.unlink()

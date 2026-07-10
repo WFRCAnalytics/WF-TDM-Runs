@@ -122,6 +122,7 @@ wf-tdm-runs/
 │   │                                run sets with custom pages (e.g. non-motorized-2023)
 │   │                                are linked in manually instead
 │   ├── report_data.py            ← shared data helpers (reads runs/ metadata)
+│   ├── chart_utils.py            ← shared Plotly chart styling (see below)
 │   └── run_sets/
 │       ├── <run_set_id>.qmd      ← generic per-run-set page, data-driven from runs/
 │       └── <run_set_id>/         ← custom per-run-set pages (e.g. slides.qmd +
@@ -158,6 +159,25 @@ wf-tdm-runs/
 ├── docs/architecture/            ← 6 ADRs
 └── pyproject.toml
 ```
+
+### Slide-deck chart legends
+
+Every `reports/run_sets/<id>/slides.qmd` should call
+`chart_utils.use_slide_chart_defaults()` once, in its setup cell (see
+`bring-work-trips-closer-to-home/slides.qmd` or `non-motorized-2023/slides.qmd`
+for the exact pattern: `sys.path.insert(0, os.path.join('..', '..'))` then
+`from chart_utils import use_slide_chart_defaults; use_slide_chart_defaults()`).
+This registers a Plotly template moving the legend to a horizontal band at
+the top-left by default — Plotly Express's own default (top-right, outside
+the plot) collides with Plotly's modebar icons (also top-right) on a
+RevealJS deck's narrow, fixed-size canvas. This collision was independently
+hand-fixed per-chart twice (non-motorized-2023, then
+bring-work-trips-closer-to-home) before being centralized here — any new
+slides.qmd should call this instead of re-discovering the same fix. A chart
+needing a different offset (e.g. a taller multi-line title) can still pass
+its own `legend=dict(y=...)` on top of the template's default; an explicit
+per-chart value always wins over the template. `summary.qmd` pages (full-width
+HTML, not a fixed slide canvas) don't have this collision and don't need it.
 
 ### CLI commands
 
