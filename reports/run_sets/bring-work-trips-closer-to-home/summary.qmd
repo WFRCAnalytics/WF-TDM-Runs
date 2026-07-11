@@ -88,7 +88,7 @@ if byline:
 
 What would it look like, in rough terms, if more people who live in an area of our region also worked in that area — instead of commuting elsewhere? This sketch-level test asks: if a share of home-based-work (HBW) trips that currently start inside a target area but end outside it instead ended inside the target area — following today's existing internal destination pattern — what would change at the corridor and regional level?
 
-Three geography types are tested, each applied region-wide (every area of that type shifted simultaneously): **City Area** (roughly a single incorporated city boundary, ~80 areas region-wide — ~55 in WFRC, ~25 in MAG), **Medium District** (a mid-sized planning district, coarser than city boundaries, often spanning parts of one or more cities or unincorporated areas — ~48 areas region-wide, ~35 WFRC / ~13 MAG), and **Workshop Area** (the same city groupings used for our public workshops — ~12 region-wide, 8 WFRC / 4 MAG). Per the approved scoping memo, **City Area is the lead geography for this write-up**; Medium District and Workshop Area are shown throughout as a robustness check across scales. The model basis is the **2027 RTP adoption year** network and land use, model version **v10.0.0-beta.1**.
+Three geography types are tested, each applied region-wide (every area of that type shifted simultaneously): **City Area** (roughly a single incorporated city boundary, ~80 areas region-wide), **Medium District** (a mid-sized planning district, coarser than city boundaries, often spanning parts of one or more cities or unincorporated areas — ~48 areas region-wide), and **Workshop Area** (the same city groupings used for our public workshops — ~12 region-wide). Per the approved scoping memo, **City Area is the lead geography for this write-up**; Medium District and Workshop Area are shown throughout as a robustness check across scales. The model basis is the **2027 RTP adoption year** network and land use, model version **v10.0.0-beta.1**.
 
 This is not a land-use forecast. It is a directional, order-of-magnitude check on whether "closer jobs-housing balance" is worth studying further — see [Caveats](#caveats-and-interpretation).
 
@@ -180,7 +180,9 @@ SHIFT_COLORS = {'5%': '#a6cee3', '10%': '#3182bd', '25%': '#08306b'}
 
 region_shift = vmt_vhd[
     (vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO) & (vmt_vhd['period'] == 'Peak')
-].groupby(['geography_label', 'shift_pct'], as_index=False)[['delta_DY_VMT', 'delta_DY_VHD']].sum()
+].groupby(['geography_label', 'shift_pct'], as_index=False)[['delta_DY_VMT', 'base_DY_VMT', 'delta_DY_VHD', 'base_DY_VHD']].sum()
+region_shift['pct_DY_VMT'] = region_shift['delta_DY_VMT'] / region_shift['base_DY_VMT'] * 100
+region_shift['pct_DY_VHD'] = region_shift['delta_DY_VHD'] / region_shift['base_DY_VHD'] * 100
 region_shift['shift_label'] = region_shift['shift_pct'].apply(lambda v: f'{int(v)}%')
 shift_label_order = [f'{int(s)}%' for s in sorted(region_shift['shift_pct'].unique())]
 
@@ -199,13 +201,13 @@ def _big_picture(y_col, y_title, title):
     )
     return fig
 
-_big_picture('delta_DY_VHD', 'Change in VHD (hours/day), Region', 'Region-Wide VHD Change, All Shift Levels<br><sup>Peak period</sup>').show(config=CHART_CONFIG)
+_big_picture('pct_DY_VHD', 'Change in VHD (%), Region', 'Region-Wide VHD Change, All Shift Levels<br><sup>Peak period, % of baseline</sup>').show(config=CHART_CONFIG)
 ```
 
 ```{python}
 #| label: fig-big-picture-vmt
 
-_big_picture('delta_DY_VMT', 'Change in VMT (miles/day), Region', 'Region-Wide VMT Change, All Shift Levels<br><sup>Peak period</sup>').show(config=CHART_CONFIG)
+_big_picture('pct_DY_VMT', 'Change in VMT (%), Region', 'Region-Wide VMT Change, All Shift Levels<br><sup>Peak period, % of baseline</sup>').show(config=CHART_CONFIG)
 ```
 
 Both metrics scale with shift size in a straightforward, roughly proportional way across all three geography types — a useful sanity check before diving into the county/corridor/facility-type detail below, where the shift-level toggle takes over.

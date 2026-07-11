@@ -20,11 +20,19 @@ area. Fixed by also pinning the title near the very top of the figure
 both, verified against single-line and two-line (title+<br><sup>subtitle)
 titles alike.
 
-figure_with_shift_toggle's own toggle-button rows used to live in this same
-top margin, stacked below the title and above the legend. They were moved
-BELOW the plot instead (see figure_with_shift_toggle's docstring) so the
-top margin only ever has to reserve room for title + legend, a fixed
-two-tier stack -- SLIDE_MARGIN's t is sized for exactly that now.
+figure_with_shift_toggle's own toggle buttons went through two more
+layouts after that: first a stack of rows below the plot (eating into a
+chart's declared height, since Plotly margins are subtracted from the
+figure's total pixel height, not added on top of it -- a tall reserved
+margin.b left barely any of a chart's `height=` for the actual plot when
+several toggle dimensions were present), then their current form: a
+vertically-stacked column in the RIGHT margin instead, alongside the plot
+rather than below it. margin.r grows to fit the column; margin.b is left
+alone, so a chart's `height=` goes almost entirely to the plot itself.
+This is also why figure_with_shift_toggle unconditionally repositions the
+legend to the same top-left band SLIDE_LEGEND already gives slides -- the
+right column would otherwise collide with Plotly Express's default
+top-right legend placement on non-slide (summary.qmd) charts.
 """
 import math
 
@@ -131,21 +139,29 @@ def _row_highlight(indices: list, active_pos: int) -> dict:
     return out
 
 
-def _row_menus(labels: list, indices: list, active_pos: int, y: float, args_fn) -> list:
-    """Builds one row of individually-stylable toggle "buttons" as sibling
-    single-button updatemenus, evenly spaced and centered under x=0.5 at
-    height y (negative = below the plot). indices are these menus' own
-    final positions in the figure's combined updatemenus list (known ahead
-    of time since rows are appended in order) -- needed so each button's
-    click handler can recolor its whole row via `updatemenus[i].bgcolor`
-    relayout paths. args_fn(pos) returns this button's own "update"-method
-    args list (trace restyle / layout changes) BEFORE the row-highlight
-    relayout is appended -- this function appends it."""
-    n = len(labels)
-    spacing = min(0.30, max(0.08, 0.017 * max(len(label) for label in labels) + 0.05))
-    start = -spacing * (n - 1) / 2
+# Right-hand toggle column layout: one vertically-stacked group of buttons
+# per toggle dimension (shift/period/group/pct), all at the same x, top to
+# bottom in the order the groups are built -- see _col_menus/COL_X below.
+COL_X = 1.04
+COL_TOP_Y = 0.97
+COL_BUTTON_DY = 0.12
+COL_GROUP_GAP = 0.07
+
+
+def _col_menus(labels: list, indices: list, active_pos: int, y_positions: list, args_fn, x: float = COL_X) -> list:
+    """Builds one vertically-stacked group of individually-stylable toggle
+    "buttons" as sibling single-button updatemenus, all at the same x (just
+    right of the plot, in the reserved right margin) and one y per
+    y_positions entry (already laid out top-to-bottom by the caller).
+    indices are these menus' own final positions in the figure's combined
+    updatemenus list (known ahead of time since groups are appended in
+    order) -- needed so each button's click handler can recolor its whole
+    group via `updatemenus[i].bgcolor` relayout paths. args_fn(pos) returns
+    this button's own "update"-method args list (trace restyle / layout
+    changes) BEFORE the group-highlight relayout is appended -- this
+    function appends it."""
     menus = []
-    for pos, (label, idx) in enumerate(zip(labels, indices)):
+    for pos, (label, idx, y) in enumerate(zip(labels, indices, y_positions)):
         args = list(args_fn(pos))
         if len(args) < 2:
             args = args + [{}]
@@ -153,8 +169,8 @@ def _row_menus(labels: list, indices: list, active_pos: int, y: float, args_fn) 
         style = _button_style(pos == active_pos)
         menus.append(dict(
             type="buttons", direction="right", showactive=False,
-            x=0.5 + start + spacing * pos, xanchor="center",
-            y=y, yanchor="top", pad=dict(l=4, r=4, t=4, b=4),
+            x=x, xanchor="left",
+            y=y, yanchor="middle", pad=dict(l=6, r=6, t=4, b=4),
             bgcolor=style["bgcolor"], font=style["font"],
             bordercolor=style["bordercolor"], borderwidth=style["borderwidth"],
             buttons=[dict(label=label, method="update", args=args)],
@@ -167,6 +183,7 @@ def figure_with_shift_toggle(
     pct_col=None, value_axis_title=None, pct_axis_title=None,
     period_col=None, default_period=None, period_order=None,
     group_col=None, default_group=None, group_order=None, group_label_fmt="{v}",
+    global_shift=False,
 ):
     """Builds one figure per available shift_pct value in df (via
     build_fig(subset_df_for_that_shift) -- typically a small wrapper around
@@ -241,13 +258,35 @@ def figure_with_shift_toggle(
     Change row (pct_col), being y-swap based rather than visibility-based,
     remains fully independent of shift level, period, and group regardless.
 
-    All button rows render BELOW the plot (not above, alongside the title/
-    legend) as a stack of centered rows -- shift level nearest the plot,
-    then period, then group, then Absolute/% Change -- each row's
-    currently-selected button shown with a dark navy background and white
-    text (see _row_menus/_button_style) so the active choice is unambiguous
-    at a glance, since Plotly's own updatemenus have no built-in
-    active-button highlighting for a "buttons"-type menu.
+    Every toggle dimension renders as its own vertically-stacked group of
+    buttons in a column to the RIGHT of the plot (not below it, and not
+    alongside the title/legend) -- shift level nearest the top, then
+    period, then group, then Absolute/% Change, top to bottom -- each
+    group's currently-selected button shown with a dark navy background
+    and white text (see _col_menus/_button_style) so the active choice is
+    unambiguous at a glance, since Plotly's own updatemenus have no
+    built-in active-button highlighting for a "buttons"-type menu. This
+    column lives inside the plot's own y-range (paper y 0..1), not in a
+    reserved margin, so a chart's declared `height=` isn't eaten by toggle
+    space the way a below-the-plot row stack used to; only margin.r grows,
+    sized to fit the widest button label actually rendered.
+
+    global_shift=True suppresses this chart's OWN shift-level button row
+    entirely (no per-chart 5%/10%/25% buttons) and instead stashes what
+    that row would have done into `combined.layout.meta["wfrcShiftLevels"]`
+    -- a plain list of {label, visible, relayout} dicts, one per shift
+    level, with exactly the trace-visibility array and cross-row highlight
+    reset a local button's "args" would have carried. This is for
+    slides.qmd's deck-wide shift-level control (see
+    reports/global_shift_toggle.html): one fixed on-screen control
+    restyles every chart in the whole deck by reading each chart's own
+    `layout.meta.wfrcShiftLevels` and calling `Plotly.update` with the
+    matching entry, rather than each chart carrying its own buttons.
+    Period/group/pct rows, if present, are unaffected and still render
+    per-chart -- only the shift-level row is globalized, since it's the one
+    dimension every chart on that deck shares. summary.qmd's charts don't
+    use this (global_shift defaults to False), so they keep their own
+    per-chart shift buttons as before.
     """
     have_period = period_col is not None
     have_group = group_col is not None
@@ -342,8 +381,14 @@ def figure_with_shift_toggle(
     group_labels = [group_label_fmt.format(v=g) for g in groups] if have_group else []
     pct_labels = ["Absolute", "% Change"] if per_cell_pct_figs is not None else []
 
-    shift_indices = list(range(0, len(shift_labels)))
-    next_idx = len(shift_indices)
+    # global_shift=True skips reserving a row/index block for the shift
+    # level entirely -- no local shift buttons are built, so nothing should
+    # claim updatemenus indices or a row_y slot for it.
+    shift_indices = []
+    next_idx = 0
+    if not global_shift:
+        shift_indices = list(range(0, len(shift_labels)))
+        next_idx = len(shift_indices)
     period_indices = []
     if have_period:
         period_indices = list(range(next_idx, next_idx + len(period_labels)))
@@ -357,43 +402,77 @@ def figure_with_shift_toggle(
         pct_indices = list(range(next_idx, next_idx + len(pct_labels)))
         next_idx += len(pct_indices)
 
-    n_rows = 1 + int(have_period) + int(have_group) + int(per_cell_pct_figs is not None)
-    row_spacing = 0.16
-    row_y = {"shift": -0.20}
-    slot = 1
+    n_rows = int(not global_shift) + int(have_period) + int(have_group) + int(per_cell_pct_figs is not None)
+    # Lay out each present toggle group as its own vertically-stacked block
+    # in the right-hand column, top to bottom in build order -- a cursor
+    # walks down from COL_TOP_Y, each group claiming one y position per
+    # button plus a gap before the next group. This lives entirely within
+    # the plot's own 0..1 paper-y range (never needs to steal from the
+    # figure's overall height the way a below-the-plot row stack used to),
+    # so a chart's declared `height=` goes almost entirely to the plot
+    # itself instead of being eaten by reserved toggle space.
+    _cursor = COL_TOP_Y
+
+    def _alloc_col(n):
+        nonlocal _cursor
+        ys = [_cursor - i * COL_BUTTON_DY for i in range(n)]
+        _cursor -= n * COL_BUTTON_DY + COL_GROUP_GAP
+        return ys
+
+    row_y = {}
+    if not global_shift:
+        row_y["shift"] = _alloc_col(len(shift_labels))
     if have_period:
-        row_y["period"] = -0.20 - row_spacing * slot
-        slot += 1
+        row_y["period"] = _alloc_col(len(period_labels))
     if have_group:
-        row_y["group"] = -0.20 - row_spacing * slot
-        slot += 1
+        row_y["group"] = _alloc_col(len(group_labels))
     if per_cell_pct_figs is not None:
-        row_y["pct"] = -0.20 - row_spacing * slot
-        slot += 1
+        row_y["pct"] = _alloc_col(len(pct_labels))
 
     # Clicking any one visibility-based row's button resets the OTHER
     # visibility-based rows to their own default (see the period_col/
     # group_col docstring paragraph above) -- so each row's own click
     # handler also has to visually reset every other such row back to its
     # default button, not just re-highlight itself, or the rows could show
-    # a selection that no longer matches what's actually visible.
+    # a selection that no longer matches what's actually visible. There's
+    # nothing to reset for shift when global_shift=True -- no local shift
+    # row exists on this chart, so it's skipped rather than referencing
+    # indices that were never assigned.
     def _other_row_reset(exclude):
         out = {}
         if have_period and exclude != "period":
             out.update(_row_highlight(period_indices, periods.index(default_period)))
         if have_group and exclude != "group":
             out.update(_row_highlight(group_indices, groups.index(default_group)))
-        if exclude != "shift":
+        if not global_shift and exclude != "shift":
             out.update(_row_highlight(shift_indices, shift_levels.index(default_shift)))
         return out
 
-    def _shift_args(pos):
-        s = shift_levels[pos]
-        return [
-            {"visible": _visible_for(fixed_shift=s, fixed_period=default_period, fixed_group=default_group)},
-            _other_row_reset("shift"),
-        ]
-    updatemenus = _row_menus(shift_labels, shift_indices, shift_levels.index(default_shift), row_y["shift"], _shift_args)
+    updatemenus = []
+    if global_shift:
+        # Deck-wide shift toggle (slides.qmd): stash each shift level's
+        # trace-visibility array and cross-row reset into layout.meta
+        # instead of building visible buttons -- see reports/
+        # global_shift_toggle.html, which reads this from every chart on
+        # the page and drives them all from one fixed on-screen control.
+        combined.update_layout(meta={
+            "wfrcShiftLevels": [
+                {
+                    "label": shift_label_fmt.format(v=s),
+                    "visible": _visible_for(fixed_shift=s, fixed_period=default_period, fixed_group=default_group),
+                    "relayout": _other_row_reset("shift"),
+                }
+                for s in shift_levels
+            ],
+        })
+    else:
+        def _shift_args(pos):
+            s = shift_levels[pos]
+            return [
+                {"visible": _visible_for(fixed_shift=s, fixed_period=default_period, fixed_group=default_group)},
+                _other_row_reset("shift"),
+            ]
+        updatemenus = _col_menus(shift_labels, shift_indices, shift_levels.index(default_shift), row_y["shift"], _shift_args)
 
     if have_period:
         def _period_args(pos):
@@ -402,7 +481,7 @@ def figure_with_shift_toggle(
                 {"visible": _visible_for(fixed_shift=default_shift, fixed_period=p, fixed_group=default_group)},
                 _other_row_reset("period"),
             ]
-        updatemenus += _row_menus(period_labels, period_indices, periods.index(default_period), row_y["period"], _period_args)
+        updatemenus += _col_menus(period_labels, period_indices, periods.index(default_period), row_y["period"], _period_args)
 
     if have_group:
         def _group_args(pos):
@@ -411,7 +490,7 @@ def figure_with_shift_toggle(
                 {"visible": _visible_for(fixed_shift=default_shift, fixed_period=default_period, fixed_group=g)},
                 _other_row_reset("group"),
             ]
-        updatemenus += _row_menus(group_labels, group_indices, groups.index(default_group), row_y["group"], _group_args)
+        updatemenus += _col_menus(group_labels, group_indices, groups.index(default_group), row_y["group"], _group_args)
 
     if per_cell_pct_figs is not None:
         abs_y = [list(per_cell_figs[key].data[j].y) for key in cells for j in range(n_traces)]
@@ -424,14 +503,25 @@ def figure_with_shift_toggle(
             if pos == 0:
                 return [{"y": abs_y}, {"yaxis.title.text": value_axis_title, "yaxis.range": abs_range}]
             return [{"y": pct_y}, {"yaxis.title.text": pct_axis_title, "yaxis.range": pct_range}]
-        updatemenus += _row_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
+        updatemenus += _col_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
 
-    # Bottom margin sized for the number of rows actually present, so the
-    # toggle stack never overlaps the x-axis's own tick labels/title above
-    # it -- charts still set their own top margin/height afterward (e.g.
-    # `fig.update_layout(margin=dict(t=80))`), which merges with, rather
-    # than replaces, this bottom value.
-    combined.update_layout(margin=dict(b=150 + 70 * (n_rows - 1)))
+    # Legend moves to a horizontal band above the plot's own top-left edge
+    # (same position use_slide_chart_defaults() gives slides) so it never
+    # competes with the new right-hand toggle column for space -- harmless
+    # if this chart has no visible legend.
+    combined.update_layout(legend=SLIDE_LEGEND)
+
+    # Right margin sized to fit the widest button label actually rendered,
+    # so the toggle column has room without being clipped -- charts still
+    # set their own top margin/height afterward (e.g. `fig.update_layout
+    # (margin=dict(t=80))`), which merges with, rather than replaces, this
+    # right-margin value. No toggle groups at all (n_rows == 0) leaves
+    # margin.r untouched, since there's no column to reserve space for.
+    if n_rows > 0:
+        all_labels = shift_labels + period_labels + group_labels + pct_labels
+        max_label_len = max(len(label) for label in all_labels)
+        margin_r = min(220, max(110, 34 + 8 * max_label_len))
+        combined.update_layout(margin=dict(r=margin_r))
     combined.update_layout(updatemenus=updatemenus)
     return combined
 
