@@ -359,6 +359,66 @@ def load_hbw_trip_matrix_for_period(scenario_id: str, period: str) -> np.ndarray
     return load_hbw_trip_matrix_for_period_from_runs(scenario_id, period)
 
 
+def load_full_city_area_lookup() -> pd.DataFrame:
+    """TAZID -> CITY_UGRC for every TAZ in the region (not just
+    TARGET_CITIES) -- the full ~80 City Area groupings the City Area
+    scenario actually redistributes among, region-wide. Null CITY_UGRC
+    means that TAZ isn't inside any City Area (276 of 3562 TAZs, mostly
+    unincorporated land). Always read live from tdm/, same as
+    load_city_taz_lookup."""
+    import geopandas as gpd
+    gdf = gpd.read_file(TAZ_DBF)
+    out = pd.DataFrame(gdf[["TAZID", "CITY_UGRC"]])
+    out["TAZID"] = out["TAZID"].astype(int)
+    return out.sort_values("TAZID").reset_index(drop=True)
+
+
+def compute_city_area_shift_trips(shift_pct: float = 10) -> dict:
+    """Estimates how many baseline daily HBW trips start inside a City
+    Area but end outside it (region-wide, summed across all ~80 City Area
+    groups at once, since the scenario shifts all of them simultaneously)
+    and how many of those a given shift_pct actually redistributes -- a
+    scale-of-mechanism narrative number, not a per-scenario chart metric.
+
+    Requires mapping the baseline HBW trip matrix's row/column order to
+    TAZID, which the curated OMX carries no explicit mapping for (Cube
+    Voyager's export doesn't embed one here -- confirmed by inspecting
+    the file directly, `list_mappings()` is empty). Assumes the standard
+    convention: matrix index 0..N-1 corresponds to TAZID 1..N in
+    ascending order for the model's internal TAZs (3562 of them, per
+    WFv1000_TAZ.dbf), with the matrix's remaining rows/columns (it's
+    3629x3629, 67 more than the internal TAZ count) being external
+    stations or special generator zones outside any City Area -- they
+    still count in the region-wide trip total but never count as
+    "starting inside a City Area." This assumption is NOT independently
+    verified against the model's own zone-numbering documentation; treat
+    the resulting figures as an order-of-magnitude estimate, not an exact
+    count, and see this function's call site for how it's caveated.
+    """
+    city_lookup = load_full_city_area_lookup()
+    n_internal = len(city_lookup)
+    trips = load_hbw_trip_matrix_for_period(BASELINE_SCENARIO, "Daily")
+    n = trips.shape[0]
+
+    city_codes = np.full(n, None, dtype=object)
+    city_codes[:n_internal] = np.where(city_lookup["CITY_UGRC"].isna(), None, city_lookup["CITY_UGRC"])
+
+    has_city = city_codes != None  # noqa: E711 -- elementwise on an object array, not a scalar None check
+    same_city = city_codes[:, None] == city_codes[None, :]
+    eligible = has_city[:, None] & ~same_city
+
+    total_trips = float(trips.sum())
+    eligible_trips = float(trips[eligible].sum())
+    shifted_trips = eligible_trips * shift_pct / 100
+    return {
+        "total_trips": total_trips,
+        "eligible_trips": eligible_trips,
+        "shifted_trips": shifted_trips,
+        "pct_of_total": shifted_trips / total_trips * 100,
+        "shift_pct": shift_pct,
+    }
+
+
 def build_hbw_trip_length_distribution(scenario_ids: list) -> dict:
     """Trip-volume-weighted HBW trip-length frequency distribution (O-D
     skim distance x O-D trip volume, binned), one curve per scenario x

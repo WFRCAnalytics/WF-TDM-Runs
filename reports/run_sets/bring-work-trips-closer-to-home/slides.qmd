@@ -239,7 +239,7 @@ def _build_vmt_vs_vhd(sub):
     fig.add_vline(x=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(scatter_df, _build_vmt_vs_vhd, global_shift=True)
+fig = figure_with_shift_toggle(scatter_df, _build_vmt_vs_vhd, global_shift=True, numeric_x=True)
 
 def _fixed(vals, pad_frac=0.10):
     lo, hi = vals.min(), vals.max()

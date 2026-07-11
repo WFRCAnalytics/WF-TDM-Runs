@@ -204,7 +204,7 @@ def figure_with_shift_toggle(
     pct_col=None, value_axis_title=None, pct_axis_title=None,
     period_col=None, default_period=None, period_order=None,
     group_col=None, default_group=None, group_order=None, group_label_fmt="{v}",
-    global_shift=False,
+    global_shift=False, numeric_x=False,
 ):
     """Builds one figure per available shift_pct value in df (via
     build_fig(subset_df_for_that_shift) -- typically a small wrapper around
@@ -291,6 +291,10 @@ def figure_with_shift_toggle(
     reserved margin, so a chart's declared `height=` isn't eaten by toggle
     space the way a below-the-plot row stack used to; only margin.r grows,
     sized to fit the widest button label actually rendered.
+
+    numeric_x=True rounds hover text on the x-axis too (3 significant
+    figures, same as y), for a chart whose x is a continuous value rather
+    than a category -- see _round_hover above.
 
     global_shift=True suppresses this chart's OWN shift-level button row
     entirely (no per-chart 5%/10%/25% buttons) and instead stashes what
@@ -386,6 +390,37 @@ def figure_with_shift_toggle(
                     trace.texttemplate = "%{y:+.1f}%"
                     trace.textposition = "outside"
                     trace.textfont = dict(size=9)
+
+    # Plotly Express's own auto-generated hovertemplate leaves %{x}/%{y}
+    # unformatted, so hovering shows the raw float (often a dozen decimal
+    # digits from an upstream division) regardless of the value's actual
+    # magnitude -- unlike the fixed-decimal texttemplate above (reasonable
+    # for a single known unit), hover has to cover every metric this
+    # module ever plots, from sub-1 trip-length deltas to five-digit VMT
+    # totals, so a single fixed decimal count is either noisy or rounds
+    # small values to nothing. Round to 3 significant digits instead (d3
+    # format's "r" type) -- scales with magnitude automatically. Only %{y}
+    # is touched by default (a bar/line chart's x is a category, not a
+    # number); pass numeric_x=True for a chart whose x-axis is ALSO a
+    # continuous value (e.g. the VMT-vs-VHT/HH scatter) to round that too
+    # -- deliberately explicit rather than guessed from trace type, since
+    # trip-length-distribution's px.line is also a "scatter"-type trace
+    # but its x is a categorical bin label, not a number.
+    def _round_hover(trace):
+        if not trace.hovertemplate:
+            return
+        ht = trace.hovertemplate.replace("%{y}", "%{y:+,.3r}")
+        if numeric_x:
+            ht = ht.replace("%{x}", "%{x:+,.3r}")
+        trace.hovertemplate = ht
+
+    for f in per_cell_figs.values():
+        for trace in f.data:
+            _round_hover(trace)
+    if per_cell_pct_figs is not None:
+        for f in per_cell_pct_figs.values():
+            for trace in f.data:
+                _round_hover(trace)
 
     default_cell = (default_shift, default_period, default_group)
     combined = go.Figure()
