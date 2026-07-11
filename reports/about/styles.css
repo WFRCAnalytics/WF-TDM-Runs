@@ -7,7 +7,6 @@
 }
 
 .reveal {
-  font-size: 80%;
   color: var(--wfrc-navy);
 }
 
@@ -30,10 +29,6 @@
 
 .reveal .title-slide .subtitle {
   color: var(--wfrc-teal);
-}
-
-.reveal ul, .reveal ol {
-  font-size: 65%;
 }
 
 .reveal pre code {

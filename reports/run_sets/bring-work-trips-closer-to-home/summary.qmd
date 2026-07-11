@@ -73,7 +73,7 @@ PERIOD_ORDER = loader.PERIOD_ORDER  # ['Peak', 'Off-Peak', 'Daily']
 PRIMARY_SHIFT_PCT = 10
 ```
 
-**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Slides view](slides.html)
+**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Slides view](slides.html) &nbsp;|&nbsp; [About this framework](../../about/index.html)
 
 ```{python}
 #| echo: false

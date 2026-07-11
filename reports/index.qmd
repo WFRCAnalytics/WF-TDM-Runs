@@ -23,6 +23,8 @@ nm2023_scenario_count = rd.scenario_count("non-motorized-2023")
 Generated from committed run metadata under `runs/`, newest run set first.
 A new run set appears here automatically once it has at least one committed run.
 
+**[About this framework →](about/index.qmd)** — what it is, how it works, and what it's bought us so far.
+
 ```{python}
 #| echo: false
 #| output: asis

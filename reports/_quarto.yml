@@ -10,6 +10,8 @@ website:
     left:
       - href: index.qmd
         text: "Run Sets"
+      - href: about/index.qmd
+        text: "About"
 
 format:
   html:

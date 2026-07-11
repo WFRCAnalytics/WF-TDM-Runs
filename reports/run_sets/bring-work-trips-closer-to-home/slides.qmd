@@ -595,4 +595,4 @@ Fixed at the 10% shift level, Peak period (AM+PM). City Area and Medium District
 
 ## Questions
 
-**[Full write-up →](summary.html)**
+**[Full write-up →](summary.html)** &nbsp;|&nbsp; **[About this framework →](../../about/index.html)**

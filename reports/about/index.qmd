@@ -1,6 +1,6 @@
 ---
 title: "Managing TDM Scenario Runs as Code"
-subtitle: "A working pattern from WFRC — Interagency Modeling Technical Committee"
+subtitle: "About this framework — originally presented to WFRC's Interagency Modeling Technical Committee"
 author: "Bill Hereth, WFRC"
 format:
   revealjs:
@@ -13,6 +13,7 @@ format:
     fig-align: center
     css: styles.css
     footer: "Wasatch Front Regional Council | TDM Run Management Framework"
+    include-before-body: ../about_back_link.html
 ---
 
 ## The Problem
@@ -30,6 +31,14 @@ format:
 Every modeler in this room has some version of this story. Start here, not with the tool.
 :::
 
+## Why We're Sharing This
+
+::: {.incremental}
+- Not asking for anything today — this is what we built, what it's bought us, and what it cost
+- If a similar pattern would help your agency's scenario management, happy to talk specifics
+- The repo, architecture decisions (ADRs), and both example run sets are there to look at
+:::
+
 ## What This Is
 
 > A framework that manages **run sets** — scenarios, sensitivity tests, alternatives — as versioned configuration, sitting *around* the TDM.
@@ -38,6 +47,27 @@ Every modeler in this room has some version of this story. Start here, not with 
 - It does **not** touch the TDM codebase, the Cube Voyager engine, or how the model runs internally
 - It manages: what changes between scenarios, what got run against which model version, and what came out
 - Built against WFRC's Cube Voyager TDM — the general pattern isn't Cube-specific, the implementation details are
+:::
+
+## Workflow: From Idea to Report
+
+```{mermaid}
+flowchart TD
+    A[Brainstorm concept] --> B[Prepare scoping document]
+    B --> C{Review and revise}
+    C -->|revise| B
+    C -->|approved| D[Prepare scenario YAMLs<br>declare needed outputs]
+    D --> E[Prepare custom code<br>if needed]
+    E --> F[Run models, gather outputs]
+    F --> G[Prepare report]
+```
+
+::: {.notes}
+This is the human process a run set actually goes through, start to finish
+-- the framework itself (override mechanism, execution, curation) picks up
+partway through, at "Run models, gather outputs." Everything upstream of
+that (scoping, review, scenario design) is still an analyst/committee
+process, not something the tool automates.
 :::
 
 ## Core Idea: One Override Mechanism
@@ -102,6 +132,15 @@ Every override key is validated against the baseline **before the model is touch
 
 Every run — CLI-driven or manually executed — gets one of these. Committed, schema-validated, checksummed. That's the whole audit trail.
 
+## From Metadata to a Published Site
+
+::: {.incremental}
+- `reports/` is a Quarto website living in the same repo — it reads `run_metadata.json` directly, no database
+- Run sets without a custom report auto-discover onto the index; `non-motorized-2023` and `bring-work-trips-closer-to-home` have hand-built pages (slide decks + detailed writeups) reading the same underlying data
+- A GitHub Actions workflow renders the site on push and deploys it to **GitHub Pages** — publishing is automatic, not a manual export step
+- CI is scoped to validation and reporting only — it never touches Cube Voyager or the TDM submodule
+:::
+
 ## Let's Look at It Live {.demo-cue}
 
 ::: {.demo-cue}
@@ -140,14 +179,6 @@ Then, if time: pull up one run_metadata.json in the GitHub repo directly.
 | `Scenarios/_default/` baseline library convention | Curated outputs + size ceiling, raw outputs stay local |
 | Cube's exit-code/cluster-shutdown quirks | Structured run metadata as the audit trail |
 | | Automated reporting from that metadata |
-
-## Why We're Sharing This
-
-::: {.incremental}
-- Not asking for anything today — this is what we built, what it's bought us, and what it cost
-- If a similar pattern would help your agency's scenario management, happy to talk specifics
-- The repo, architecture decisions (ADRs), and both example run sets are there to look at
-:::
 
 ## Questions
 
