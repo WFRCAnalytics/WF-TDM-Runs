@@ -132,9 +132,18 @@ TARGET_CITIES = {
 }
 TAZ_DBF = os.path.join(REPO_ROOT, "tdm", "1_Inputs", "1_TAZ", "WFv1000_TAZ.dbf")
 
-# "Free time added back to households" (memo section 6) is scoped to the two
-# peak periods, not the full day.
-PEAK_PERIODS = ["AM", "PM"]
+# Peak = the two commute peaks (AM+PM); Off-Peak = midday + evening/night
+# (MD+EV). Used to give VMT/VHD/VHT/Volume charts a Peak/Off-Peak toggle
+# (chart_utils.figure_with_shift_toggle's period_col) instead of a single
+# DY_ (all-4-periods) aggregate -- confirmed with the run set's author as
+# the standard WFRC 4-period convention.
+PERIOD_GROUPS = {"Peak": ["AM", "PM"], "Off-Peak": ["MD", "EV"]}
+
+# "Free time added back to households" (memo section 6) is scoped to the
+# peak periods specifically, not toggle-able -- kept as its own name (rather
+# than always reading PERIOD_GROUPS["Peak"]) since build_hbw_trip_length()'s
+# TAZ-Based Metrics filter (a different, unrelated metric) also uses it.
+PEAK_PERIODS = PERIOD_GROUPS["Peak"]
 
 
 def _latest_runs() -> dict:
@@ -366,6 +375,29 @@ def _with_meta(df: pd.DataFrame) -> pd.DataFrame:
     return df.merge(SCENARIO_META, on="scenario_id")
 
 
+def _add_period_dim(df: pd.DataFrame, group_cols: list, metric_cols: dict) -> pd.DataFrame:
+    """Expands one row per group_cols (already carrying summed AM_<m>/MD_<m>/
+    PM_<m>/EV_<m> columns for each metric) into two rows per group -- one per
+    PERIOD_GROUPS key -- adding a "period" column ("Peak"/"Off-Peak") for
+    chart_utils.figure_with_shift_toggle's period_col to filter on.
+
+    metric_cols maps each desired OUTPUT column name (e.g. "DY_VMT") to the
+    underlying per-period metric suffix (e.g. "VMT", summing AM_VMT+PM_VMT
+    for the Peak row, MD_VMT+EV_VMT for Off-Peak). Output columns keep their
+    original DY_-prefixed names deliberately, even though they now hold a
+    period-specific sum rather than a true all-day one, so every existing
+    chart reading delta_DY_VMT/pct_DY_VMT/etc. keeps working unchanged --
+    only the .qmd call site needs to add period_col="period"."""
+    frames = []
+    for period, periods in PERIOD_GROUPS.items():
+        sub = df[group_cols].copy()
+        sub["period"] = period
+        for out_col, metric in metric_cols.items():
+            sub[out_col] = df[[f"{p}_{metric}" for p in periods]].sum(axis=1)
+        frames.append(sub)
+    return pd.concat(frames, ignore_index=True)
+
+
 def _add_delta(df: pd.DataFrame, group_cols: list, value_cols: list) -> pd.DataFrame:
     """Adds delta_<col> = <col> - baseline's <col>, matched on group_cols
     (excluding scenario_id/geography_label/shift_pct, which differ from the
@@ -398,15 +430,18 @@ def _segid_by_county(segid_df: pd.DataFrame) -> pd.DataFrame:
 def build_corridor_volumes(segid_df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.DataFrame:
     """Volume/VMT/VHD by named corridor and scenario, region-wide (summed
     across whichever counties a corridor passes through) -- memo section
-    6's corridor detail. Only SEGIDs matched to a named corridor are kept."""
+    6's corridor detail. Only SEGIDs matched to a named corridor are kept.
+
+    Adds a "period" column (Peak=AM+PM / Off-Peak=MD+EV, see PERIOD_GROUPS)
+    for a Peak/Off-Peak chart toggle -- DY_Vol/DY_VMT/DY_VHD keep their
+    original names but now hold period-specific sums, not true daily ones;
+    see _add_period_dim."""
     merged = segid_df.merge(crosswalk[["SEGID", "corridor_label"]], on="SEGID", how="inner")
-    agg = merged.groupby(["scenario_id", "corridor_label"], as_index=False).agg(
-        AM_Vol=("AM_Vol", "sum"), MD_Vol=("MD_Vol", "sum"), PM_Vol=("PM_Vol", "sum"),
-        EV_Vol=("EV_Vol", "sum"), DY_Vol=("DY_Vol", "sum"),
-        DY_VMT=("DY_VMT", "sum"), DY_VHD=("DY_VHD", "sum"),
-    )
+    period_agg_cols = {f"{p}_{m}": (f"{p}_{m}", "sum") for p in ("AM", "MD", "PM", "EV") for m in ("Vol", "VMT", "VHD")}
+    agg = merged.groupby(["scenario_id", "corridor_label"], as_index=False).agg(**period_agg_cols)
+    agg = _add_period_dim(agg, ["scenario_id", "corridor_label"], {"DY_Vol": "Vol", "DY_VMT": "VMT", "DY_VHD": "VHD"})
     agg = _with_meta(agg)
-    return _add_delta(agg, ["corridor_label"], ["AM_Vol", "MD_Vol", "PM_Vol", "EV_Vol", "DY_Vol", "DY_VMT", "DY_VHD"])
+    return _add_delta(agg, ["corridor_label", "period"], ["DY_Vol", "DY_VMT", "DY_VHD"])
 
 
 def build_freeway_corridors_by_county(segid_df: pd.DataFrame, crosswalk: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
@@ -414,30 +449,31 @@ def build_freeway_corridors_by_county(segid_df: pd.DataFrame, crosswalk: pd.Data
     (FREEWAY_CORRIDORS), broken out by the county each segment actually
     sits in -- e.g. I-15 in Salt Lake County vs. I-15 in Davis County --
     rather than build_corridor_volumes()'s single region-wide total per
-    corridor."""
+    corridor. Adds a "period" column, see build_corridor_volumes."""
     fips_to_name = hh_df[["CO_FIPS", "CO_NAME"]].drop_duplicates().set_index("CO_FIPS")["CO_NAME"]
     merged = segid_df.merge(crosswalk[["SEGID", "corridor_label"]], on="SEGID", how="inner")
     merged = merged[merged["corridor_label"].isin(FREEWAY_CORRIDORS)].copy()
     merged["CO_NAME"] = merged["CO_FIPS"].map(fips_to_name)
-    agg = merged.groupby(["scenario_id", "corridor_label", "CO_NAME"], as_index=False).agg(
-        DY_Vol=("DY_Vol", "sum"), DY_VMT=("DY_VMT", "sum"), DY_VHD=("DY_VHD", "sum"),
-    )
+    period_agg_cols = {f"{p}_{m}": (f"{p}_{m}", "sum") for p in ("AM", "MD", "PM", "EV") for m in ("Vol", "VMT", "VHD")}
+    agg = merged.groupby(["scenario_id", "corridor_label", "CO_NAME"], as_index=False).agg(**period_agg_cols)
+    agg = _add_period_dim(agg, ["scenario_id", "corridor_label", "CO_NAME"], {"DY_Vol": "Vol", "DY_VMT": "VMT", "DY_VHD": "VHD"})
     agg = _with_meta(agg)
-    return _add_delta(agg, ["corridor_label", "CO_NAME"], ["DY_Vol", "DY_VMT", "DY_VHD"])
+    return _add_delta(agg, ["corridor_label", "CO_NAME", "period"], ["DY_Vol", "DY_VMT", "DY_VHD"])
 
 
 def build_corridor_orientation_summary(segid_df: pd.DataFrame, crosswalk: pd.DataFrame) -> pd.DataFrame:
     """VMT/VHD summed across all named corridors sharing the same
     predominant orientation (CORRIDOR_ORIENTATION: N/S, E/W, or Loop for
     I-215 specifically) -- a region-wide rollup, not broken out by
-    individual corridor or county."""
+    individual corridor or county. Adds a "period" column, see
+    build_corridor_volumes."""
     merged = segid_df.merge(crosswalk[["SEGID", "corridor_label"]], on="SEGID", how="inner")
     merged["orientation"] = merged["corridor_label"].map(CORRIDOR_ORIENTATION)
-    agg = merged.groupby(["scenario_id", "orientation"], as_index=False).agg(
-        DY_Vol=("DY_Vol", "sum"), DY_VMT=("DY_VMT", "sum"), DY_VHD=("DY_VHD", "sum"),
-    )
+    period_agg_cols = {f"{p}_{m}": (f"{p}_{m}", "sum") for p in ("AM", "MD", "PM", "EV") for m in ("Vol", "VMT", "VHD")}
+    agg = merged.groupby(["scenario_id", "orientation"], as_index=False).agg(**period_agg_cols)
+    agg = _add_period_dim(agg, ["scenario_id", "orientation"], {"DY_Vol": "Vol", "DY_VMT": "VMT", "DY_VHD": "VHD"})
     agg = _with_meta(agg)
-    return _add_delta(agg, ["orientation"], ["DY_Vol", "DY_VMT", "DY_VHD"])
+    return _add_delta(agg, ["orientation", "period"], ["DY_Vol", "DY_VMT", "DY_VHD"])
 
 
 def build_vmt_vhd_by_county_facility(segid_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
@@ -445,41 +481,43 @@ def build_vmt_vhd_by_county_facility(segid_df: pd.DataFrame, hh_df: pd.DataFrame
     type -- memo section 6's headline (VHD) and explanatory (VMT) tables.
     Excludes FTCLASS == "Local" -- a tiny, incidental slice of SEGID rows
     (21 of ~4,500 in a typical scenario) not part of the facility-type
-    breakdown the memo asks for."""
+    breakdown the memo asks for. Adds a "period" column, see
+    build_corridor_volumes."""
     fips_to_name = hh_df[["CO_FIPS", "CO_NAME"]].drop_duplicates().set_index("CO_FIPS")["CO_NAME"]
     df = segid_df[segid_df["FTCLASS"] != "Local"].copy()
     df["CO_NAME"] = df["CO_FIPS"].map(fips_to_name)
 
-    by_county = df.groupby(["scenario_id", "CO_NAME", "FTCLASS"], as_index=False).agg(
-        DY_VMT=("DY_VMT", "sum"), DY_VHD=("DY_VHD", "sum"),
-    )
-    region = df.groupby(["scenario_id", "FTCLASS"], as_index=False).agg(
-        DY_VMT=("DY_VMT", "sum"), DY_VHD=("DY_VHD", "sum"),
-    )
+    period_agg_cols = {f"{p}_{m}": (f"{p}_{m}", "sum") for p in ("AM", "MD", "PM", "EV") for m in ("VMT", "VHD")}
+    by_county = df.groupby(["scenario_id", "CO_NAME", "FTCLASS"], as_index=False).agg(**period_agg_cols)
+    region = df.groupby(["scenario_id", "FTCLASS"], as_index=False).agg(**period_agg_cols)
     region["CO_NAME"] = "Region"
     combined = pd.concat([by_county, region], ignore_index=True)
+    combined = _add_period_dim(combined, ["scenario_id", "CO_NAME", "FTCLASS"], {"DY_VMT": "VMT", "DY_VHD": "VHD"})
     combined = _with_meta(combined)
-    return _add_delta(combined, ["CO_NAME", "FTCLASS"], ["DY_VMT", "DY_VHD"])
+    return _add_delta(combined, ["CO_NAME", "FTCLASS", "period"], ["DY_VMT", "DY_VHD"])
 
 
 def build_vht_per_household(segid_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
     """Peak-period (AM+PM) VHT per household, by county + region -- memo's
-    'free time added back to households' metric."""
+    'free time added back to households' metric -- was previously fixed at
+    Peak (AM+PM), now also builds the Off-Peak (MD+EV) counterpart and adds
+    a "period" column, see build_corridor_volumes."""
     fips_to_name = hh_df[["CO_FIPS", "CO_NAME"]].drop_duplicates().set_index("CO_FIPS")["CO_NAME"]
     df = segid_df.copy()
     df["CO_NAME"] = df["CO_FIPS"].map(fips_to_name)
-    df["PEAK_VHT"] = df[[f"{p}_VHT" for p in PEAK_PERIODS]].sum(axis=1)
 
-    by_county = df.groupby(["scenario_id", "CO_NAME"], as_index=False)["PEAK_VHT"].sum()
-    region = df.groupby("scenario_id", as_index=False)["PEAK_VHT"].sum()
+    period_agg_cols = {f"{p}_VHT": (f"{p}_VHT", "sum") for p in ("AM", "MD", "PM", "EV")}
+    by_county = df.groupby(["scenario_id", "CO_NAME"], as_index=False).agg(**period_agg_cols)
+    region = df.groupby("scenario_id", as_index=False).agg(**period_agg_cols)
     region["CO_NAME"] = "Region"
     combined = pd.concat([by_county, region], ignore_index=True)
+    combined = _add_period_dim(combined, ["scenario_id", "CO_NAME"], {"VHT": "VHT"})
 
     hh = build_county_hh(hh_df)[["CO_NAME", "TOTHH"]]
     combined = combined.merge(hh, on="CO_NAME", how="left")
-    combined["VHT_PER_HH"] = combined["PEAK_VHT"] / combined["TOTHH"]
+    combined["VHT_PER_HH"] = combined["VHT"] / combined["TOTHH"]
     combined = _with_meta(combined)
-    return _add_delta(combined, ["CO_NAME"], ["PEAK_VHT", "VHT_PER_HH"])
+    return _add_delta(combined, ["CO_NAME", "period"], ["VHT", "VHT_PER_HH"])
 
 
 def build_transit_ridership(route_df: pd.DataFrame) -> pd.DataFrame:

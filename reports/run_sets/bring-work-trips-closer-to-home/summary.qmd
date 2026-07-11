@@ -120,17 +120,17 @@ This is not a land-use forecast. It is a directional, order-of-magnitude check o
 #| output: asis
 
 def _row(geo):
-    v = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['geography_label'] == geo) & (vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT)]
+    v = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['geography_label'] == geo) & (vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT) & (vmt_vhd['period'] == 'Peak')]
     vhd = v['delta_DY_VHD'].sum()
     vmt = v['delta_DY_VMT'].sum()
-    hh_rows = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['geography_label'] == geo) & (vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT)]
+    hh_rows = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['geography_label'] == geo) & (vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT) & (vht_hh['period'] == 'Peak')]
     hh = hh_rows['delta_VHT_PER_HH'].iloc[0]
     return vhd, vmt, hh
 
 city_vhd, city_vmt, city_hh = _row('City Area')
 display(Markdown(
-    f"- At a **{PRIMARY_SHIFT_PCT}% shift**, **City Area** redistribution reduces region-wide daily vehicle-hours of "
-    f"delay (VHD) by roughly **{abs(city_vhd):,.0f} hours/day** and daily VMT by roughly "
+    f"- At a **{PRIMARY_SHIFT_PCT}% shift**, **City Area** redistribution reduces region-wide Peak-period "
+    f"vehicle-hours of delay (VHD) by roughly **{abs(city_vhd):,.0f} hours/day** and Peak-period VMT by roughly "
     f"**{abs(city_vmt):,.0f} miles/day** — a small fraction of regional totals, but directionally "
     "consistent with what the mechanism should produce.\n"
     f"- Peak-period vehicle-hours of travel per household falls by about **{abs(city_hh)*60:.1f} minutes/day** "
@@ -140,7 +140,8 @@ display(Markdown(
     "- **Transit ridership on TRAX, FrontRunner, and bus all decline slightly** under all three geography types — "
     "shortening commutes reduces the number of trips long enough for transit to compete on, an "
     "important, non-obvious side effect (see [Transit Ridership](#transit-ridership)).\n"
-    "- Most charts below let you **toggle between shift levels** as more scenarios complete — "
+    "- Most charts below let you **toggle between shift levels**, and the VMT/VHD/VHT charts also toggle "
+    "between **Peak and Off-Peak** periods, as more scenarios complete — "
     "see [Caveats](#caveats-and-interpretation) before drawing conclusions regardless of level."
 ))
 ```
@@ -183,7 +184,7 @@ This is the headline metric — congestion is what people actually feel, more th
 
 vhd_df = vmt_vhd[vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO].copy()
 vhd_df['CO_NAME'] = pd.Categorical(vhd_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
-vhd_by_county = vhd_df.groupby(['CO_NAME', 'geography_label', 'shift_pct'], as_index=False, observed=True)[['delta_DY_VHD', 'base_DY_VHD']].sum()
+vhd_by_county = vhd_df.groupby(['CO_NAME', 'geography_label', 'shift_pct', 'period'], as_index=False, observed=True)[['delta_DY_VHD', 'base_DY_VHD']].sum()
 vhd_by_county['pct_DY_VHD'] = vhd_by_county['delta_DY_VHD'] / vhd_by_county['base_DY_VHD'] * 100
 
 def _build_vhd_county(sub, y_col='delta_DY_VHD'):
@@ -192,17 +193,18 @@ def _build_vhd_county(sub, y_col='delta_DY_VHD'):
         barmode='group',
         category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'CO_NAME': 'County', y_col: 'Change in Daily VHD (hours/day)', 'geography_label': 'Geography Type'},
+        labels={'CO_NAME': 'County', y_col: 'Change in VHD (hours/day)', 'geography_label': 'Geography Type'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
 fig = figure_with_shift_toggle(
     vhd_by_county, _build_vhd_county, pct_col='pct_DY_VHD',
-    value_axis_title='Change in Daily VHD (hours/day)', pct_axis_title='Change in Daily VHD (%)',
+    value_axis_title='Change in VHD (hours/day)', pct_axis_title='Change in VHD (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(
-    title=dict(text='Change in Daily Vehicle-Hours of Delay vs. Baseline<br><sup>All facility types</sup>', font_size=15),
+    title=dict(text='Change in Vehicle-Hours of Delay vs. Baseline<br><sup>All facility types</sup>', font_size=15),
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
@@ -218,7 +220,7 @@ Salt Lake and Utah counties see the largest absolute VHD reductions under every 
 
 vhd_ft_df = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)].copy()
 vhd_ft_df['pct_DY_VHD'] = vhd_ft_df['delta_DY_VHD'] / vhd_ft_df['base_DY_VHD'] * 100
-ft_order = vhd_ft_df.groupby('FTCLASS')['delta_DY_VHD'].sum().sort_values().index.tolist()
+ft_order = vhd_ft_df[vhd_ft_df['period'] == 'Peak'].groupby('FTCLASS')['delta_DY_VHD'].sum().sort_values().index.tolist()
 
 def _build_vhd_facility(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
@@ -226,7 +228,7 @@ def _build_vhd_facility(sub, y_col='delta_DY_VHD'):
         barmode='group',
         category_orders={'FTCLASS': ft_order, 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'FTCLASS': 'Facility Type', y_col: 'Change in Daily VHD (hours/day), Region', 'geography_label': 'Geography Type'},
+        labels={'FTCLASS': 'Facility Type', y_col: 'Change in VHD (hours/day), Region', 'geography_label': 'Geography Type'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-15)
@@ -234,10 +236,11 @@ def _build_vhd_facility(sub, y_col='delta_DY_VHD'):
 
 fig = figure_with_shift_toggle(
     vhd_ft_df, _build_vhd_facility, pct_col='pct_DY_VHD',
-    value_axis_title='Change in Daily VHD (hours/day), Region', pct_axis_title='Change in Daily VHD (%), Region',
+    value_axis_title='Change in VHD (hours/day), Region', pct_axis_title='Change in VHD (%), Region',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(
-    title=dict(text='Region-Wide Change in Daily VHD by Facility Type', font_size=15),
+    title=dict(text='Region-Wide Change in VHD by Facility Type', font_size=15),
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
@@ -255,7 +258,7 @@ VMT is explanatory here, not the headline: shorter commutes mean less driving, a
 ```{python}
 #| label: fig-vmt-county
 
-vmt_by_county = vhd_df.groupby(['CO_NAME', 'geography_label', 'shift_pct'], as_index=False, observed=True)[['delta_DY_VMT', 'base_DY_VMT']].sum()
+vmt_by_county = vhd_df.groupby(['CO_NAME', 'geography_label', 'shift_pct', 'period'], as_index=False, observed=True)[['delta_DY_VMT', 'base_DY_VMT']].sum()
 vmt_by_county['pct_DY_VMT'] = vmt_by_county['delta_DY_VMT'] / vmt_by_county['base_DY_VMT'] * 100
 
 def _build_vmt_county(sub, y_col='delta_DY_VMT'):
@@ -264,17 +267,18 @@ def _build_vmt_county(sub, y_col='delta_DY_VMT'):
         barmode='group',
         category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'CO_NAME': 'County', y_col: 'Change in Daily VMT (miles/day)', 'geography_label': 'Geography Type'},
+        labels={'CO_NAME': 'County', y_col: 'Change in VMT (miles/day)', 'geography_label': 'Geography Type'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
 fig = figure_with_shift_toggle(
     vmt_by_county, _build_vmt_county, pct_col='pct_DY_VMT',
-    value_axis_title='Change in Daily VMT (miles/day)', pct_axis_title='Change in Daily VMT (%)',
+    value_axis_title='Change in VMT (miles/day)', pct_axis_title='Change in VMT (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(
-    title=dict(text='Change in Daily Vehicle Miles Traveled vs. Baseline<br><sup>All facility types</sup>', font_size=15),
+    title=dict(text='Change in Vehicle Miles Traveled vs. Baseline<br><sup>All facility types</sup>', font_size=15),
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
@@ -287,12 +291,12 @@ Region-wide, the shift reduces daily VMT across all geography types — City Are
 
 ## Corridor Detail {#corridor-detail}
 
-Volume and delay change on the region's major corridors, City Area first (the lead geography), **fixed at the 10% shift level** (this table isn't a Plotly chart, so the toggle buttons above don't apply to it). Corridors are ranked by City Area's VHD impact.
+Volume and delay change on the region's major corridors, City Area first (the lead geography), **fixed at the 10% shift level, Peak period** (this table isn't a Plotly chart, so the toggle buttons above don't apply to it). Corridors are ranked by City Area's VHD impact.
 
 ```{python}
 #| label: tbl-corridor-city
 
-corridor_volumes_primary = corridor_volumes[corridor_volumes['shift_pct'] == PRIMARY_SHIFT_PCT]
+corridor_volumes_primary = corridor_volumes[(corridor_volumes['shift_pct'] == PRIMARY_SHIFT_PCT) & (corridor_volumes['period'] == 'Peak')]
 
 city_corr = corridor_volumes_primary[corridor_volumes_primary['geography_label'] == 'City Area'].sort_values('delta_DY_VHD')
 corr_order = city_corr['corridor_label'].tolist()
@@ -331,7 +335,7 @@ def _build_corridor_compare(sub, y_col='delta_DY_VHD'):
         barmode='group',
         category_orders={'corridor_label': corr_order, 'geography_label': ['Medium District', 'Workshop Area']},
         color_discrete_map=GEO_COLORS,
-        labels={'corridor_label': 'Corridor', y_col: 'Δ Daily VHD (hrs)', 'geography_label': 'Geography Type'},
+        labels={'corridor_label': 'Corridor', y_col: 'Δ VHD (hrs)', 'geography_label': 'Geography Type'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-45)
@@ -339,7 +343,8 @@ def _build_corridor_compare(sub, y_col='delta_DY_VHD'):
 
 fig = figure_with_shift_toggle(
     others_all, _build_corridor_compare, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(
     title=dict(text='Corridor VHD Change — Medium District &amp; Workshop Area<br><sup>Same corridor order as City Area above</sup>', font_size=14),
@@ -352,7 +357,7 @@ The same corridors move in the same direction under all three geography types, a
 
 ### Freeway Corridors by County {#freeway-by-county}
 
-Freeway/expressway corridors carry the bulk of the region's through traffic; a shared-name corridor like I-15 actually spans several counties, so here each freeway corridor is broken into the county each segment sits in instead of one blended region-wide total. City Area only (the lead geography), toggle by shift level.
+Freeway/expressway corridors carry the bulk of the region's through traffic; a shared-name corridor like I-15 actually spans several counties, so here each freeway corridor is broken into the county each segment sits in instead of one blended region-wide total. City Area only (the lead geography), toggle by shift level and Peak/Off-Peak.
 
 ```{python}
 #| label: fig-freeway-county
@@ -372,7 +377,7 @@ def _build_freeway_county(sub, y_col='delta_DY_VHD'):
         sub, x='corridor_label', y=y_col, color='CO_NAME',
         barmode='group',
         category_orders={'corridor_label': freeway_order, 'CO_NAME': COUNTY_ORDER},
-        labels={'corridor_label': 'Freeway Corridor', y_col: 'Δ Daily VHD (hrs)', 'CO_NAME': 'County'},
+        labels={'corridor_label': 'Freeway Corridor', y_col: 'Δ VHD (hrs)', 'CO_NAME': 'County'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-20)
@@ -380,7 +385,8 @@ def _build_freeway_county(sub, y_col='delta_DY_VHD'):
 
 fig = figure_with_shift_toggle(
     freeway_city, _build_freeway_county, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(
     title=dict(text='Freeway Corridor VHD Change by County<br><sup>City Area scenario</sup>', font_size=15),
@@ -408,14 +414,15 @@ def _build_orientation(sub, y_col='delta_DY_VHD'):
         barmode='group',
         category_orders={'orientation': ['N/S', 'E/W', 'Loop'], 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'orientation': 'Corridor Orientation', y_col: 'Δ Daily VHD (hrs)', 'geography_label': 'Geography Type'},
+        labels={'orientation': 'Corridor Orientation', y_col: 'Δ VHD (hrs)', 'geography_label': 'Geography Type'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
 fig = figure_with_shift_toggle(
     orientation_df, _build_orientation, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(
     title=dict(text='Change in Daily VHD by Corridor Orientation', font_size=15),
@@ -466,7 +473,7 @@ Boardings decline slightly across every rail line and the bus aggregate, under e
 
 ---
 
-## Free Time Added Back: Peak-Period VHT per Household {#free-time-added-back}
+## Free Time Added Back: VHT per Household {#free-time-added-back}
 
 This metric deliberately uses **vehicle-hours of travel (VHT)**, not VHD. VHD (used in the [congestion section](#congestion-vehicle-hours-of-delay) above) only captures the delay component of travel time; VHT is the full realized travel time — free-flow time plus delay — so it also picks up the time households save simply because their trips are now *shorter*, not only because those trips hit less congestion. That's the more complete read on "time given back to households."
 
@@ -485,24 +492,25 @@ def _build_vht_hh(sub, y_col='delta_VHT_PER_HH_min'):
         barmode='group',
         category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'CO_NAME': 'County', y_col: 'Change in Peak VHT / Household (min/day)', 'geography_label': 'Geography Type'},
+        labels={'CO_NAME': 'County', y_col: 'Change in VHT / Household (min/day)', 'geography_label': 'Geography Type'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
 fig = figure_with_shift_toggle(
     vht_plot, _build_vht_hh, pct_col='pct_VHT_PER_HH',
-    value_axis_title='Change in Peak VHT / Household (min/day)', pct_axis_title='Change in Peak VHT / Household (%)',
+    value_axis_title='Change in VHT / Household (min/day)', pct_axis_title='Change in VHT / Household (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(
-    title=dict(text='Change in Peak-Period Vehicle-Hours of Travel per Household<br><sup>AM + PM periods</sup>', font_size=15),
+    title=dict(text='Change in Vehicle-Hours of Travel per Household<br><sup>Peak = AM+PM, Off-Peak = MD+EV</sup>', font_size=15),
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
 fig.show(config=CHART_CONFIG)
 ```
 
-Region-wide, peak VHT per household falls under every geography type — a small but directionally meaningful amount of time given back to the average household, on top of whatever congestion relief accrues to specific corridors above.
+Region-wide, VHT per household falls under every geography type at both Peak and Off-Peak — a small but directionally meaningful amount of time given back to the average household, on top of whatever congestion relief accrues to specific corridors above.
 
 ---
 
@@ -721,13 +729,13 @@ HBW mode share barely moves at any shift level — consistent with the mechanism
 
 ## Cross-Scale Comparison {#cross-scale-comparison}
 
-All three geography types, side by side, **fixed at the 10% shift level** (this table isn't toggle-enabled). Region-wide figures.
+All three geography types, side by side, **fixed at the 10% shift level, Peak period** (this table isn't toggle-enabled). Region-wide figures.
 
 ```{python}
 #| label: tbl-cross-scale
 
-vmt_vhd_primary = vmt_vhd[vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT]
-vht_hh_primary = vht_hh[vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT]
+vmt_vhd_primary = vmt_vhd[(vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT) & (vmt_vhd['period'] == 'Peak')]
+vht_hh_primary = vht_hh[(vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT) & (vht_hh['period'] == 'Peak')]
 trip_length_primary = trip_length[trip_length['shift_pct'] == PRIMARY_SHIFT_PCT]
 transit_primary = transit[transit['shift_pct'] == PRIMARY_SHIFT_PCT]
 
@@ -739,18 +747,18 @@ for geo in GEO_ORDER:
     tl = trip_length_primary[(trip_length_primary['CO_NAME'] == 'Region') & (trip_length_primary['geography_label'] == geo)]['delta_trip_length'].iloc[0]
     board = transit_primary[transit_primary['geography_label'] == geo]['delta_Boardings'].sum()
     rows.append({
-        'Geography Type': geo, 'Δ Daily VHD (hrs)': vhd, 'Δ Daily VMT (mi)': vmt,
+        'Geography Type': geo, 'Δ VHD (hrs)': vhd, 'Δ VMT (mi)': vmt,
         'Δ Peak VHT/HH (min)': hh_min, 'Δ HBW Trip Length (mi)': tl, 'Δ Transit Boardings': board,
     })
 cross = pd.DataFrame(rows)
 
 display(cross.style
     .format({
-        'Δ Daily VHD (hrs)': '{:+,.0f}', 'Δ Daily VMT (mi)': '{:+,.0f}',
+        'Δ VHD (hrs)': '{:+,.0f}', 'Δ VMT (mi)': '{:+,.0f}',
         'Δ Peak VHT/HH (min)': '{:+.2f}', 'Δ HBW Trip Length (mi)': '{:+.3f}',
         'Δ Transit Boardings': '{:+,.0f}',
     })
-    .set_caption(f'Region-wide change vs. baseline, {PRIMARY_SHIFT_PCT}% shift level')
+    .set_caption(f'Region-wide change vs. baseline, {PRIMARY_SHIFT_PCT}% shift level, Peak period')
     .set_table_styles([
         {'selector': 'caption', 'props': [('font-size', '0.9em'), ('font-style', 'italic')]},
         {'selector': 'th', 'props': [('background-color', '#2a78d6'), ('color', 'white'), ('font-weight', 'bold')]},

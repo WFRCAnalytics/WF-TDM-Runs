@@ -53,10 +53,12 @@ CITY_ORDER = sorted(loader.TARGET_CITIES.keys())
 TRANSIT_LINE_ORDER = ['FrontRunner', 'TRAX Blue Line', 'TRAX Green Line', 'TRAX Red Line', loader.BUS_LABEL]
 shifted_ids = [s for s in scenario_ids if s != loader.BASELINE_SCENARIO]
 
-# Most charts below toggle between shift levels (chart_utils.figure_with_shift_toggle,
-# buttons top-right of each chart). A couple of fixed-number callouts/tables stay
-# pinned at PRIMARY_SHIFT_PCT since they're styled dataframes, not Plotly figures,
-# and can't use the same toggle trick.
+# Most charts below toggle between shift levels, and the VMT/VHD/VHT charts
+# also toggle between Peak (AM+PM) and Off-Peak (MD+EV) -- both via
+# chart_utils.figure_with_shift_toggle's button rows. A couple of
+# fixed-number callouts/tables stay pinned at PRIMARY_SHIFT_PCT (and Peak,
+# where relevant) since they're styled dataframes, not Plotly figures, and
+# can't use the same toggle trick.
 PRIMARY_SHIFT_PCT = 10
 ```
 
@@ -96,7 +98,7 @@ This deck extends automatically as more scenarios complete.
 ```{python}
 #| fig-align: center
 vhd_region_df = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)]
-vhd_region_df = vhd_region_df.groupby(['geography_label', 'shift_pct'], as_index=False)[['delta_DY_VHD', 'base_DY_VHD']].sum()
+vhd_region_df = vhd_region_df.groupby(['geography_label', 'shift_pct', 'period'], as_index=False)[['delta_DY_VHD', 'base_DY_VHD']].sum()
 vhd_region_df['pct_DY_VHD'] = vhd_region_df['delta_DY_VHD'] / vhd_region_df['base_DY_VHD'] * 100
 
 def _build_vhd_region(sub, y_col='delta_DY_VHD'):
@@ -111,9 +113,10 @@ def _build_vhd_region(sub, y_col='delta_DY_VHD'):
 
 fig = figure_with_shift_toggle(
     vhd_region_df, _build_vhd_region, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
-fig.update_layout(height=460, title=dict(text='Change in Daily Vehicle-Hours of Delay, Region', font_size=15))
+fig.update_layout(height=460, title=dict(text='Change in Vehicle-Hours of Delay, Region', font_size=15))
 fig.show(config=CHART_CONFIG)
 ```
 
@@ -124,7 +127,7 @@ fig.show(config=CHART_CONFIG)
 vhd_df = vmt_vhd.copy()
 vhd_df['CO_NAME'] = pd.Categorical(vhd_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
 vhd_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
-    ['CO_NAME', 'geography_label', 'shift_pct'], as_index=False, observed=True
+    ['CO_NAME', 'geography_label', 'shift_pct', 'period'], as_index=False, observed=True
 )[['delta_DY_VHD', 'base_DY_VHD']].sum()
 vhd_by_county['pct_DY_VHD'] = vhd_by_county['delta_DY_VHD'] / vhd_by_county['base_DY_VHD'] * 100
 
@@ -132,16 +135,17 @@ def _build_vhd_county(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
         sub, x='CO_NAME', y=y_col, color='geography_label', barmode='group',
         category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'CO_NAME': 'County', y_col: 'Δ Daily VHD (hrs)', 'geography_label': 'Geography'},
+        labels={'CO_NAME': 'County', y_col: 'Δ VHD (hrs)', 'geography_label': 'Geography'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
 fig = figure_with_shift_toggle(
     vhd_by_county, _build_vhd_county, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
-fig.update_layout(height=460, title=dict(text='Change in Daily VHD by County', font_size=15))
+fig.update_layout(height=460, title=dict(text='Change in VHD by County', font_size=15))
 fig.show(config=CHART_CONFIG)
 ```
 
@@ -150,7 +154,7 @@ fig.show(config=CHART_CONFIG)
 ```{python}
 #| fig-align: center
 vmt_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
-    ['CO_NAME', 'geography_label', 'shift_pct'], as_index=False, observed=True
+    ['CO_NAME', 'geography_label', 'shift_pct', 'period'], as_index=False, observed=True
 )[['delta_DY_VMT', 'base_DY_VMT']].sum()
 vmt_by_county['pct_DY_VMT'] = vmt_by_county['delta_DY_VMT'] / vmt_by_county['base_DY_VMT'] * 100
 
@@ -158,16 +162,17 @@ def _build_vmt_county(sub, y_col='delta_DY_VMT'):
     fig = px.bar(
         sub, x='CO_NAME', y=y_col, color='geography_label', barmode='group',
         category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'CO_NAME': 'County', y_col: 'Δ Daily VMT (mi)', 'geography_label': 'Geography'},
+        labels={'CO_NAME': 'County', y_col: 'Δ VMT (mi)', 'geography_label': 'Geography'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
 fig = figure_with_shift_toggle(
     vmt_by_county, _build_vmt_county, pct_col='pct_DY_VMT',
-    value_axis_title='Δ Daily VMT (mi)', pct_axis_title='Δ Daily VMT (%)',
+    value_axis_title='Δ VMT (mi)', pct_axis_title='Δ VMT (%)',
+    period_col='period', default_period='Peak',
 )
-fig.update_layout(height=460, title=dict(text='Change in Daily VMT by County', font_size=15))
+fig.update_layout(height=460, title=dict(text='Change in VMT by County', font_size=15))
 fig.show(config=CHART_CONFIG)
 ```
 
@@ -181,6 +186,7 @@ Shorter commutes mean less driving; less driving on congested facilities is why 
 #| fig-align: center
 city_corr_primary = corridor_volumes[
     (corridor_volumes['geography_label'] == 'City Area') & (corridor_volumes['shift_pct'] == PRIMARY_SHIFT_PCT)
+    & (corridor_volumes['period'] == 'Peak')
 ].sort_values('delta_DY_VHD')
 top8_order = city_corr_primary['corridor_label'].head(8).tolist()
 
@@ -194,7 +200,7 @@ def _build_top8(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
         sub, x='corridor_label', y=y_col, color_discrete_sequence=[GEO_COLORS['City Area']],
         category_orders={'corridor_label': top8_order},
-        labels={'corridor_label': 'Corridor', y_col: 'Δ Daily VHD (hrs)'},
+        labels={'corridor_label': 'Corridor', y_col: 'Δ VHD (hrs)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-30)
@@ -202,13 +208,14 @@ def _build_top8(sub, y_col='delta_DY_VHD'):
 
 fig = figure_with_shift_toggle(
     city_corr_all, _build_top8, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(height=460, title=dict(text='Top 8 Corridors by VHD Reduction — City Area', font_size=15))
 fig.show(config=CHART_CONFIG)
 ```
 
-I-15, Redwood Road, Mountain View Corridor, and I-215 see the largest reductions.
+I-15, Redwood Road, Mountain View Corridor, and I-215 see the largest reductions (Peak period, ranking fixed at the primary shift level).
 
 ## Freeway Corridors by County {.smaller}
 
@@ -225,7 +232,7 @@ def _build_freeway_county(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
         sub, x='corridor_label', y=y_col, color='CO_NAME', barmode='group',
         category_orders={'corridor_label': freeway_order, 'CO_NAME': COUNTY_ORDER},
-        labels={'corridor_label': 'Freeway Corridor', y_col: 'Δ Daily VHD (hrs)', 'CO_NAME': 'County'},
+        labels={'corridor_label': 'Freeway Corridor', y_col: 'Δ VHD (hrs)', 'CO_NAME': 'County'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-20)
@@ -233,7 +240,8 @@ def _build_freeway_county(sub, y_col='delta_DY_VHD'):
 
 fig = figure_with_shift_toggle(
     freeway_city, _build_freeway_county, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
 fig.update_layout(height=460, title=dict(text='Freeway Corridor VHD Change by County — City Area', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -253,16 +261,17 @@ def _build_orientation(sub, y_col='delta_DY_VHD'):
         sub, x='orientation', y=y_col, color='geography_label', barmode='group',
         category_orders={'orientation': ['N/S', 'E/W', 'Loop'], 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'orientation': 'Corridor Orientation', y_col: 'Δ Daily VHD (hrs)', 'geography_label': 'Geography'},
+        labels={'orientation': 'Corridor Orientation', y_col: 'Δ VHD (hrs)', 'geography_label': 'Geography'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
 fig = figure_with_shift_toggle(
     orientation_df, _build_orientation, pct_col='pct_DY_VHD',
-    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak',
 )
-fig.update_layout(height=460, title=dict(text='Change in Daily VHD by Corridor Orientation', font_size=15))
+fig.update_layout(height=460, title=dict(text='Change in VHD by Corridor Orientation', font_size=15))
 fig.show(config=CHART_CONFIG)
 ```
 
@@ -308,7 +317,7 @@ def _build_vht_region(sub, y_col='delta_VHT_PER_HH_min'):
     fig = px.bar(
         sub, x='geography_label', y=y_col, color='geography_label',
         category_orders={'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'geography_label': '', y_col: 'Δ Peak VHT/HH (min)'},
+        labels={'geography_label': '', y_col: 'Δ VHT/HH (min)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(showlegend=False)
@@ -316,9 +325,10 @@ def _build_vht_region(sub, y_col='delta_VHT_PER_HH_min'):
 
 fig = figure_with_shift_toggle(
     region_hh, _build_vht_region, pct_col='pct_VHT_PER_HH',
-    value_axis_title='Δ Peak VHT/HH (min)', pct_axis_title='Δ Peak VHT/HH (%)',
+    value_axis_title='Δ VHT/HH (min)', pct_axis_title='Δ VHT/HH (%)',
+    period_col='period', default_period='Peak',
 )
-fig.update_layout(height=420, title=dict(text='Peak VHT / Household', font_size=14))
+fig.update_layout(height=420, title=dict(text='VHT / Household', font_size=14))
 fig.show(config=CHART_CONFIG)
 ```
 :::
@@ -429,8 +439,8 @@ Ogden, Layton, Salt Lake City, West Jordan, Saratoga Springs — City Area scena
 ```{python}
 #| echo: false
 #| output: asis
-vmt_vhd_primary = vmt_vhd[vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT]
-vht_hh_primary = vht_hh[vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT]
+vmt_vhd_primary = vmt_vhd[(vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT) & (vmt_vhd['period'] == 'Peak')]
+vht_hh_primary = vht_hh[(vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT) & (vht_hh['period'] == 'Peak')]
 trip_length_primary = trip_length[trip_length['shift_pct'] == PRIMARY_SHIFT_PCT]
 
 rows = []
@@ -445,7 +455,7 @@ display(pd.DataFrame(rows).style.hide(axis='index')
         .set_table_styles([{'selector': 'th', 'props': [('background-color', '#2a78d6'), ('color', 'white')]}]))
 ```
 
-Fixed at the 10% shift level. City Area and Medium District track closely; Workshop Area is consistently smaller — the coarsest geography, fewer areas region-wide.
+Fixed at the 10% shift level, Peak period (AM+PM). City Area and Medium District track closely; Workshop Area is consistently smaller — the coarsest geography, fewer areas region-wide.
 
 ## Caveats {.smaller}
 

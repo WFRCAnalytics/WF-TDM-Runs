@@ -90,9 +90,13 @@ def _fixed_range(y_lists, pad_frac=0.08):
     return [lo - pad, hi + pad]
 
 
+_NO_PERIOD = "__no_period__"
+
+
 def figure_with_shift_toggle(
     df, build_fig, shift_col="shift_pct", default_shift=10, shift_label_fmt="{v}%", always_include=(),
     pct_col=None, value_axis_title=None, pct_axis_title=None,
+    period_col=None, default_period=None, period_order=None,
 ):
     """Builds one figure per available shift_pct value in df (via
     build_fig(subset_df_for_that_shift) -- typically a small wrapper around
@@ -142,7 +146,30 @@ def figure_with_shift_toggle(
     at once, separately for Absolute and % Change mode, so neither button
     row rescales the axis when clicked -- only _fixed_range's own padding
     changes the range, never a click.
+
+    period_col, if given, names a column (e.g. "period", values like "Peak"/
+    "Off-Peak") that adds a THIRD, independent row of buttons filtering df
+    to one period at a time -- df is filtered to period_col == p (in
+    addition to the shift_col/always_include filtering) before build_fig is
+    called for every (shift, period) combination. Unlike pct_col, this is
+    VISIBILITY-based, the same mechanism as the shift-level toggle itself
+    (build_fig produces a genuinely different set of traces per period,
+    rather than just a different y-column) -- necessary because period
+    changes what rows feed the aggregation (e.g. sum of AM+PM SEGID columns
+    vs. MD+EV), not just which column of an already-aggregated row to plot.
+
+    Because both shift-level and period are visibility-based, they can't be
+    made fully independent without custom client-side JS tracking which
+    button was clicked last (static Plotly updatemenus can't read each
+    other's current state) -- clicking a period button resets the shift
+    level to default_shift, and clicking a shift button resets the period to
+    default_period. This is a deliberate, documented simplification, not an
+    oversight: full 3-way independence (shift x period x value-mode) would
+    need a real client-side callback. The Absolute/% Change row (pct_col),
+    being y-swap based rather than visibility-based, remains fully
+    independent of both shift level and period regardless.
     """
+    have_period = period_col is not None
     all_values = sorted(df[shift_col].unique())
     shift_levels = [v for v in all_values if v not in always_include]
     if not shift_levels:
@@ -150,68 +177,103 @@ def figure_with_shift_toggle(
     if default_shift not in shift_levels:
         default_shift = shift_levels[0]
 
-    per_shift_figs = {
-        s: build_fig(df[df[shift_col].isin([*always_include, s])]) for s in shift_levels
-    }
-    n_traces = len(per_shift_figs[shift_levels[0]].data)
-    for s, f in per_shift_figs.items():
+    if have_period:
+        periods = period_order or sorted(df[period_col].unique())
+        if default_period is None or default_period not in periods:
+            default_period = periods[0]
+    else:
+        periods = [_NO_PERIOD]
+        default_period = _NO_PERIOD
+
+    def _subset(s, p):
+        mask = df[shift_col].isin([*always_include, s])
+        if have_period:
+            mask &= df[period_col] == p
+        return df[mask]
+
+    per_cell_figs = {(s, p): build_fig(_subset(s, p)) for s in shift_levels for p in periods}
+    n_traces = len(per_cell_figs[(shift_levels[0], periods[0])].data)
+    for (s, p), f in per_cell_figs.items():
         if len(f.data) != n_traces:
             raise ValueError(
-                f"Shift level {s} produced {len(f.data)} trace(s), expected {n_traces} (from "
-                f"shift level {shift_levels[0]}) -- category_orders/color_discrete_map must be "
-                "identical across shift levels for the toggle to swap between them cleanly."
+                f"Shift level {s}, period {p!r} produced {len(f.data)} trace(s), expected "
+                f"{n_traces} (from shift level {shift_levels[0]}, period {periods[0]!r}) -- "
+                "category_orders/color_discrete_map must be identical across every shift "
+                "level/period combination for the toggle to swap between them cleanly."
             )
 
-    per_shift_pct_figs = None
+    per_cell_pct_figs = None
     if pct_col is not None:
-        per_shift_pct_figs = {
-            s: build_fig(df[df[shift_col].isin([*always_include, s])], y_col=pct_col) for s in shift_levels
+        per_cell_pct_figs = {
+            (s, p): build_fig(_subset(s, p), y_col=pct_col) for s in shift_levels for p in periods
         }
-        for s, f in per_shift_pct_figs.items():
+        for (s, p), f in per_cell_pct_figs.items():
             if len(f.data) != n_traces:
                 raise ValueError(
-                    f"Percent-mode figure for shift level {s} produced {len(f.data)} trace(s), "
-                    f"expected {n_traces} -- build_fig(sub, y_col=pct_col) must produce the same "
-                    "trace structure as build_fig(sub)."
+                    f"Percent-mode figure for shift level {s}, period {p!r} produced "
+                    f"{len(f.data)} trace(s), expected {n_traces} -- build_fig(sub, "
+                    "y_col=pct_col) must produce the same trace structure as build_fig(sub)."
                 )
 
     combined = go.Figure()
     for s in shift_levels:
-        for trace in per_shift_figs[s].data:
-            trace.visible = s == default_shift
-            combined.add_trace(trace)
-    combined.layout = per_shift_figs[default_shift].layout
+        for p in periods:
+            for trace in per_cell_figs[(s, p)].data:
+                trace.visible = s == default_shift and p == default_period
+                combined.add_trace(trace)
+    combined.layout = per_cell_figs[(default_shift, default_period)].layout
 
-    # Fixed y-axis range spanning every shift level (not just default_shift)
-    # so toggling between 5%/10%/25% restyles which bars are visible without
-    # also rescaling the axis -- a rescale on every click makes it hard to
-    # judge whether one shift level's effect is actually bigger than
+    # Fixed y-axis range spanning every shift level and period at once (not
+    # just the default cell) so toggling restyles which bars are visible
+    # without also rescaling the axis -- a rescale on every click makes it
+    # hard to judge whether one selection's effect is actually bigger than
     # another's at a glance.
-    abs_range = _fixed_range(trace.y for f in per_shift_figs.values() for trace in f.data)
+    abs_range = _fixed_range(trace.y for f in per_cell_figs.values() for trace in f.data)
     if abs_range is not None:
         combined.update_layout(yaxis=dict(range=abs_range))
 
-    buttons = []
-    for i, s in enumerate(shift_levels):
-        visible = [False] * (n_traces * len(shift_levels))
-        for j in range(n_traces):
-            visible[i * n_traces + j] = True
-        buttons.append(dict(label=shift_label_fmt.format(v=s), method="update", args=[{"visible": visible}]))
+    def _visible_for(fixed_shift=None, fixed_period=None):
+        visible = []
+        for s in shift_levels:
+            for p in periods:
+                match = (fixed_shift is None or s == fixed_shift) and (fixed_period is None or p == fixed_period)
+                visible.extend([match] * n_traces)
+        return visible
 
+    shift_buttons = [
+        dict(
+            label=shift_label_fmt.format(v=s), method="update",
+            args=[{"visible": _visible_for(fixed_shift=s, fixed_period=default_period)}],
+        )
+        for s in shift_levels
+    ]
     updatemenus = [
         dict(
-            type="buttons", direction="right", buttons=buttons, showactive=True,
+            type="buttons", direction="right", buttons=shift_buttons, showactive=True,
             x=1, xanchor="right", y=1.15, yanchor="bottom", pad=dict(r=5, t=5),
         )
     ]
 
-    if per_shift_pct_figs is not None:
-        abs_y = [list(per_shift_figs[s].data[j].y) for s in shift_levels for j in range(n_traces)]
-        pct_y = [list(per_shift_pct_figs[s].data[j].y) for s in shift_levels for j in range(n_traces)]
+    if have_period:
+        period_buttons = [
+            dict(
+                label=str(p), method="update",
+                args=[{"visible": _visible_for(fixed_shift=default_shift, fixed_period=p)}],
+            )
+            for p in periods
+        ]
+        updatemenus.append(dict(
+            type="buttons", direction="right", buttons=period_buttons, showactive=True,
+            x=1, xanchor="right", y=1.0, yanchor="bottom", pad=dict(r=5, t=5),
+        ))
+
+    if per_cell_pct_figs is not None:
+        abs_y = [list(per_cell_figs[(s, p)].data[j].y) for s in shift_levels for p in periods for j in range(n_traces)]
+        pct_y = [list(per_cell_pct_figs[(s, p)].data[j].y) for s in shift_levels for p in periods for j in range(n_traces)]
         # Same fixed-range treatment as abs_range above, computed separately
         # since percent values live on a different scale than the raw units
-        # -- each mode gets its own range, fixed across all shift levels.
-        pct_range = _fixed_range(trace.y for f in per_shift_pct_figs.values() for trace in f.data)
+        # -- each mode gets its own range, fixed across every shift/period.
+        pct_range = _fixed_range(trace.y for f in per_cell_pct_figs.values() for trace in f.data)
         value_axis_title = value_axis_title or combined.layout.yaxis.title.text
         pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
         updatemenus.append(dict(
