@@ -302,12 +302,12 @@ city_corr = corridor_volumes_primary[corridor_volumes_primary['geography_label']
 corr_order = city_corr['corridor_label'].tolist()
 
 tbl = city_corr[['corridor_label', 'DY_Vol', 'delta_DY_Vol', 'DY_VHD', 'delta_DY_VHD']].rename(columns={
-    'corridor_label': 'Corridor', 'DY_Vol': 'Daily Volume', 'delta_DY_Vol': 'Δ Volume',
-    'DY_VHD': 'Daily VHD (hrs)', 'delta_DY_VHD': 'Δ VHD (hrs)',
+    'corridor_label': 'Corridor', 'DY_Vol': 'Peak Volume', 'delta_DY_Vol': 'Δ Volume',
+    'DY_VHD': 'Peak VHD (hrs)', 'delta_DY_VHD': 'Δ VHD (hrs)',
 })
 display(tbl.style
-    .format({'Daily Volume': '{:,.0f}', 'Δ Volume': '{:+,.0f}', 'Daily VHD (hrs)': '{:,.0f}', 'Δ VHD (hrs)': '{:+,.0f}'})
-    .set_caption(f'City Area ({PRIMARY_SHIFT_PCT}% shift) — corridor volume and delay change vs. baseline')
+    .format({'Peak Volume': '{:,.0f}', 'Δ Volume': '{:+,.0f}', 'Peak VHD (hrs)': '{:,.0f}', 'Δ VHD (hrs)': '{:+,.0f}'})
+    .set_caption(f'City Area ({PRIMARY_SHIFT_PCT}% shift, Peak period) — corridor volume and delay change vs. baseline')
     .set_table_styles([
         {'selector': 'caption', 'props': [('font-size', '0.9em'), ('font-style', 'italic')]},
         {'selector': 'th', 'props': [('background-color', '#2a78d6'), ('color', 'white'), ('font-weight', 'bold')]},
@@ -425,7 +425,7 @@ fig = figure_with_shift_toggle(
     period_col='period', default_period='Peak',
 )
 fig.update_layout(
-    title=dict(text='Change in Daily VHD by Corridor Orientation', font_size=15),
+    title=dict(text='Change in VHD by Corridor Orientation', font_size=15),
     height=440, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
@@ -551,7 +551,7 @@ Average HBW trip length falls region-wide under every geography type — the mos
 
 ### Trip Length Distribution {#trip-length-distribution}
 
-The average above is one number; the full distribution shows *how* the shift happens — fewer long-distance commutes, more short ones — built directly from the origin-destination trip matrix and distance skim (region-wide, all HBW trips regardless of mode, in 2-mile bins), not the production-side estimate used for the average. The baseline curve is shown alongside whichever shift level is selected.
+The average above is one number; the full distribution shows *how* the shift happens — fewer long-distance commutes, more short ones — built directly from the origin-destination trip matrix and distance skim (region-wide, all HBW trips regardless of mode, in 2-mile bins), not the production-side estimate used for the average. The baseline curve is shown alongside whichever shift level is selected, and both the trips and the distance skim are Peak/Off-Peak-correct (see the methodology note under Caveats).
 
 ```{python}
 #| label: fig-trip-length-dist
@@ -570,7 +570,10 @@ def _build_trip_length_dist(sub):
     fig.update_traces(selector=dict(name='Baseline'), line=dict(color='black', dash='dash', width=2), marker=dict(color='black'))
     return fig
 
-fig = figure_with_shift_toggle(td, _build_trip_length_dist, always_include=[0])
+fig = figure_with_shift_toggle(
+    td, _build_trip_length_dist, always_include=[0],
+    period_col='period', default_period='Peak',
+)
 fig.update_layout(
     title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>Region-wide, weighted by O-D trip volume, 2-mile bins</sup>', font_size=15),
     height=460, margin=dict(t=80),
@@ -589,12 +592,13 @@ rows = []
 for geo in GEO_ORDER:
     v = trip_length_avg[
         (trip_length_avg['geography_label'] == geo) & (trip_length_avg['shift_pct'] == PRIMARY_SHIFT_PCT)
+        & (trip_length_avg['period'] == 'Peak')
     ]['delta_weighted_avg_trip_length']
     if len(v):
         rows.append(f"- **{geo}**: weighted-average trip length changes by **{v.iloc[0]:+.2f} miles**.")
 display(Markdown(
-    f"Cross-check against the production-side average above, **fixed at the {PRIMARY_SHIFT_PCT}% shift level** "
-    "(independent methodology — full O-D skim × trip volume, not PMT/trips):\n\n" + "\n".join(rows)
+    f"Cross-check against the production-side average above, **fixed at the {PRIMARY_SHIFT_PCT}% shift level, "
+    "Peak period** (independent methodology — full O-D skim × trip volume, not PMT/trips):\n\n" + "\n".join(rows)
 ))
 ```
 
@@ -795,7 +799,7 @@ This is a **sketch-level, order-of-magnitude test**, not a land-use or economic 
 
 **A note on run status.** Closer01–06's `run_metadata.json` originally recorded these runs as `failed` (Cube Voyager's cluster-shutdown step returned a nonzero exit code after the model had already completed and written all outputs) — verified by inspecting each run's Voyager print log, which shows every step completing and `TOTAL MODEL RUN TIME` logged before the exit-code issue. Outputs were re-curated via `tdmruns import-manual-run`, which recorded a clean `success` status against the same underlying model run.
 
-**Shift-level toggle.** Most charts pre-build every available shift level's traces and use Plotly's `updatemenus` (client-side show/hide buttons) to switch between them, since a static Quarto render has no backend to re-run Python on a click. A handful of tables and narrative figures are pandas-styled dataframes, not Plotly figures, so the same toggle doesn't apply to them — those stay fixed at the 10% shift level and say so explicitly. Most of those same charts also carry a second, independent row of buttons ("Absolute" / "% Change") to view each value as a percent of its own baseline instead of a raw unit change — useful for judging a change's size relative to what it's changing from, not just its absolute magnitude. It's independent of the shift-level toggle (it restyles trace values rather than trace visibility), so the two can be used in any combination.
+**Shift-level toggle.** Most charts pre-build every available shift level's traces and use Plotly's `updatemenus` (client-side show/hide buttons) to switch between them, since a static Quarto render has no backend to re-run Python on a click. A handful of tables and narrative figures are pandas-styled dataframes, not Plotly figures, so the same toggle doesn't apply to them — those stay fixed at the 10% shift level and say so explicitly. Most VMT/VHD/VHT charts also carry a Peak/Off-Peak row (same show/hide mechanism, applied to a second, independent dimension) and a third, independent row of buttons ("Absolute" / "% Change") to view each value as a percent of its own baseline instead of a raw unit change. The Absolute/% Change row restyles trace *values* rather than trace *visibility*, so it composes freely with both the shift-level and Peak/Off-Peak rows. Shift level and Peak/Off-Peak, however, both restyle visibility — clicking one resets the other to its default (Peak, 10%), since a static page has no way for one button to know what another button currently has selected; see `reports/chart_utils.py`'s `figure_with_shift_toggle` docstring.
 
 **Freeway/orientation groupings.** `run_sets/bring-work-trips-closer-to-home/report_loader.py`'s `FREEWAY_CORRIDORS` and `CORRIDOR_ORIENTATION` are a manual, corridor-level classification (not a per-segment geometric analysis): freeway/expressway status matches the scoping memo's own grouping and is consistent with each corridor's dominant `FTCLASS` in `Summary_SEGID.csv`; orientation (N/S vs. E/W) reflects each corridor's predominant real-world heading, except I-215, which loops around Salt Lake County and gets its own "Loop" category rather than being forced into either.
 
@@ -805,4 +809,4 @@ This is a **sketch-level, order-of-magnitude test**, not a land-use or economic 
 
 **Data completeness.** See the note at the top of this page for the current count of verified shift scenarios. Corridor definitions: `run_sets/bring-work-trips-closer-to-home/inputs/corridor_segid_crosswalk.csv`, built from the network's link file (`tdm/1_Inputs/3_Highway/GIS/WFv1000_MasterNet_*.dbf`) with manual keyword matching and priority tie-breaking at interchange segments — see `REPORT_PLAN.md` for the full method.
 
-**Trip length distribution data.** The distribution above (and its weighted-average cross-check) is built from two curated matrix extracts, not from a summary CSV: the `GP_Dist` table of the final daily highway skim (`5_AssignHwy/5_FinalNetSkims/Skm_DY.mtx`) and the `motor`/`nonmotor` tables of the post-mode-choice HBW trip matrix (`4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_pkok.mtx`) — both several hundred MB in full, curated down to small single/two-table OMX files via a new `outputs.include` `matrix:`/`tabs:` entry type (see `run_set.yaml`), which invokes Cube Voyager's CONVERTMAT at curation time. The trip matrix's raw values are stored at 100x scale (confirmed empirically against `_ZoneSummary_TripsByMode.csv`'s trusted total, within 0.001%) and divided back down in `report_loader.py`. Distance-skim cells at Cube's `NOACCESS` sentinel (9999, unconnected zone pairs) are excluded before binning, now in 5-mile bins.
+**Trip length distribution data.** The distribution above (and its weighted-average cross-check) is built from curated matrix extracts, not from a summary CSV, and is Peak/Off-Peak-correct: Peak rows pair the `motor`/`nonmotor` tables of the Peak-only HBW trip matrix (`4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_Pk.mtx`) against a Peak distance skim (the unweighted average of the `GP_Dist` tables of the AM and PM final skims, `5_AssignHwy/5_FinalNetSkims/Skm_AM.mtx`/`Skm_PM.mtx`); Off-Peak rows pair the Ok trip matrix against the MD/EV skims' averaged `GP_Dist`. Averaging is unweighted because HBW trips are only ever split this coarsely (Peak/Off-Peak), not further into AM/MD/PM/EV, so there's no period-specific trip volume to weight the distance average by — a reasonable simplification since AM/MD/PM/EV/DY `GP_Dist` means differ by well under 1% of each other in practice (distance is a largely static network attribute along whichever path was assigned). An earlier version of this chart used a single all-day (`Skm_DY.mtx`) distance skim applied uniformly to the combined Peak+Off-Peak (`HBW_trips_allsegs_pkok.mtx`) trip matrix, mismatching trips against a distance that wasn't specific to when they actually travel. All of these matrices are several hundred MB in full, curated down to small single/two-table OMX files via the `outputs.include` `matrix:`/`tabs:` entry type (see `run_set.yaml`), which invokes Cube Voyager's CONVERTMAT at curation time. The trip matrices' raw values are stored at 100x scale (confirmed empirically against `_ZoneSummary_TripsByMode.csv`'s trusted total, within 0.001%) and divided back down in `report_loader.py`. Distance-skim cells at Cube's `NOACCESS` sentinel (9999, unconnected zone pairs) are excluded before binning, now in 2-mile bins.

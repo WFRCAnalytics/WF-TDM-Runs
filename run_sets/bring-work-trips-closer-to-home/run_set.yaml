@@ -27,9 +27,24 @@ outputs:
       columns: [TAZID, Metric, Purpose, Period, PA, Total]
     - datafile: "4_ModeChoice/3_TransitAssign/*_transit_brding_summary_route.csv"
     - datafile: "0_InputProcessing/*SE_File.dbf"
-    - matrix: "5_AssignHwy/5_FinalNetSkims/*Skm_DY.mtx"
+    # Period-specific final skims (5_AssignHwy/5_FinalNetSkims) and
+    # Peak/Off-Peak-split HBW trip matrices, for the trip-length
+    # distribution's Peak/Off-Peak toggle -- see report_loader.py's
+    # build_hbw_trip_length_distribution(). Replaced the single
+    # all-4-period Skm_DY.mtx + combined HBW_trips_allsegs_pkok.mtx this
+    # run_set curated originally, which mismatched trips against a distance
+    # skim that wasn't specific to when they actually travel.
+    - matrix: "5_AssignHwy/5_FinalNetSkims/*Skm_AM.mtx"
       tabs: [GP_Dist]
-    - matrix: "4_ModeChoice/2_DetailedTripMatrices/*HBW_trips_allsegs_pkok.mtx"
+    - matrix: "5_AssignHwy/5_FinalNetSkims/*Skm_MD.mtx"
+      tabs: [GP_Dist]
+    - matrix: "5_AssignHwy/5_FinalNetSkims/*Skm_PM.mtx"
+      tabs: [GP_Dist]
+    - matrix: "5_AssignHwy/5_FinalNetSkims/*Skm_EV.mtx"
+      tabs: [GP_Dist]
+    - matrix: "4_ModeChoice/2_DetailedTripMatrices/*HBW_trips_allsegs_Pk.mtx"
+      tabs: [motor, nonmotor]
+    - matrix: "4_ModeChoice/2_DetailedTripMatrices/*HBW_trips_allsegs_Ok.mtx"
       tabs: [motor, nonmotor]
   max_file_size_mb: 95
 

@@ -58,11 +58,9 @@ _SUFFIX_SEGID = "Summary_SEGID_filtered.csv"
 _SUFFIX_TAZ_METRICS = "TAZ-Based Metrics_filtered.csv"
 _SUFFIX_TRANSIT_ROUTE = "_transit_brding_summary_route.csv"
 _SUFFIX_SE_FILE = "SE_File.dbf"
-_SUFFIX_SKIM = "Skm_DY.omx"
-_SUFFIX_HBW_MATRIX = "HBW_trips_allsegs_pkok.omx"
 
-# HBW_trips_allsegs_pkok.mtx's "motor"/"nonmotor" tables (and every other
-# table in it) are stored at 100x scale -- confirmed empirically: (motor +
+# HBW_trips_allsegs_*.mtx's "motor"/"nonmotor" tables (and every other
+# table in them) are stored at 100x scale -- confirmed empirically: (motor +
 # nonmotor summed across the whole matrix) / 100 matches
 # _ZoneSummary_TripsByMode.csv's HBW/Dy/P region total (1,879,445) within
 # 0.001% (raw sum was 187,947,222). A Cube Voyager fixed-point convention
@@ -280,31 +278,55 @@ def load_city_taz_lookup() -> pd.DataFrame:
     return out[out["city_label"].notna()][["TAZID", "city_label"]]
 
 
-def load_distance_skim_from_runs(scenario_id: str) -> np.ndarray:
-    """Full TAZ x TAZ GP_Dist array (daily) from the curated single-tab
-    skim OMX -- see run_set.yaml's matrix:/tabs: entry for how this got
-    curated down from the ~400 MB source Skm_DY.mtx."""
+# 5_AssignHwy/5_FinalNetSkims/*Skm_<sub_period>.mtx, one file per
+# final-assignment time period, each carrying a GP_Dist table.
+_SUFFIX_SKIM_SUB_PERIOD = {"AM": "Skm_AM.omx", "MD": "Skm_MD.omx", "PM": "Skm_PM.omx", "EV": "Skm_EV.omx"}
+
+# 4_ModeChoice/2_DetailedTripMatrices/*HBW_trips_allsegs_<Pk|Ok>.mtx -- HBW
+# trips are only ever split this coarsely (Peak/Off-Peak), never down to
+# individual AM/MD/PM/EV the way the final skims above are.
+_SUFFIX_HBW_MATRIX_PERIOD = {"Peak": "HBW_trips_allsegs_Pk.omx", "Off-Peak": "HBW_trips_allsegs_Ok.omx"}
+
+
+def load_distance_skim_sub_period_from_runs(scenario_id: str, sub_period: str) -> np.ndarray:
+    """Full TAZ x TAZ GP_Dist array for one of the 4 final-skim time periods
+    (sub_period in "AM"/"MD"/"PM"/"EV") -- the period-correct distance
+    source, as opposed to load_distance_skim_from_runs's single all-day
+    (DY) skim reused for every trip regardless of when it travels."""
     import openmatrix as omx
-    f = omx.open_file(_curated_path(scenario_id, _SUFFIX_SKIM), "r")
+    f = omx.open_file(_curated_path(scenario_id, _SUFFIX_SKIM_SUB_PERIOD[sub_period]), "r")
     try:
         return np.array(f["GP_Dist"])
     finally:
         f.close()
 
 
-def load_distance_skim(scenario_id: str) -> np.ndarray:
+def load_distance_skim_for_period_from_runs(scenario_id: str, period: str) -> np.ndarray:
+    """Peak (AM+PM) or Off-Peak (MD+EV) distance skim -- an unweighted
+    average of its two constituent sub-periods' GP_Dist arrays (see
+    PERIOD_GROUPS). Unweighted because the HBW trip matrices are only ever
+    split Peak/Off-Peak, not further into AM/MD/PM/EV, so there's no
+    period-specific trip volume to weight by; this is a deliberate
+    simplification, reasonable in practice since AM/MD/PM/EV/DY skim means
+    all fall within about 1% of each other (GP_Dist barely varies by
+    period -- distance is a largely static network attribute along
+    whichever path was assigned, confirmed empirically for this run set)."""
+    parts = [load_distance_skim_sub_period_from_runs(scenario_id, p) for p in PERIOD_GROUPS[period]]
+    return np.mean(parts, axis=0)
+
+
+def load_distance_skim_for_period(scenario_id: str, period: str) -> np.ndarray:
     if rd.is_retired(RUN_SET_ID):
-        return np.load(_snapshot_path(f"{scenario_id}_gp_dist.npy"))
-    return load_distance_skim_from_runs(scenario_id)
+        return np.load(_snapshot_path(f"{scenario_id}_gp_dist_{period}.npy"))
+    return load_distance_skim_for_period_from_runs(scenario_id, period)
 
 
-def load_hbw_trip_matrix_from_runs(scenario_id: str) -> np.ndarray:
-    """Full TAZ x TAZ HBW trip-volume array (all modes, both periods
-    combined), from the curated two-tab OMX ("motor" + "nonmotor" --
-    together they cover every mode in HBW_trips_allsegs_pkok.mtx), scaled
-    down by HBW_MATRIX_SCALE."""
+def load_hbw_trip_matrix_for_period_from_runs(scenario_id: str, period: str) -> np.ndarray:
+    """Full TAZ x TAZ HBW trip-volume array for Peak or Off-Peak only (as
+    opposed to load_hbw_trip_matrix_from_runs's Peak+Off-Peak combined),
+    from the curated two-tab OMX, scaled down by HBW_MATRIX_SCALE."""
     import openmatrix as omx
-    f = omx.open_file(_curated_path(scenario_id, _SUFFIX_HBW_MATRIX), "r")
+    f = omx.open_file(_curated_path(scenario_id, _SUFFIX_HBW_MATRIX_PERIOD[period]), "r")
     try:
         motor = np.array(f["motor"])
         nonmotor = np.array(f["nonmotor"])
@@ -313,61 +335,73 @@ def load_hbw_trip_matrix_from_runs(scenario_id: str) -> np.ndarray:
     return (motor + nonmotor) / HBW_MATRIX_SCALE
 
 
-def load_hbw_trip_matrix(scenario_id: str) -> np.ndarray:
+def load_hbw_trip_matrix_for_period(scenario_id: str, period: str) -> np.ndarray:
     if rd.is_retired(RUN_SET_ID):
-        return np.load(_snapshot_path(f"{scenario_id}_hbw_matrix.npy"))
-    return load_hbw_trip_matrix_from_runs(scenario_id)
+        return np.load(_snapshot_path(f"{scenario_id}_hbw_matrix_{period}.npy"))
+    return load_hbw_trip_matrix_for_period_from_runs(scenario_id, period)
 
 
 def build_hbw_trip_length_distribution(scenario_ids: list) -> dict:
     """Trip-volume-weighted HBW trip-length frequency distribution (O-D
-    skim distance x O-D trip volume, binned), one curve per scenario, plus
-    a weighted-average trip length as a cross-check against
-    build_hbw_trip_length()'s independent PMT/trips-based average -- the two
-    are computed from entirely different sources (full O-D skim x matrix
-    here, production-side PMT/trip totals there) and should be close, not
-    identical. Built region-wide only (not by county): the point of this
-    view is the shape of the curve, not another county breakdown.
+    skim distance x O-D trip volume, binned), one curve per scenario x
+    period (Peak/Off-Peak, see PERIOD_GROUPS -- a "period" column drives
+    chart_utils.figure_with_shift_toggle's Peak/Off-Peak toggle), plus a
+    weighted-average trip length per scenario x period as a cross-check
+    against build_hbw_trip_length()'s independent PMT/trips-based average
+    -- the two are computed from entirely different sources (full O-D skim
+    x matrix here, production-side PMT/trip totals there) and should be
+    close, not identical. Built region-wide only (not by county): the
+    point of this view is the shape of the curve, not another county
+    breakdown.
 
-    Only scenarios with both curated matrix outputs are included -- silently
-    skips any that haven't been backfilled yet, matching
-    available_scenario_ids()'s "grows as more scenarios land" philosophy.
-    NOACCESS-sentinel (9999) skim cells are excluded before binning so a
-    handful of technically-unconnected zone pairs can't masquerade as
-    extreme-long trips.
+    Distance and trips are both period-correct: Peak rows pair the Peak
+    HBW trip matrix (HBW_trips_allsegs_Pk.mtx) against the Peak (AM+PM
+    average) distance skim, Off-Peak rows pair the Ok trip matrix against
+    the Off-Peak (MD+EV average) skim -- see load_distance_skim_for_period/
+    load_hbw_trip_matrix_for_period. Previously this used a single DY
+    (all-4-period) distance skim applied uniformly to the combined
+    Peak+Off-Peak (pkok) trip matrix, mismatching trips against a distance
+    that wasn't specific to when they actually travel.
+
+    Only scenarios with all four period skims and both Peak/Off-Peak
+    matrices curated are included -- silently skips any that haven't been
+    backfilled yet, matching available_scenario_ids()'s "grows as more
+    scenarios land" philosophy. NOACCESS-sentinel (9999) skim cells are
+    excluded before binning so a handful of technically-unconnected zone
+    pairs can't masquerade as extreme-long trips.
     """
+    required_suffixes = [*_SUFFIX_SKIM_SUB_PERIOD.values(), *_SUFFIX_HBW_MATRIX_PERIOD.values()]
     have_matrices = []
     for scenario_id in scenario_ids:
         run = _latest_runs().get(scenario_id)
         paths = rd.curated_output_paths(run) if run else []
-        if any(p.endswith(_SUFFIX_SKIM) for p in paths) and any(
-            p.endswith(_SUFFIX_HBW_MATRIX) for p in paths
-        ):
+        if all(any(p.endswith(suffix) for p in paths) for suffix in required_suffixes):
             have_matrices.append(scenario_id)
 
     dist_rows = []
     avg_rows = []
     for scenario_id in have_matrices:
-        dist = load_distance_skim(scenario_id)
-        trips = load_hbw_trip_matrix(scenario_id)
+        for period in PERIOD_GROUPS:
+            dist = load_distance_skim_for_period(scenario_id, period)
+            trips = load_hbw_trip_matrix_for_period(scenario_id, period)
 
-        valid = dist < SKIM_NOACCESS_SENTINEL
-        flat_dist = dist[valid]
-        flat_trips = trips[valid]
-        total_trips = flat_trips.sum()
+            valid = dist < SKIM_NOACCESS_SENTINEL
+            flat_dist = dist[valid]
+            flat_trips = trips[valid]
+            total_trips = flat_trips.sum()
 
-        bin_trips, _ = np.histogram(flat_dist, bins=DISTANCE_BIN_EDGES, weights=flat_trips)
-        for label, t in zip(DISTANCE_BIN_LABELS, bin_trips):
-            dist_rows.append({
-                "scenario_id": scenario_id, "bin_label": label, "trips": t,
-                "share_pct": (t / total_trips * 100) if total_trips else float("nan"),
-            })
+            bin_trips, _ = np.histogram(flat_dist, bins=DISTANCE_BIN_EDGES, weights=flat_trips)
+            for label, t in zip(DISTANCE_BIN_LABELS, bin_trips):
+                dist_rows.append({
+                    "scenario_id": scenario_id, "bin_label": label, "period": period, "trips": t,
+                    "share_pct": (t / total_trips * 100) if total_trips else float("nan"),
+                })
 
-        weighted_avg = (flat_dist * flat_trips).sum() / total_trips if total_trips else float("nan")
-        avg_rows.append({"scenario_id": scenario_id, "weighted_avg_trip_length": weighted_avg})
+            weighted_avg = (flat_dist * flat_trips).sum() / total_trips if total_trips else float("nan")
+            avg_rows.append({"scenario_id": scenario_id, "period": period, "weighted_avg_trip_length": weighted_avg})
 
-    distribution = _add_delta(_with_meta(pd.DataFrame(dist_rows)), ["bin_label"], ["trips", "share_pct"])
-    average = _add_delta(_with_meta(pd.DataFrame(avg_rows)), [], ["weighted_avg_trip_length"])
+    distribution = _add_delta(_with_meta(pd.DataFrame(dist_rows)), ["bin_label", "period"], ["trips", "share_pct"])
+    average = _add_delta(_with_meta(pd.DataFrame(avg_rows)), ["period"], ["weighted_avg_trip_length"])
     return {"distribution": distribution, "average": average}
 
 

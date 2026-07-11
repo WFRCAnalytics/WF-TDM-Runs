@@ -26,7 +26,17 @@ def convert_mtx_to_omx(mtx_path: Path, omx_path: Path, voyager_exe: str):
     # dedicated temp dir keeps those out of omx_path's own directory (which,
     # for outputs.py's matrix curation, is the run's committed outputs/
     # folder; those incidental artifacts must never end up there).
-    with tempfile.TemporaryDirectory(prefix="convertmat_") as work_dir_str:
+    # ignore_cleanup_errors: Voyager's own process exit (via the `start /w`
+    # wrapper) doesn't always release its file handles on this directory's
+    # contents (TPPL*.PRN/.VAR/.PRJ logs) the instant it returns -- observed
+    # in practice as an intermittent WinError 32 ("file in use") from this
+    # context manager's own teardown, even though the conversion itself had
+    # already succeeded. The scratch files left behind are harmless (OS temp
+    # cleanup reclaims them eventually); letting this raise was worse, since
+    # it aborted extract_matrix_tabs() before its own temp_full_omx cleanup
+    # could run, stranding a full (unrimmed, sometimes 100+ MB) matrix
+    # conversion in the destination's own directory.
+    with tempfile.TemporaryDirectory(prefix="convertmat_", ignore_cleanup_errors=True) as work_dir_str:
         work_dir = Path(work_dir_str)
         script_path = work_dir / f"_convert_in_{mtx_path.stem}.s"
         bat_path = work_dir / f"_convert_in_{mtx_path.stem}.bat"
@@ -41,7 +51,8 @@ def convert_mtx_to_omx(mtx_path: Path, omx_path: Path, voyager_exe: str):
 
 
 def convert_omx_to_mtx(omx_path: Path, mtx_path: Path, voyager_exe: str):
-    with tempfile.TemporaryDirectory(prefix="convertmat_") as work_dir_str:
+    # ignore_cleanup_errors: see convert_mtx_to_omx's comment above.
+    with tempfile.TemporaryDirectory(prefix="convertmat_", ignore_cleanup_errors=True) as work_dir_str:
         work_dir = Path(work_dir_str)
         script_path = work_dir / f"_convert_out_{mtx_path.stem}.s"
         bat_path = work_dir / f"_convert_out_{mtx_path.stem}.bat"
@@ -69,8 +80,8 @@ def extract_matrix_tabs(
     to be read by Cube Voyager itself, not Python."""
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     temp_full_omx = dest_path.parent / f"_full_{source_mtx.stem}.omx"
-    convert_mtx_to_omx(source_mtx, temp_full_omx, voyager_exe)
     try:
+        convert_mtx_to_omx(source_mtx, temp_full_omx, voyager_exe)
         trimmed_omx = dest_path if output_format == "omx" else (
             dest_path.parent / f"_trimmed_{source_mtx.stem}.omx"
         )
