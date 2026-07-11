@@ -20,17 +20,11 @@ area. Fixed by also pinning the title near the very top of the figure
 both, verified against single-line and two-line (title+<br><sup>subtitle)
 titles alike.
 
-The top margin stacks three tiers, top to bottom: title (SLIDE_TITLE,
-pinned near the absolute top of the figure via container-relative y, so
-its position doesn't shift with margin/plot-height changes) -> toggle
-buttons, where present (figure_with_shift_toggle's updatemenus, plot-area-
-relative y) -> legend (SLIDE_LEGEND, also plot-area-relative, closest tier
-to the plot). Toggle buttons used to float above the legend, even above
-the title on some charts -- moved below the title on purpose, since
-buttons floating above everything else read as disconnected from the
-chart they control. SLIDE_MARGIN's t is sized for exactly this three-tier
-stack; if any tier's y moves, re-check the other two don't collide (see
-the pixel-math approach in the session that introduced this ordering).
+figure_with_shift_toggle's own toggle-button rows used to live in this same
+top margin, stacked below the title and above the legend. They were moved
+BELOW the plot instead (see figure_with_shift_toggle's docstring) so the
+top margin only ever has to reserve room for title + legend, a fixed
+two-tier stack -- SLIDE_MARGIN's t is sized for exactly that now.
 """
 import math
 
@@ -45,32 +39,44 @@ import plotly.io as pio
 CHART_CONFIG = {"displayModeBar": False}
 
 # Legend: a horizontal band top-left (clear of Plotly's top-right modebar),
-# the tier closest to the plot -- sits right at the plot's own top edge
-# (y=1.0), below both the title and (where present) the toggle buttons.
+# sitting right at the plot's own top edge (y=1.0), below the title.
 SLIDE_LEGEND = dict(orientation="h", yanchor="bottom", y=1.0, xanchor="left", x=0)
 
 # Title: pinned near the very top of the figure so it has a fixed, known
 # position regardless of legend/margin -- font_size is left to each chart.
 SLIDE_TITLE = dict(y=0.97, yanchor="top")
 
-# Enough reserved top margin for a two-line title (text + <br><sup>subtitle),
-# the toggle-button row below it, and the legend band below that, without
-# any tier being clipped or cramped against another.
-SLIDE_MARGIN = dict(t=140)
+# Top margin only has to fit a two-line title plus the legend band below it
+# now that toggle buttons (figure_with_shift_toggle) live below the plot
+# instead of above it.
+SLIDE_MARGIN = dict(t=90)
+
+# Full-bleed width for a single, one-chart-per-slide figure on this deck's
+# 1280px-wide RevealJS canvas (1280 minus reasonable left/right slide
+# padding) -- Plotly figures have a fixed pixel width, not a responsive
+# one, so without this every chart defaulted to Plotly Express's own ~700px
+# width and sat with large empty margins on either side. A chart placed in
+# a two-column ::: {.column width="50%"} ::: layout must override this back
+# down to roughly half (see e.g. slides.qmd's paired VHT/trip-length and
+# city charts, each passing their own width=560) -- the template default
+# only fits a full-width slide.
+SLIDE_CHART_WIDTH = 1150
 
 
 def use_slide_chart_defaults():
     """Call once, in a slides.qmd's setup cell, after importing
     plotly.express -- registers a Plotly template giving every
     subsequently-created figure in this document a top-left legend, a
-    pinned title position, and reserved top margin by default, so title and
-    legend don't compete for the same space. A chart can still override any
-    of this further (e.g. legend=dict(y=1.15) for an extra-tall title) or
-    turn the legend off entirely (showlegend=False); this only sets what
-    happens if it doesn't -- an explicit per-chart value always wins over
-    the template default."""
+    pinned title position, reserved top margin, and a full slide-width
+    default size, so title and legend don't compete for space and a chart
+    isn't left stranded at Plotly's own default ~700px width on a 1280px
+    slide. A chart can still override any of this further (e.g.
+    legend=dict(y=1.15) for an extra-tall title, or width=560 for a
+    two-column layout) or turn the legend off entirely (showlegend=False);
+    this only sets what happens if it doesn't -- an explicit per-chart
+    value always wins over the template default."""
     pio.templates["wfrc_slide_legend"] = go.layout.Template(
-        layout=go.Layout(legend=SLIDE_LEGEND, title=SLIDE_TITLE, margin=SLIDE_MARGIN)
+        layout=go.Layout(legend=SLIDE_LEGEND, title=SLIDE_TITLE, margin=SLIDE_MARGIN, width=SLIDE_CHART_WIDTH)
     )
     pio.templates.default = "plotly+wfrc_slide_legend"
 
@@ -91,12 +97,76 @@ def _fixed_range(y_lists, pad_frac=0.08):
 
 
 _NO_PERIOD = "__no_period__"
+_NO_GROUP = "__no_group__"
+
+# Toggle-button styling: the currently-selected option gets a dark navy
+# background + white text; every other option in its row gets a light-teal
+# background + navy text. Plotly's own updatemenus have no per-button
+# active-state styling (bgcolor/font are set on the whole updatemenu, not
+# on individual buttons within it) -- so each "button" the user sees is
+# actually its own single-button updatemenu, positioned side by side to
+# look like one row, restyled via relayout on click. WFRC brand colors
+# (see CLAUDE.md): navy #1B3A5C, light teal #E8F4F8.
+_ACTIVE_BG, _ACTIVE_FG = "#1B3A5C", "#FFFFFF"
+_INACTIVE_BG, _INACTIVE_FG = "#E8F4F8", "#1B3A5C"
+
+
+def _button_style(active: bool) -> dict:
+    return dict(
+        bgcolor=_ACTIVE_BG if active else _INACTIVE_BG,
+        font=dict(color=_ACTIVE_FG if active else _INACTIVE_FG, size=11),
+        bordercolor="#1B3A5C", borderwidth=1,
+    )
+
+
+def _row_highlight(indices: list, active_pos: int) -> dict:
+    """Relayout dict recoloring every sibling single-button menu in a row
+    (indices, their position in the figure's combined updatemenus list) so
+    the one at active_pos looks selected and the rest don't."""
+    out = {}
+    for pos, idx in enumerate(indices):
+        style = _button_style(pos == active_pos)
+        out[f"updatemenus[{idx}].bgcolor"] = style["bgcolor"]
+        out[f"updatemenus[{idx}].font.color"] = style["font"]["color"]
+    return out
+
+
+def _row_menus(labels: list, indices: list, active_pos: int, y: float, args_fn) -> list:
+    """Builds one row of individually-stylable toggle "buttons" as sibling
+    single-button updatemenus, evenly spaced and centered under x=0.5 at
+    height y (negative = below the plot). indices are these menus' own
+    final positions in the figure's combined updatemenus list (known ahead
+    of time since rows are appended in order) -- needed so each button's
+    click handler can recolor its whole row via `updatemenus[i].bgcolor`
+    relayout paths. args_fn(pos) returns this button's own "update"-method
+    args list (trace restyle / layout changes) BEFORE the row-highlight
+    relayout is appended -- this function appends it."""
+    n = len(labels)
+    spacing = min(0.30, max(0.08, 0.017 * max(len(label) for label in labels) + 0.05))
+    start = -spacing * (n - 1) / 2
+    menus = []
+    for pos, (label, idx) in enumerate(zip(labels, indices)):
+        args = list(args_fn(pos))
+        if len(args) < 2:
+            args = args + [{}]
+        args[1] = {**args[1], **_row_highlight(indices, pos)}
+        style = _button_style(pos == active_pos)
+        menus.append(dict(
+            type="buttons", direction="right", showactive=False,
+            x=0.5 + start + spacing * pos, xanchor="center",
+            y=y, yanchor="top", pad=dict(l=4, r=4, t=4, b=4),
+            bgcolor=style["bgcolor"], font=style["font"],
+            bordercolor=style["bordercolor"], borderwidth=style["borderwidth"],
+            buttons=[dict(label=label, method="update", args=args)],
+        ))
+    return menus
 
 
 def figure_with_shift_toggle(
     df, build_fig, shift_col="shift_pct", default_shift=10, shift_label_fmt="{v}%", always_include=(),
     pct_col=None, value_axis_title=None, pct_axis_title=None,
     period_col=None, default_period=None, period_order=None,
+    group_col=None, default_group=None, group_order=None, group_label_fmt="{v}",
 ):
     """Builds one figure per available shift_pct value in df (via
     build_fig(subset_df_for_that_shift) -- typically a small wrapper around
@@ -148,28 +218,39 @@ def figure_with_shift_toggle(
     changes the range, never a click.
 
     period_col, if given, names a column (e.g. "period", values like "Peak"/
-    "Off-Peak") that adds a THIRD, independent row of buttons filtering df
-    to one period at a time -- df is filtered to period_col == p (in
-    addition to the shift_col/always_include filtering) before build_fig is
-    called for every (shift, period) combination. Unlike pct_col, this is
-    VISIBILITY-based, the same mechanism as the shift-level toggle itself
-    (build_fig produces a genuinely different set of traces per period,
-    rather than just a different y-column) -- necessary because period
-    changes what rows feed the aggregation (e.g. sum of AM+PM SEGID columns
-    vs. MD+EV), not just which column of an already-aggregated row to plot.
+    "Off-Peak"/"Daily") that adds another, independent row of buttons
+    filtering df to one period at a time. group_col works exactly the same
+    way for a second such dimension (e.g. "geography_label", values "City
+    Area"/"Medium District"/"Workshop Area") -- both are VISIBILITY-based,
+    the same mechanism as the shift-level toggle itself (build_fig produces
+    a genuinely different set of traces per period/group, rather than just
+    a different y-column), necessary because period/group change what rows
+    feed the aggregation, not just which column of an already-aggregated
+    row to plot. df is filtered on shift_col (+ period_col, + group_col,
+    whichever are given) before build_fig is called for every combination.
+    period_order/group_order fix each row's button order (e.g. ["Peak",
+    "Off-Peak", "Daily"]) instead of relying on alphabetical sort.
 
-    Because both shift-level and period are visibility-based, they can't be
-    made fully independent without custom client-side JS tracking which
-    button was clicked last (static Plotly updatemenus can't read each
-    other's current state) -- clicking a period button resets the shift
-    level to default_shift, and clicking a shift button resets the period to
-    default_period. This is a deliberate, documented simplification, not an
-    oversight: full 3-way independence (shift x period x value-mode) would
-    need a real client-side callback. The Absolute/% Change row (pct_col),
-    being y-swap based rather than visibility-based, remains fully
-    independent of both shift level and period regardless.
+    Because shift-level, period, and group are all visibility-based, they
+    can't be made fully independent without custom client-side JS tracking
+    which button was clicked last (static Plotly updatemenus can't read
+    each other's current state) -- clicking any one of these rows' buttons
+    resets the OTHER visibility-based rows to their own default. This is a
+    deliberate, documented simplification, not an oversight: full N-way
+    independence would need a real client-side callback. The Absolute/%
+    Change row (pct_col), being y-swap based rather than visibility-based,
+    remains fully independent of shift level, period, and group regardless.
+
+    All button rows render BELOW the plot (not above, alongside the title/
+    legend) as a stack of centered rows -- shift level nearest the plot,
+    then period, then group, then Absolute/% Change -- each row's
+    currently-selected button shown with a dark navy background and white
+    text (see _row_menus/_button_style) so the active choice is unambiguous
+    at a glance, since Plotly's own updatemenus have no built-in
+    active-button highlighting for a "buttons"-type menu.
     """
     have_period = period_col is not None
+    have_group = group_col is not None
     all_values = sorted(df[shift_col].unique())
     shift_levels = [v for v in all_values if v not in always_include]
     if not shift_levels:
@@ -185,105 +266,231 @@ def figure_with_shift_toggle(
         periods = [_NO_PERIOD]
         default_period = _NO_PERIOD
 
-    def _subset(s, p):
+    if have_group:
+        groups = group_order or sorted(df[group_col].unique())
+        if default_group is None or default_group not in groups:
+            default_group = groups[0]
+    else:
+        groups = [_NO_GROUP]
+        default_group = _NO_GROUP
+
+    def _subset(s, p, g):
         mask = df[shift_col].isin([*always_include, s])
         if have_period:
             mask &= df[period_col] == p
+        if have_group:
+            mask &= df[group_col] == g
         return df[mask]
 
-    per_cell_figs = {(s, p): build_fig(_subset(s, p)) for s in shift_levels for p in periods}
-    n_traces = len(per_cell_figs[(shift_levels[0], periods[0])].data)
-    for (s, p), f in per_cell_figs.items():
+    cells = [(s, p, g) for s in shift_levels for p in periods for g in groups]
+    per_cell_figs = {key: build_fig(_subset(*key)) for key in cells}
+    n_traces = len(per_cell_figs[cells[0]].data)
+    for key, f in per_cell_figs.items():
         if len(f.data) != n_traces:
             raise ValueError(
-                f"Shift level {s}, period {p!r} produced {len(f.data)} trace(s), expected "
-                f"{n_traces} (from shift level {shift_levels[0]}, period {periods[0]!r}) -- "
-                "category_orders/color_discrete_map must be identical across every shift "
-                "level/period combination for the toggle to swap between them cleanly."
+                f"Shift/period/group combination {key!r} produced {len(f.data)} trace(s), "
+                f"expected {n_traces} (from {cells[0]!r}) -- category_orders/"
+                "color_discrete_map must be identical across every combination for the "
+                "toggle to swap between them cleanly."
             )
 
     per_cell_pct_figs = None
     if pct_col is not None:
-        per_cell_pct_figs = {
-            (s, p): build_fig(_subset(s, p), y_col=pct_col) for s in shift_levels for p in periods
-        }
-        for (s, p), f in per_cell_pct_figs.items():
+        per_cell_pct_figs = {key: build_fig(_subset(*key), y_col=pct_col) for key in cells}
+        for key, f in per_cell_pct_figs.items():
             if len(f.data) != n_traces:
                 raise ValueError(
-                    f"Percent-mode figure for shift level {s}, period {p!r} produced "
-                    f"{len(f.data)} trace(s), expected {n_traces} -- build_fig(sub, "
-                    "y_col=pct_col) must produce the same trace structure as build_fig(sub)."
+                    f"Percent-mode figure for combination {key!r} produced {len(f.data)} "
+                    f"trace(s), expected {n_traces} -- build_fig(sub, y_col=pct_col) must "
+                    "produce the same trace structure as build_fig(sub)."
                 )
 
+    default_cell = (default_shift, default_period, default_group)
     combined = go.Figure()
-    for s in shift_levels:
-        for p in periods:
-            for trace in per_cell_figs[(s, p)].data:
-                trace.visible = s == default_shift and p == default_period
-                combined.add_trace(trace)
-    combined.layout = per_cell_figs[(default_shift, default_period)].layout
+    for key in cells:
+        for trace in per_cell_figs[key].data:
+            trace.visible = key == default_cell
+            combined.add_trace(trace)
+    combined.layout = per_cell_figs[default_cell].layout
 
-    # Fixed y-axis range spanning every shift level and period at once (not
-    # just the default cell) so toggling restyles which bars are visible
-    # without also rescaling the axis -- a rescale on every click makes it
-    # hard to judge whether one selection's effect is actually bigger than
+    # Fixed y-axis range spanning every combination at once (not just the
+    # default cell) so toggling restyles which bars are visible without
+    # also rescaling the axis -- a rescale on every click makes it hard to
+    # judge whether one selection's effect is actually bigger than
     # another's at a glance.
     abs_range = _fixed_range(trace.y for f in per_cell_figs.values() for trace in f.data)
     if abs_range is not None:
         combined.update_layout(yaxis=dict(range=abs_range))
 
-    def _visible_for(fixed_shift=None, fixed_period=None):
+    def _visible_for(fixed_shift=None, fixed_period=None, fixed_group=None):
         visible = []
-        for s in shift_levels:
-            for p in periods:
-                match = (fixed_shift is None or s == fixed_shift) and (fixed_period is None or p == fixed_period)
-                visible.extend([match] * n_traces)
+        for s, p, g in cells:
+            match = (
+                (fixed_shift is None or s == fixed_shift)
+                and (fixed_period is None or p == fixed_period)
+                and (fixed_group is None or g == fixed_group)
+            )
+            visible.extend([match] * n_traces)
         return visible
 
-    shift_buttons = [
-        dict(
-            label=shift_label_fmt.format(v=s), method="update",
-            args=[{"visible": _visible_for(fixed_shift=s, fixed_period=default_period)}],
-        )
-        for s in shift_levels
-    ]
-    updatemenus = [
-        dict(
-            type="buttons", direction="right", buttons=shift_buttons, showactive=True,
-            x=1, xanchor="right", y=1.15, yanchor="bottom", pad=dict(r=5, t=5),
-        )
-    ]
+    # Row layout: figure out every row's button count up front so each
+    # row's sibling menus know their own final index in the combined
+    # updatemenus list before any button's click args are built (rows are
+    # appended in this same order, so indices are contiguous per row).
+    shift_labels = [shift_label_fmt.format(v=s) for s in shift_levels]
+    period_labels = [str(p) for p in periods] if have_period else []
+    group_labels = [group_label_fmt.format(v=g) for g in groups] if have_group else []
+    pct_labels = ["Absolute", "% Change"] if per_cell_pct_figs is not None else []
+
+    shift_indices = list(range(0, len(shift_labels)))
+    next_idx = len(shift_indices)
+    period_indices = []
+    if have_period:
+        period_indices = list(range(next_idx, next_idx + len(period_labels)))
+        next_idx += len(period_indices)
+    group_indices = []
+    if have_group:
+        group_indices = list(range(next_idx, next_idx + len(group_labels)))
+        next_idx += len(group_indices)
+    pct_indices = []
+    if per_cell_pct_figs is not None:
+        pct_indices = list(range(next_idx, next_idx + len(pct_labels)))
+        next_idx += len(pct_indices)
+
+    n_rows = 1 + int(have_period) + int(have_group) + int(per_cell_pct_figs is not None)
+    row_spacing = 0.16
+    row_y = {"shift": -0.20}
+    slot = 1
+    if have_period:
+        row_y["period"] = -0.20 - row_spacing * slot
+        slot += 1
+    if have_group:
+        row_y["group"] = -0.20 - row_spacing * slot
+        slot += 1
+    if per_cell_pct_figs is not None:
+        row_y["pct"] = -0.20 - row_spacing * slot
+        slot += 1
+
+    # Clicking any one visibility-based row's button resets the OTHER
+    # visibility-based rows to their own default (see the period_col/
+    # group_col docstring paragraph above) -- so each row's own click
+    # handler also has to visually reset every other such row back to its
+    # default button, not just re-highlight itself, or the rows could show
+    # a selection that no longer matches what's actually visible.
+    def _other_row_reset(exclude):
+        out = {}
+        if have_period and exclude != "period":
+            out.update(_row_highlight(period_indices, periods.index(default_period)))
+        if have_group and exclude != "group":
+            out.update(_row_highlight(group_indices, groups.index(default_group)))
+        if exclude != "shift":
+            out.update(_row_highlight(shift_indices, shift_levels.index(default_shift)))
+        return out
+
+    def _shift_args(pos):
+        s = shift_levels[pos]
+        return [
+            {"visible": _visible_for(fixed_shift=s, fixed_period=default_period, fixed_group=default_group)},
+            _other_row_reset("shift"),
+        ]
+    updatemenus = _row_menus(shift_labels, shift_indices, shift_levels.index(default_shift), row_y["shift"], _shift_args)
 
     if have_period:
-        period_buttons = [
-            dict(
-                label=str(p), method="update",
-                args=[{"visible": _visible_for(fixed_shift=default_shift, fixed_period=p)}],
-            )
-            for p in periods
-        ]
-        updatemenus.append(dict(
-            type="buttons", direction="right", buttons=period_buttons, showactive=True,
-            x=1, xanchor="right", y=1.0, yanchor="bottom", pad=dict(r=5, t=5),
-        ))
+        def _period_args(pos):
+            p = periods[pos]
+            return [
+                {"visible": _visible_for(fixed_shift=default_shift, fixed_period=p, fixed_group=default_group)},
+                _other_row_reset("period"),
+            ]
+        updatemenus += _row_menus(period_labels, period_indices, periods.index(default_period), row_y["period"], _period_args)
+
+    if have_group:
+        def _group_args(pos):
+            g = groups[pos]
+            return [
+                {"visible": _visible_for(fixed_shift=default_shift, fixed_period=default_period, fixed_group=g)},
+                _other_row_reset("group"),
+            ]
+        updatemenus += _row_menus(group_labels, group_indices, groups.index(default_group), row_y["group"], _group_args)
 
     if per_cell_pct_figs is not None:
-        abs_y = [list(per_cell_figs[(s, p)].data[j].y) for s in shift_levels for p in periods for j in range(n_traces)]
-        pct_y = [list(per_cell_pct_figs[(s, p)].data[j].y) for s in shift_levels for p in periods for j in range(n_traces)]
-        # Same fixed-range treatment as abs_range above, computed separately
-        # since percent values live on a different scale than the raw units
-        # -- each mode gets its own range, fixed across every shift/period.
+        abs_y = [list(per_cell_figs[key].data[j].y) for key in cells for j in range(n_traces)]
+        pct_y = [list(per_cell_pct_figs[key].data[j].y) for key in cells for j in range(n_traces)]
         pct_range = _fixed_range(trace.y for f in per_cell_pct_figs.values() for trace in f.data)
         value_axis_title = value_axis_title or combined.layout.yaxis.title.text
         pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
-        updatemenus.append(dict(
-            type="buttons", direction="right", showactive=True,
-            buttons=[
-                dict(label="Absolute", method="update", args=[{"y": abs_y}, {"yaxis.title.text": value_axis_title, "yaxis.range": abs_range}]),
-                dict(label="% Change", method="update", args=[{"y": pct_y}, {"yaxis.title.text": pct_axis_title, "yaxis.range": pct_range}]),
-            ],
-            x=0, xanchor="left", y=1.15, yanchor="bottom", pad=dict(r=5, t=5),
-        ))
 
+        def _pct_args(pos):
+            if pos == 0:
+                return [{"y": abs_y}, {"yaxis.title.text": value_axis_title, "yaxis.range": abs_range}]
+            return [{"y": pct_y}, {"yaxis.title.text": pct_axis_title, "yaxis.range": pct_range}]
+        updatemenus += _row_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
+
+    # Bottom margin sized for the number of rows actually present, so the
+    # toggle stack never overlaps the x-axis's own tick labels/title above
+    # it -- charts still set their own top margin/height afterward (e.g.
+    # `fig.update_layout(margin=dict(t=80))`), which merges with, rather
+    # than replaces, this bottom value.
+    combined.update_layout(margin=dict(b=150 + 70 * (n_rows - 1)))
     combined.update_layout(updatemenus=updatemenus)
     return combined
+
+
+# ---------------------------------------------------------------------------
+# Table toggle: pandas Styler tables are plain HTML, not Plotly figures, so
+# figure_with_shift_toggle's client-side updatemenus trick doesn't apply --
+# this is the equivalent for "all tables get an Absolute/% Change toggle."
+# ---------------------------------------------------------------------------
+
+_TABLE_TOGGLE_SCRIPT = """
+<script>
+function wfrcToggleTable(tableId, mode) {
+  var abs = document.getElementById(tableId + '_abs');
+  var pct = document.getElementById(tableId + '_pct');
+  var bAbs = document.getElementById(tableId + '_btn_abs');
+  var bPct = document.getElementById(tableId + '_btn_pct');
+  abs.style.display = (mode === 'abs') ? '' : 'none';
+  pct.style.display = (mode === 'pct') ? '' : 'none';
+  bAbs.style.background = (mode === 'abs') ? '#1B3A5C' : '#E8F4F8';
+  bAbs.style.color = (mode === 'abs') ? '#FFFFFF' : '#1B3A5C';
+  bPct.style.background = (mode === 'pct') ? '#1B3A5C' : '#E8F4F8';
+  bPct.style.color = (mode === 'pct') ? '#FFFFFF' : '#1B3A5C';
+}
+</script>
+"""
+
+_TABLE_BUTTON_CSS = (
+    "display:inline-block;padding:4px 14px;margin:0 6px 10px 0;border:1px solid #1B3A5C;"
+    "border-radius:4px;cursor:pointer;font-size:0.85em;font-family:inherit;user-select:none;"
+)
+
+
+def styled_table_with_toggle(table_id: str, abs_styler, pct_styler, default: str = "abs") -> str:
+    """Wraps two pandas Styler objects -- one with delta columns shown in
+    their native units, one with the same columns shown as a percent of
+    baseline -- in a small Absolute/% Change button pair plus two divs,
+    shown/hidden via inline JS. Renders under the SAME toggle color scheme
+    as figure_with_shift_toggle's chart buttons (dark navy = selected,
+    light teal = not) for visual consistency across the page. Returns an
+    HTML string; render it with `display(HTML(...))`, not `Markdown(...)`
+    (Styler's own <style> block needs to reach the page unescaped).
+
+    table_id must be unique on the page (becomes the id= prefix for both
+    table divs and both buttons) -- reused across scenarios/tables would
+    make every same-named toggle move together instead of independently.
+    """
+    abs_display = "" if default == "abs" else "display:none;"
+    pct_display = "" if default == "pct" else "display:none;"
+    abs_bg, abs_fg = (_ACTIVE_BG, _ACTIVE_FG) if default == "abs" else (_INACTIVE_BG, _INACTIVE_FG)
+    pct_bg, pct_fg = (_ACTIVE_BG, _ACTIVE_FG) if default == "pct" else (_INACTIVE_BG, _INACTIVE_FG)
+    return f"""
+{_TABLE_TOGGLE_SCRIPT}
+<div>
+  <span id="{table_id}_btn_abs" style="{_TABLE_BUTTON_CSS}background:{abs_bg};color:{abs_fg};"
+        onclick="wfrcToggleTable('{table_id}', 'abs')">Absolute</span>
+  <span id="{table_id}_btn_pct" style="{_TABLE_BUTTON_CSS}background:{pct_bg};color:{pct_fg};"
+        onclick="wfrcToggleTable('{table_id}', 'pct')">% Change</span>
+</div>
+<div id="{table_id}_abs" style="{abs_display}">{abs_styler.to_html()}</div>
+<div id="{table_id}_pct" style="{pct_display}">{pct_styler.to_html()}</div>
+"""

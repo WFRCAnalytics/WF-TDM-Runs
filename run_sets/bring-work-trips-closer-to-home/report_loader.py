@@ -120,22 +120,33 @@ FREEWAY_CORRIDORS = {
     "Mountain View Corridor", "Bangerter Highway", "SR-201", "West Davis Corridor",
 }
 
-# The 5 cities picked out for city-level results -> their WFv1000_TAZ.dbf
-# CITY_UGRC code. Only meaningful under the City Area scenarios: that's the
-# one geography type whose redistribution is actually scoped by these same
-# city boundaries.
+# The cities picked out for city-level results -> their WFv1000_TAZ.dbf
+# CITY_UGRC code (confirmed against tdm/1_Inputs/1_TAZ/Districts/City.dbf's
+# CITY_NAME field). Only meaningful under the City Area scenarios: that's
+# the one geography type whose redistribution is actually scoped by these
+# same city boundaries. Roy, North Salt Lake, Mill Creek, Provo, and Payson
+# were added alongside the original five to broaden the size/geography
+# spread (small/mid-size Davis and Utah County cities weren't represented).
 TARGET_CITIES = {
     "Ogden": "OGD", "Layton": "LAY", "Salt Lake City": "SLC",
     "West Jordan": "WJC", "Saratoga Springs": "SAR",
+    "Roy": "ROY", "North Salt Lake": "NSL", "Mill Creek": "MLC",
+    "Provo": "PVO", "Payson": "PAY",
 }
 TAZ_DBF = os.path.join(REPO_ROOT, "tdm", "1_Inputs", "1_TAZ", "WFv1000_TAZ.dbf")
 
 # Peak = the two commute peaks (AM+PM); Off-Peak = midday + evening/night
-# (MD+EV). Used to give VMT/VHD/VHT/Volume charts a Peak/Off-Peak toggle
-# (chart_utils.figure_with_shift_toggle's period_col) instead of a single
-# DY_ (all-4-periods) aggregate -- confirmed with the run set's author as
-# the standard WFRC 4-period convention.
-PERIOD_GROUPS = {"Peak": ["AM", "PM"], "Off-Peak": ["MD", "EV"]}
+# (MD+EV); Daily = all four sub-periods. Used to give VMT/VHD/VHT/Volume
+# charts a Peak/Off-Peak/Daily toggle (chart_utils.figure_with_shift_toggle's
+# period_col) -- confirmed with the run set's author as the standard WFRC
+# 4-period convention. Dict order drives PERIOD_ORDER below.
+PERIOD_GROUPS = {"Peak": ["AM", "PM"], "Off-Peak": ["MD", "EV"], "Daily": ["AM", "MD", "PM", "EV"]}
+
+# Explicit display order for figure_with_shift_toggle(period_order=...) --
+# PERIOD_GROUPS itself is insertion-ordered the same way, but call sites
+# pass this so the button row's order doesn't silently depend on dict
+# iteration order elsewhere.
+PERIOD_ORDER = list(PERIOD_GROUPS.keys())
 
 # "Free time added back to households" (memo section 6) is scoped to the
 # peak periods specifically, not toggle-able -- kept as its own name (rather
@@ -322,9 +333,13 @@ def load_distance_skim_for_period(scenario_id: str, period: str) -> np.ndarray:
 
 
 def load_hbw_trip_matrix_for_period_from_runs(scenario_id: str, period: str) -> np.ndarray:
-    """Full TAZ x TAZ HBW trip-volume array for Peak or Off-Peak only (as
-    opposed to load_hbw_trip_matrix_from_runs's Peak+Off-Peak combined),
-    from the curated two-tab OMX, scaled down by HBW_MATRIX_SCALE."""
+    """Full TAZ x TAZ HBW trip-volume array for Peak, Off-Peak, or Daily,
+    from the curated two-tab OMX, scaled down by HBW_MATRIX_SCALE. Only
+    Peak (Pk) and Off-Peak (Ok) matrices are actually curated -- no separate
+    all-day OMX exists -- so Daily is built as their sum rather than read
+    from its own file."""
+    if period == "Daily":
+        return sum(load_hbw_trip_matrix_for_period_from_runs(scenario_id, p) for p in ("Peak", "Off-Peak"))
     import openmatrix as omx
     f = omx.open_file(_curated_path(scenario_id, _SUFFIX_HBW_MATRIX_PERIOD[period]), "r")
     try:
@@ -531,6 +546,53 @@ def build_vmt_vhd_by_county_facility(segid_df: pd.DataFrame, hh_df: pd.DataFrame
     return _add_delta(combined, ["CO_NAME", "FTCLASS", "period"], ["DY_VMT", "DY_VHD"])
 
 
+def build_congested_miles(segid_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
+    """Miles of roadway with volume/capacity (V/C) > 1.0 ("severe
+    congestion"), by county + facility type (plus a Region row), for Peak,
+    Off-Peak, and Daily -- a length-based capacity read, distinct from
+    VHD/VMT: relevant to funding/capacity decisions since it answers "how
+    many miles are over capacity," not "how much delay resulted." Peak V/C
+    is the max of AM_VC/PM_VC per segment (a segment counts as congested if
+    either commute peak pushes it over capacity); Off-Peak is the max of
+    MD_VC/EV_VC; Daily reuses Summary_SEGID's own MAX_VC (already the max
+    across all four sub-periods) rather than recomputing it. DISTANCE
+    (segment length) is summed, not LANEMILES, since the metric describes
+    route-miles over capacity regardless of lane count. Excludes FTCLASS ==
+    "Local", matching build_vmt_vhd_by_county_facility's convention.
+
+    Every (scenario, county, facility type, period) combination present in
+    segid_df gets a row even when zero miles are congested (sum of a
+    0/DISTANCE indicator column, not a pre-filtered groupby) -- so a
+    scenario with no over-capacity segments in some county/facility type
+    still lines up with the others for the toggle and for _add_delta,
+    instead of silently going missing.
+    """
+    fips_to_name = hh_df[["CO_FIPS", "CO_NAME"]].drop_duplicates().set_index("CO_FIPS")["CO_NAME"]
+    df = segid_df[segid_df["FTCLASS"] != "Local"].copy()
+    df["CO_NAME"] = df["CO_FIPS"].map(fips_to_name)
+
+    period_vc = {
+        "Peak": df[["AM_VC", "PM_VC"]].max(axis=1),
+        "Off-Peak": df[["MD_VC", "EV_VC"]].max(axis=1),
+        "Daily": df["MAX_VC"],
+    }
+
+    frames = []
+    for period, vc in period_vc.items():
+        sub = df[["scenario_id", "CO_NAME", "FTCLASS"]].copy()
+        sub["period"] = period
+        sub["congested_miles"] = df["DISTANCE"].where(vc > 1.0, 0.0)
+        frames.append(sub)
+    long_df = pd.concat(frames, ignore_index=True)
+
+    by_county = long_df.groupby(["scenario_id", "CO_NAME", "FTCLASS", "period"], as_index=False)["congested_miles"].sum()
+    region = long_df.groupby(["scenario_id", "FTCLASS", "period"], as_index=False)["congested_miles"].sum()
+    region["CO_NAME"] = "Region"
+    combined = pd.concat([by_county, region], ignore_index=True)
+    combined = _with_meta(combined)
+    return _add_delta(combined, ["CO_NAME", "FTCLASS", "period"], ["congested_miles"])
+
+
 def build_vht_per_household(segid_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
     """Peak-period (AM+PM) VHT per household, by county + region -- memo's
     'free time added back to households' metric -- was previously fixed at
@@ -684,6 +746,7 @@ def load() -> dict:
         "freeway_by_county": build_freeway_corridors_by_county(segid_df, crosswalk, hh_df),
         "corridor_orientation": build_corridor_orientation_summary(segid_df, crosswalk),
         "vmt_vhd_by_county_facility": build_vmt_vhd_by_county_facility(segid_df, hh_df),
+        "congested_miles": build_congested_miles(segid_df, hh_df),
         "vht_per_household": build_vht_per_household(segid_df, hh_df),
         "transit_ridership": build_transit_ridership(transit_route_df),
         "hbw_trip_length": build_hbw_trip_length(taz_metrics_df, trips_df, hh_df),
