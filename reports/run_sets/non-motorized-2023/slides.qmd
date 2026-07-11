@@ -29,7 +29,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join('..', '..'))
-from chart_utils import use_slide_chart_defaults
+from chart_utils import use_slide_chart_defaults, CHART_CONFIG
 use_slide_chart_defaults()
 
 # All data loading/aggregation lives in run_sets/non-motorized-2023/report_loader.py,
@@ -137,7 +137,7 @@ fig.update_layout(
     height=430, width=1100, margin=dict(t=20, b=20, l=20, r=20),
     legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 *All trip purposes combined | Modified small districts | Daily productions*
@@ -227,7 +227,7 @@ fig.update_layout(
     height=400, width=1100, margin=dict(t=40, b=20, l=20, r=20),
     legend=dict(orientation='h', yanchor='bottom', y=1.08, xanchor='left', x=0, font_size=12),
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 **Home-Based-Other** and **Non-Home–Based** trips are the most sensitive to employment density — these include lunch, errands, and midday travel that become walkable in dense employment environments.
@@ -274,7 +274,7 @@ fig.update_layout(
     xaxis_tickangle=-30, xaxis_tickfont_size=12,
     legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 EMP scenarios: walk gains are 10–100× larger than bike gains. &nbsp; HH scenarios: both modes increase, but walk still dominates.
@@ -317,7 +317,7 @@ fig.update_layout(
     yaxis_range=[0, 25], xaxis_tickfont_size=13,
     legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 2050 local forecasts land at **~19%** — comparable to a **2× multiplier** — a moderate, credible response. Centerized appears identical at this local scale because the focal TAZs sit in areas little affected by the redistribution. Region-wide, centerization adds ~7,000 more non-motorized trips (+0.07 percentage points).
@@ -353,7 +353,7 @@ fig.update_layout(
     legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0, font_size=13),
     xaxis_title_font_size=13, yaxis_title_font_size=13,
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 Districts **gaining** households (blue) → Non-Motorized share rises. &nbsp; Districts **losing** households (orange) → Non-Motorized share falls.

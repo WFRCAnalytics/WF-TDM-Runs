@@ -27,7 +27,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join('..', '..'))
-from chart_utils import use_slide_chart_defaults, figure_with_shift_toggle
+from chart_utils import use_slide_chart_defaults, figure_with_shift_toggle, CHART_CONFIG
 use_slide_chart_defaults()
 
 sys.path.insert(0, os.path.join('..', '..', '..', 'run_sets', 'bring-work-trips-closer-to-home'))
@@ -113,7 +113,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
 )
 fig.update_layout(height=460, title=dict(text='Change in Daily Vehicle-Hours of Delay, Region', font_size=15))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 ## VHD by County {.smaller}
@@ -141,7 +141,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
 )
 fig.update_layout(height=460, title=dict(text='Change in Daily VHD by County', font_size=15))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 ## Why: Vehicle Miles Traveled {.smaller}
@@ -167,7 +167,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Daily VMT (mi)', pct_axis_title='Δ Daily VMT (%)',
 )
 fig.update_layout(height=460, title=dict(text='Change in Daily VMT by County', font_size=15))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 ::: {.notes}
@@ -204,7 +204,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
 )
 fig.update_layout(height=460, title=dict(text='Top 8 Corridors by VHD Reduction — City Area', font_size=15))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 I-15, Redwood Road, Mountain View Corridor, and I-215 see the largest reductions.
@@ -235,7 +235,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
 )
 fig.update_layout(height=460, title=dict(text='Freeway Corridor VHD Change by County — City Area', font_size=15))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 I-15's reduction concentrates in Salt Lake and Utah counties, where its own daily VHD is largest to begin with.
@@ -262,7 +262,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
 )
 fig.update_layout(height=460, title=dict(text='Change in Daily VHD by Corridor Orientation', font_size=15))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 North/south corridors (I-15, Redwood Road, Mountain View Corridor, Bangerter Highway...) carry most of the reduction — the region's heaviest-volume facilities run north/south.
@@ -289,7 +289,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Daily Boardings', pct_axis_title='Δ Daily Boardings (%)',
 )
 fig.update_layout(height=460, title=dict(text='Change in Daily Boardings — Rail Lines &amp; Bus', font_size=15))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 "Bus" aggregates every non-rail route (~160 local/BRT/express codes). Shorter commutes mean fewer trips long enough for transit to compete on — ridership dips slightly on every line, including bus.
@@ -317,7 +317,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Peak VHT/HH (hrs)', pct_axis_title='Δ Peak VHT/HH (%)',
 )
 fig.update_layout(height=420, title=dict(text='Peak VHT / Household', font_size=14))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 :::
 ::: {.column width="50%"}
@@ -340,7 +340,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ HBW Trip Length (mi)', pct_axis_title='Δ HBW Trip Length (%)',
 )
 fig.update_layout(height=420, title=dict(text='Avg. HBW Trip Length', font_size=14))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 :::
 ::::
@@ -361,8 +361,8 @@ def _build_td(sub):
     return fig
 
 fig = figure_with_shift_toggle(td, _build_td, always_include=[0])
-fig.update_layout(height=460, title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>5-mile bins</sup>', font_size=15))
-fig.show()
+fig.update_layout(height=460, title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>2-mile bins</sup>', font_size=15))
+fig.show(config=CHART_CONFIG)
 ```
 
 Shorter trips become more common, longer trips less common — the mechanism working as intended, region-wide.
@@ -391,7 +391,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Trip Length (mi)', pct_axis_title='Δ Trip Length (%)',
 )
 fig.update_layout(height=420, title=dict(text='Δ HBW Trip Length by City', font_size=14))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 :::
 ::: {.column width="50%"}
@@ -411,7 +411,7 @@ fig = figure_with_shift_toggle(
     value_axis_title='Δ Peak VHT/HH (hrs)', pct_axis_title='Δ Peak VHT/HH (%)',
 )
 fig.update_layout(height=420, title=dict(text='Δ Peak VHT/HH by City', font_size=14))
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 :::
 ::::

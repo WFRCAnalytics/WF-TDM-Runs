@@ -20,8 +20,17 @@ area. Fixed by also pinning the title near the very top of the figure
 both, verified against single-line and two-line (title+<br><sup>subtitle)
 titles alike.
 """
+import math
+
 import plotly.graph_objects as go
 import plotly.io as pio
+
+# Passed to every fig.show() call (see the .qmd files) to hide Plotly's own
+# top-right modebar (zoom/pan/download icons) -- these reports are static,
+# view-only pages, not interactive analysis notebooks, so the modebar is
+# just clutter (and was already the thing use_slide_chart_defaults()'s
+# legend repositioning had to dodge).
+CHART_CONFIG = {"displayModeBar": False}
 
 # Legend: a horizontal band top-left (clear of Plotly's top-right modebar),
 # floated high enough (y=1.1) to clear the title below it.
@@ -50,6 +59,21 @@ def use_slide_chart_defaults():
         layout=go.Layout(legend=SLIDE_LEGEND, title=SLIDE_TITLE, margin=SLIDE_MARGIN)
     )
     pio.templates.default = "plotly+wfrc_slide_legend"
+
+
+def _fixed_range(y_lists, pad_frac=0.08):
+    """Common y-axis range spanning every list of y-values in y_lists, with
+    symmetric padding -- used so switching figure_with_shift_toggle's
+    shift-level (or Absolute/% Change) buttons restyles traces without also
+    rescaling the axis, since a rescale on every click makes it hard to
+    visually compare magnitudes across shift levels."""
+    values = [v for y in y_lists for v in y if v is not None and not (isinstance(v, float) and math.isnan(v))]
+    if not values:
+        return None
+    lo, hi = min(values), max(values)
+    span = hi - lo
+    pad = span * pad_frac if span else (abs(hi) * pad_frac or 1)
+    return [lo - pad, hi + pad]
 
 
 def figure_with_shift_toggle(
@@ -99,6 +123,11 @@ def figure_with_shift_toggle(
     choice, and switching value mode never resets which shift level is
     showing, because the two button rows act on disjoint trace properties
     (visible vs. y).
+
+    The y-axis range is fixed (via _fixed_range) to span every shift level
+    at once, separately for Absolute and % Change mode, so neither button
+    row rescales the axis when clicked -- only _fixed_range's own padding
+    changes the range, never a click.
     """
     all_values = sorted(df[shift_col].unique())
     shift_levels = [v for v in all_values if v not in always_include]
@@ -139,6 +168,15 @@ def figure_with_shift_toggle(
             combined.add_trace(trace)
     combined.layout = per_shift_figs[default_shift].layout
 
+    # Fixed y-axis range spanning every shift level (not just default_shift)
+    # so toggling between 5%/10%/25% restyles which bars are visible without
+    # also rescaling the axis -- a rescale on every click makes it hard to
+    # judge whether one shift level's effect is actually bigger than
+    # another's at a glance.
+    abs_range = _fixed_range(trace.y for f in per_shift_figs.values() for trace in f.data)
+    if abs_range is not None:
+        combined.update_layout(yaxis=dict(range=abs_range))
+
     buttons = []
     for i, s in enumerate(shift_levels):
         visible = [False] * (n_traces * len(shift_levels))
@@ -156,13 +194,17 @@ def figure_with_shift_toggle(
     if per_shift_pct_figs is not None:
         abs_y = [list(per_shift_figs[s].data[j].y) for s in shift_levels for j in range(n_traces)]
         pct_y = [list(per_shift_pct_figs[s].data[j].y) for s in shift_levels for j in range(n_traces)]
+        # Same fixed-range treatment as abs_range above, computed separately
+        # since percent values live on a different scale than the raw units
+        # -- each mode gets its own range, fixed across all shift levels.
+        pct_range = _fixed_range(trace.y for f in per_shift_pct_figs.values() for trace in f.data)
         value_axis_title = value_axis_title or combined.layout.yaxis.title.text
         pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
         updatemenus.append(dict(
             type="buttons", direction="right", showactive=True,
             buttons=[
-                dict(label="Absolute", method="update", args=[{"y": abs_y}, {"yaxis.title.text": value_axis_title}]),
-                dict(label="% Change", method="update", args=[{"y": pct_y}, {"yaxis.title.text": pct_axis_title}]),
+                dict(label="Absolute", method="update", args=[{"y": abs_y}, {"yaxis.title.text": value_axis_title, "yaxis.range": abs_range}]),
+                dict(label="% Change", method="update", args=[{"y": pct_y}, {"yaxis.title.text": pct_axis_title, "yaxis.range": pct_range}]),
             ],
             x=0, xanchor="left", y=1.32, yanchor="bottom", pad=dict(r=5, t=5),
         ))

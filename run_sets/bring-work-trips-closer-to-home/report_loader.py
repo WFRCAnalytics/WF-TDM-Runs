@@ -75,8 +75,8 @@ HBW_MATRIX_SCALE = 100
 # of technically-unconnected cells can't masquerade as extreme-long trips.
 SKIM_NOACCESS_SENTINEL = 9999
 
-DISTANCE_BIN_EDGES = [0, 5, 10, 15, 20, 25, 30, float("inf")]
-DISTANCE_BIN_LABELS = ["0-5 mi", "5-10 mi", "10-15 mi", "15-20 mi", "20-25 mi", "25-30 mi", "30+ mi"]
+DISTANCE_BIN_EDGES = list(range(0, 52, 2)) + [float("inf")]
+DISTANCE_BIN_LABELS = [f"{e}-{e + 2} mi" for e in range(0, 50, 2)] + ["50+ mi"]
 
 # Named routes the scoping memo specifically asks for (TRAX lines +
 # FrontRunner) -- the route file itself carries ~170 route codes, most of

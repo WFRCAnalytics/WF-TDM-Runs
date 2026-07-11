@@ -24,7 +24,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join('..', '..'))
-from chart_utils import figure_with_shift_toggle
+from chart_utils import figure_with_shift_toggle, CHART_CONFIG
 
 # All data loading/aggregation lives in
 # run_sets/bring-work-trips-closer-to-home/report_loader.py, shared with
@@ -206,7 +206,7 @@ fig.update_layout(
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 Salt Lake and Utah counties see the largest absolute VHD reductions under every geography type, consistent with where the region's congestion (and therefore its redistribution opportunity) is concentrated. **City Area** produces the largest region-wide VHD reduction of the three geography types, though the gap to Medium District is small.
@@ -241,7 +241,7 @@ fig.update_layout(
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 Freeways carry most of the region's delay reduction in absolute terms — expected, since that's where most of the region's VHD sits today. Arterial and collector reductions are smaller but consistent in direction.
@@ -278,7 +278,7 @@ fig.update_layout(
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 Region-wide, the shift reduces daily VMT across all geography types — City Area and Medium District produce similar-sized reductions; Workshop Area's is somewhat smaller, consistent with it being the coarsest geography (fewer, larger areas mean some "shifted" trips were already relatively close by).
@@ -345,7 +345,7 @@ fig.update_layout(
     title=dict(text='Corridor VHD Change — Medium District &amp; Workshop Area<br><sup>Same corridor order as City Area above</sup>', font_size=14),
     height=420, margin=dict(t=80),
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 The same corridors move in the same direction under all three geography types, at broadly similar (though not identical) magnitudes — a useful robustness check on the City Area result above.
@@ -387,7 +387,7 @@ fig.update_layout(
     height=460, margin=dict(t=80),
     legend_title_text='County',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 I-15's reduction is concentrated in Salt Lake and Utah counties, where its own daily VHD is largest to begin with; corridors that only pass through one or two counties (Legacy Parkway, SR-201) naturally show a simpler single- or two-county picture.
@@ -422,7 +422,7 @@ fig.update_layout(
     height=440, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 North/south corridors (I-15, Redwood Road, State Street, Legacy Parkway, Mountain View Corridor, Bangerter Highway, US-89) carry the large majority of the named-corridor VHD reduction — expected, since the region's heaviest-volume freeways and arterials run north/south along the valley. East/west corridors and the I-215 loop see smaller, but still consistently negative, changes.
@@ -459,7 +459,7 @@ fig.update_layout(
     height=440, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 Boardings decline slightly across every rail line and the bus aggregate, under every geography type. This is a real, non-obvious mechanical effect: bringing work trips closer to home shortens the commutes most likely to have used transit in the first place, so some riders shift to shorter drives, walks, or bikes instead. FrontRunner sees the largest absolute rail decline, consistent with it serving the longest-distance commutes; the bus aggregate's decline reflects the same effect summed across roughly 160 local/BRT/express routes.
@@ -498,7 +498,7 @@ fig.update_layout(
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 Region-wide, peak VHT per household falls under every geography type — a small but directionally meaningful amount of time given back to the average household, on top of whatever congestion relief accrues to specific corridors above.
@@ -535,14 +535,14 @@ fig.update_layout(
     height=460, margin=dict(t=80),
     legend_title_text='Geography Type',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 Average HBW trip length falls region-wide under every geography type — the most direct measure of the mechanism actually working as intended: trips that used to travel farther for work now travel a shorter distance, on average, across the whole region.
 
 ### Trip Length Distribution {#trip-length-distribution}
 
-The average above is one number; the full distribution shows *how* the shift happens — fewer long-distance commutes, more short ones — built directly from the origin-destination trip matrix and distance skim (region-wide, all HBW trips regardless of mode, in 5-mile bins), not the production-side estimate used for the average. The baseline curve is shown alongside whichever shift level is selected.
+The average above is one number; the full distribution shows *how* the shift happens — fewer long-distance commutes, more short ones — built directly from the origin-destination trip matrix and distance skim (region-wide, all HBW trips regardless of mode, in 2-mile bins), not the production-side estimate used for the average. The baseline curve is shown alongside whichever shift level is selected.
 
 ```{python}
 #| label: fig-trip-length-dist
@@ -562,11 +562,11 @@ def _build_trip_length_dist(sub):
 
 fig = figure_with_shift_toggle(td, _build_trip_length_dist, always_include=[0])
 fig.update_layout(
-    title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>Region-wide, weighted by O-D trip volume, 5-mile bins</sup>', font_size=15),
+    title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>Region-wide, weighted by O-D trip volume, 2-mile bins</sup>', font_size=15),
     height=460, margin=dict(t=80),
     legend_title_text='Scenario',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 ```{python}
@@ -617,7 +617,7 @@ fig.update_layout(
     title=dict(text='Change in Average HBW Trip Length by City<br><sup>City Area scenario, households/trips originating in each city</sup>', font_size=15),
     height=440, margin=dict(t=80),
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 ```{python}
@@ -641,7 +641,7 @@ fig.update_layout(
     title=dict(text='Change in Peak HBW Travel Time per Household by City<br><sup>City Area scenario</sup>', font_size=15),
     height=440, margin=dict(t=80),
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 ```{python}
@@ -705,7 +705,7 @@ fig.update_layout(
     height=460, margin=dict(t=80),
     legend_title_text='Scenario',
 )
-fig.show()
+fig.show(config=CHART_CONFIG)
 ```
 
 HBW mode share barely moves at any shift level — consistent with the mechanism only touching trip *destinations*, not the mode choice model's own logic. The small transit decline visible here matches the ridership drop discussed above.
