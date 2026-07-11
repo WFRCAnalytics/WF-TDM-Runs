@@ -735,7 +735,7 @@ Region-wide, VHT per household falls under every geography type at both Peak and
 ```{python}
 #| label: fig-trip-length
 
-tl_df = trip_length.copy()
+tl_df = trip_length[trip_length['period'] == 'Daily'].copy()
 tl_df['CO_NAME'] = pd.Categorical(tl_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
 tl_plot = tl_df[tl_df['scenario_id'] != loader.BASELINE_SCENARIO].copy()
 tl_plot['pct_trip_length'] = tl_plot['delta_trip_length'] / tl_plot['base_trip_length'] * 100
@@ -973,7 +973,7 @@ All three geography types, side by side, **fixed at the 10% shift level, Peak pe
 
 vmt_vhd_primary = vmt_vhd[(vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT) & (vmt_vhd['period'] == 'Peak')]
 vht_hh_primary = vht_hh[(vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT) & (vht_hh['period'] == 'Peak')]
-trip_length_primary = trip_length[trip_length['shift_pct'] == PRIMARY_SHIFT_PCT]
+trip_length_primary = trip_length[(trip_length['shift_pct'] == PRIMARY_SHIFT_PCT) & (trip_length['period'] == 'Daily')]
 transit_primary = transit[transit['shift_pct'] == PRIMARY_SHIFT_PCT]
 
 abs_rows, pct_rows = [], []

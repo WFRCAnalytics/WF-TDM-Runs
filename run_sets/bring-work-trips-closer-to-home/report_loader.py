@@ -696,32 +696,50 @@ def build_transit_ridership(route_df: pd.DataFrame) -> pd.DataFrame:
     return _add_delta(agg, ["line_label"], ["Boardings"])
 
 
+# ZoneSummary_TripsByMode.csv's own Period values are already Peak/Off-Peak/
+# Daily (not further split into AM/MD/PM/EV the way TAZ-Based Metrics' rows
+# are) -- so unlike PMT below, no PERIOD_GROUPS summation is needed for
+# Trips, just a direct label crosswalk.
+_TRIPS_PERIOD_LABEL = {"Peak": "Pk", "Off-Peak": "Ok", "Daily": "Dy"}
+
+
 def build_hbw_trip_length(taz_metrics_df: pd.DataFrame, trips_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
-    """Average HBW trip length (PMT / trips) by county + region -- joins
-    TAZ-Based Metrics' person-miles (4-period AM/MD/PM/EV, summed to a daily
-    total) against ZoneSummary's daily HBW production trips. TAZID->county
-    comes from load_hh's SE_File read (same TAZ/county assignment used for
-    the household normalization), not from either metrics file directly."""
+    """Average HBW trip length (PMT / trips) by county + region, with a
+    Peak/Off-Peak/Daily "period" column (see build_corridor_volumes) --
+    joins TAZ-Based Metrics' person-miles (4-period AM/MD/PM/EV rows,
+    summed per PERIOD_GROUPS) against ZoneSummary's HBW production trips
+    (already Pk/Ok/Dy rows -- _TRIPS_PERIOD_LABEL crosswalks the period
+    name directly, no summation needed on this side). TAZID->county comes
+    from load_hh's SE_File read (same TAZ/county assignment used for the
+    household normalization), not from either metrics file directly."""
     taz_to_county = hh_df[["TAZID", "CO_FIPS", "CO_NAME"]].drop_duplicates()
 
-    pmt = taz_metrics_df[
+    pmt_rows = taz_metrics_df[
         (taz_metrics_df["Metric"] == "PMT") & (taz_metrics_df["Purpose"] == "HBW") & (taz_metrics_df["PA"] == "P")
     ]
-    pmt_daily = pmt.groupby(["scenario_id", "TAZID"], as_index=False)["Total"].sum().rename(columns={"Total": "PMT"})
+    trips_rows = trips_df[(trips_df["Purpose"] == "HBW") & (trips_df["PA"] == "P")]
 
-    trips = trips_df[
-        (trips_df["Purpose"] == "HBW") & (trips_df["Period"] == "Dy") & (trips_df["PA"] == "P")
-    ][["scenario_id", "TAZID", "All"]].rename(columns={"All": "Trips"})
+    frames = []
+    for period, sub_periods in PERIOD_GROUPS.items():
+        pmt = pmt_rows[pmt_rows["Period"].isin(sub_periods)]
+        pmt_sum = pmt.groupby(["scenario_id", "TAZID"], as_index=False)["Total"].sum().rename(columns={"Total": "PMT"})
 
-    df = pmt_daily.merge(trips, on=["scenario_id", "TAZID"], how="inner").merge(taz_to_county, on="TAZID", how="left")
+        trips = trips_rows[trips_rows["Period"] == _TRIPS_PERIOD_LABEL[period]][
+            ["scenario_id", "TAZID", "All"]
+        ].rename(columns={"All": "Trips"})
 
-    by_county = df.groupby(["scenario_id", "CO_NAME"], as_index=False)[["PMT", "Trips"]].sum()
-    region = df.groupby("scenario_id", as_index=False)[["PMT", "Trips"]].sum()
-    region["CO_NAME"] = "Region"
-    combined = pd.concat([by_county, region], ignore_index=True)
+        df = pmt_sum.merge(trips, on=["scenario_id", "TAZID"], how="inner").merge(taz_to_county, on="TAZID", how="left")
+        by_county = df.groupby(["scenario_id", "CO_NAME"], as_index=False)[["PMT", "Trips"]].sum()
+        region = df.groupby("scenario_id", as_index=False)[["PMT", "Trips"]].sum()
+        region["CO_NAME"] = "Region"
+        period_df = pd.concat([by_county, region], ignore_index=True)
+        period_df["period"] = period
+        frames.append(period_df)
+
+    combined = pd.concat(frames, ignore_index=True)
     combined["trip_length"] = combined["PMT"] / combined["Trips"]
     combined = _with_meta(combined)
-    return _add_delta(combined, ["CO_NAME"], ["trip_length"])
+    return _add_delta(combined, ["CO_NAME", "period"], ["trip_length"])
 
 
 def build_city_results(

@@ -12,7 +12,7 @@ format:
     fig-align: center
     footer: "Wasatch Front Regional Council | Bringing Work Trips Closer to Home"
     include-before-body: ../../back_link.html
-    include-after-body: ../../global_shift_toggle.html
+    include-after-body: ../../global_toggle_bar.html
     include-in-header: ../../slide_text_scale.html
 execute:
   echo: false
@@ -155,7 +155,7 @@ fig = figure_with_shift_toggle(
     vhd_region_df, _build_vhd_region, pct_col='pct_DY_VHD',
     value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=460, title=dict(text='Change in Vehicle-Hours of Delay, Region', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -185,7 +185,7 @@ fig = figure_with_shift_toggle(
     vhd_by_county, _build_vhd_county, pct_col='pct_DY_VHD',
     value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=460, title=dict(text='Change in VHD by County', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -213,7 +213,7 @@ fig = figure_with_shift_toggle(
     vmt_by_county, _build_vmt_county, pct_col='pct_DY_VMT',
     value_axis_title='Δ VMT (mi)', pct_axis_title='Δ VMT (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=460, title=dict(text='Change in VMT by County', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -286,7 +286,7 @@ fig = figure_with_shift_toggle(
     cm_ft, _build_congested_miles, pct_col='pct_congested_miles',
     value_axis_title='Δ Congested Miles', pct_axis_title='Δ Congested Miles (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=460, title=dict(text='Change in Miles of Severe Congestion (V/C &gt; 1.0)', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -324,7 +324,7 @@ fig = figure_with_shift_toggle(
     city_corr_all, _build_top8, pct_col='pct_DY_VHD',
     value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=460, title=dict(text='Top 8 Corridors by VHD Reduction — City Area', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -357,7 +357,7 @@ fig = figure_with_shift_toggle(
     freeway_city, _build_freeway_county, pct_col='pct_DY_VHD',
     value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=460, title=dict(text='Freeway Corridor VHD Change by County — City Area', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -386,7 +386,7 @@ fig = figure_with_shift_toggle(
     orientation_df, _build_orientation, pct_col='pct_DY_VHD',
     value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=460, title=dict(text='Change in VHD by Corridor Orientation', font_size=15))
 fig.show(config=CHART_CONFIG)
@@ -445,7 +445,7 @@ fig = figure_with_shift_toggle(
     region_hh, _build_vht_region, pct_col='pct_VHT_PER_HH',
     value_axis_title='Δ VHT/HH (min)', pct_axis_title='Δ VHT/HH (%)',
     period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    global_shift=True,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=420, width=HALF_WIDTH, title=dict(text='VHT / Household', font_size=14))
 fig.show(config=CHART_CONFIG)
@@ -469,7 +469,8 @@ def _build_tl_region(sub, y_col='delta_trip_length'):
 fig = figure_with_shift_toggle(
     region_tl, _build_tl_region, pct_col='pct_trip_length',
     value_axis_title='Δ HBW Trip Length (mi)', pct_axis_title='Δ HBW Trip Length (%)',
-    global_shift=True,
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True,
 )
 fig.update_layout(height=420, width=HALF_WIDTH, title=dict(text='Avg. HBW Trip Length', font_size=14))
 fig.show(config=CHART_CONFIG)
@@ -493,7 +494,7 @@ def _build_td(sub):
     fig.update_traces(selector=dict(name='Baseline'), line=dict(color='black', dash='dash', width=2), marker=dict(color='black'))
     return fig
 
-fig = figure_with_shift_toggle(td, _build_td, always_include=[0], period_col='period', default_period='Peak', period_order=PERIOD_ORDER, global_shift=True)
+fig = figure_with_shift_toggle(td, _build_td, always_include=[0], period_col='period', default_period='Peak', period_order=PERIOD_ORDER, global_shift=True, global_period=True)
 fig.update_layout(height=460, title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>2-mile bins, Peak/Off-Peak-correct distance</sup>', font_size=15))
 fig.update_xaxes(range=[-0.5, loader.DISTANCE_BIN_EDGES.index(30) - 0.5])
 fig.update_yaxes(range=[0, 25])
@@ -563,7 +564,7 @@ Ogden, Layton, Salt Lake City, West Jordan, Saratoga Springs, Roy, North Salt La
 #| output: asis
 vmt_vhd_primary = vmt_vhd[(vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT) & (vmt_vhd['period'] == 'Peak')]
 vht_hh_primary = vht_hh[(vht_hh['shift_pct'] == PRIMARY_SHIFT_PCT) & (vht_hh['period'] == 'Peak')]
-trip_length_primary = trip_length[trip_length['shift_pct'] == PRIMARY_SHIFT_PCT]
+trip_length_primary = trip_length[(trip_length['shift_pct'] == PRIMARY_SHIFT_PCT) & (trip_length['period'] == 'Daily')]
 
 abs_rows, pct_rows = [], []
 for geo in GEO_ORDER:

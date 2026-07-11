@@ -34,6 +34,7 @@ legend to the same top-left band SLIDE_LEGEND already gives slides -- the
 right column would otherwise collide with Plotly Express's default
 top-right legend placement on non-slide (summary.qmd) charts.
 """
+import itertools
 import math
 
 import plotly.graph_objects as go
@@ -204,7 +205,7 @@ def figure_with_shift_toggle(
     pct_col=None, value_axis_title=None, pct_axis_title=None,
     period_col=None, default_period=None, period_order=None,
     group_col=None, default_group=None, group_order=None, group_label_fmt="{v}",
-    global_shift=False, numeric_x=False,
+    global_shift=False, global_period=False, numeric_x=False,
 ):
     """Builds one figure per available shift_pct value in df (via
     build_fig(subset_df_for_that_shift) -- typically a small wrapper around
@@ -296,22 +297,26 @@ def figure_with_shift_toggle(
     figures, same as y), for a chart whose x is a continuous value rather
     than a category -- see _round_hover above.
 
-    global_shift=True suppresses this chart's OWN shift-level button row
-    entirely (no per-chart 5%/10%/25% buttons) and instead stashes what
-    that row would have done into `combined.layout.meta["wfrcShiftLevels"]`
-    -- a plain list of {label, visible, relayout} dicts, one per shift
-    level, with exactly the trace-visibility array and cross-row highlight
+    global_shift=True (and, independently, global_period=True) suppresses
+    this chart's OWN shift-level (or period) button column entirely -- no
+    per-chart 5%/10%/25% (or Peak/Off-Peak/Daily) buttons -- and instead
+    stashes what that column would have done into
+    `combined.layout.meta["wfrcShiftLevels"]` (or `["wfrcPeriodLevels"]`)
+    -- a plain list of {label, visible, relayout} dicts, one per level,
+    with exactly the trace-visibility array and cross-column highlight
     reset a local button's "args" would have carried. This is for
-    slides.qmd's deck-wide shift-level control (see
-    reports/global_shift_toggle.html): one fixed on-screen control
-    restyles every chart in the whole deck by reading each chart's own
-    `layout.meta.wfrcShiftLevels` and calling `Plotly.update` with the
-    matching entry, rather than each chart carrying its own buttons.
-    Period/group/pct rows, if present, are unaffected and still render
-    per-chart -- only the shift-level row is globalized, since it's the one
-    dimension every chart on that deck shares. summary.qmd's charts don't
-    use this (global_shift defaults to False), so they keep their own
-    per-chart shift buttons as before.
+    slides.qmd's deck-wide controls (see reports/global_toggle_bar.html):
+    one fixed on-screen control per globalized dimension restyles every
+    chart in the whole deck by reading each chart's own
+    `layout.meta.wfrcShiftLevels`/`wfrcPeriodLevels` and calling
+    `Plotly.update` with the matching entry, rather than each chart
+    carrying its own buttons for that dimension. A chart missing the
+    relevant meta key (e.g. one with no period_col at all) is silently
+    skipped by the global control -- not every chart on a deck has to
+    support every globalized dimension. group/pct columns, if present, are
+    unaffected and still render per-chart regardless of global_shift/
+    global_period. summary.qmd's charts don't use either (both default to
+    False), so they keep their own per-chart buttons as before.
     """
     have_period = period_col is not None
     have_group = group_col is not None
@@ -443,16 +448,16 @@ def figure_with_shift_toggle(
     group_labels = [group_label_fmt.format(v=g) for g in groups] if have_group else []
     pct_labels = ["Absolute", "% Change"] if per_cell_pct_figs is not None else []
 
-    # global_shift=True skips reserving a row/index block for the shift
-    # level entirely -- no local shift buttons are built, so nothing should
-    # claim updatemenus indices or a row_y slot for it.
+    # global_shift=True (or global_period=True) skips reserving a row/index
+    # block for that dimension entirely -- no local buttons are built for
+    # it, so nothing should claim updatemenus indices or a row_y slot.
     shift_indices = []
     next_idx = 0
     if not global_shift:
         shift_indices = list(range(0, len(shift_labels)))
         next_idx = len(shift_indices)
     period_indices = []
-    if have_period:
+    if have_period and not global_period:
         period_indices = list(range(next_idx, next_idx + len(period_labels)))
         next_idx += len(period_indices)
     group_indices = []
@@ -464,7 +469,7 @@ def figure_with_shift_toggle(
         pct_indices = list(range(next_idx, next_idx + len(pct_labels)))
         next_idx += len(pct_indices)
 
-    n_rows = int(not global_shift) + int(have_period) + int(have_group) + int(per_cell_pct_figs is not None)
+    n_rows = int(not global_shift) + int(have_period and not global_period) + int(have_group) + int(per_cell_pct_figs is not None)
     # Lay out each present toggle group as its own vertically-stacked block
     # in the right-hand column, top to bottom in build order -- a cursor
     # walks down from COL_TOP_Y, each group claiming one y position per
@@ -484,7 +489,7 @@ def figure_with_shift_toggle(
     row_y = {}
     if not global_shift:
         row_y["shift"] = _alloc_col(len(shift_labels))
-    if have_period:
+    if have_period and not global_period:
         row_y["period"] = _alloc_col(len(period_labels))
     if have_group:
         row_y["group"] = _alloc_col(len(group_labels))
@@ -496,13 +501,13 @@ def figure_with_shift_toggle(
     # group_col docstring paragraph above) -- so each row's own click
     # handler also has to visually reset every other such row back to its
     # default button, not just re-highlight itself, or the rows could show
-    # a selection that no longer matches what's actually visible. There's
-    # nothing to reset for shift when global_shift=True -- no local shift
-    # row exists on this chart, so it's skipped rather than referencing
-    # indices that were never assigned.
+    # a selection that no longer matches what's actually visible. Nothing
+    # to reset for a dimension that's global (global_shift/global_period)
+    # -- no local row exists on this chart for it, so it's skipped rather
+    # than referencing indices that were never assigned.
     def _other_row_reset(exclude):
         out = {}
-        if have_period and exclude != "period":
+        if have_period and not global_period and exclude != "period":
             out.update(_row_highlight(period_indices, periods.index(default_period)))
         if have_group and exclude != "group":
             out.update(_row_highlight(group_indices, groups.index(default_group)))
@@ -511,23 +516,54 @@ def figure_with_shift_toggle(
         return out
 
     updatemenus = []
+    global_axes = []
     if global_shift:
-        # Deck-wide shift toggle (slides.qmd): stash each shift level's
-        # trace-visibility array and cross-row reset into layout.meta
-        # instead of building visible buttons -- see reports/
-        # global_shift_toggle.html, which reads this from every chart on
-        # the page and drives them all from one fixed on-screen control.
+        global_axes.append("shift")
+    if have_period and global_period:
+        global_axes.append("period")
+
+    if global_axes:
+        # Deck-wide toggle (slides.qmd): for every combination of the
+        # globalized axes (shift, period, or both), stash the trace-
+        # visibility array and the reset needed for any NON-global axis
+        # (e.g. group, which always stays local in this codebase) into
+        # layout.meta instead of building visible buttons for the
+        # globalized ones -- see reports/global_toggle_bar.html, which
+        # reads this from every chart on the page and drives them all from
+        # one shared, persistent set of controls.
+        #
+        # Composite keys (each globalized axis's label, joined with "|" in
+        # global_axes order) exist so ONE shared control can track shift
+        # AND period at once without either silently resetting the other
+        # back to this chart's default -- a single-axis-only version of
+        # this meta (an earlier cut of this feature) couldn't do that: the
+        # shared control has no way to know a chart's "current" value for
+        # an axis it isn't itself tracking, so clicking shift would have
+        # had to assume period was at ITS default (or vice versa), quietly
+        # overriding whatever the OTHER shared control currently showed.
+        axis_values = {"shift": shift_levels, "period": periods}
+        axis_label_fns = {
+            "shift": lambda v: shift_label_fmt.format(v=v),
+            "period": lambda v: str(v),
+        }
+        levels_meta = {}
+        for combo in itertools.product(*(axis_values[a] for a in global_axes)):
+            combo_value = dict(zip(global_axes, combo))
+            key = "|".join(axis_label_fns[a](combo_value[a]) for a in global_axes)
+            levels_meta[key] = {
+                "visible": _visible_for(
+                    fixed_shift=combo_value.get("shift", default_shift),
+                    fixed_period=combo_value.get("period", default_period),
+                    fixed_group=default_group,
+                ),
+                "relayout": _other_row_reset("__global__"),
+            }
         combined.update_layout(meta={
-            "wfrcShiftLevels": [
-                {
-                    "label": shift_label_fmt.format(v=s),
-                    "visible": _visible_for(fixed_shift=s, fixed_period=default_period, fixed_group=default_group),
-                    "relayout": _other_row_reset("shift"),
-                }
-                for s in shift_levels
-            ],
+            "wfrcGlobalAxes": {a: [axis_label_fns[a](v) for v in axis_values[a]] for a in global_axes},
+            "wfrcGlobalLevels": levels_meta,
         })
-    else:
+
+    if not global_shift:
         def _shift_args(pos):
             s = shift_levels[pos]
             return [
@@ -536,7 +572,7 @@ def figure_with_shift_toggle(
             ]
         updatemenus = _col_menus(shift_labels, shift_indices, shift_levels.index(default_shift), row_y["shift"], _shift_args)
 
-    if have_period:
+    if have_period and not global_period:
         def _period_args(pos):
             p = periods[pos]
             return [
@@ -588,7 +624,11 @@ def figure_with_shift_toggle(
     # right-margin value. No toggle groups at all (n_rows == 0) leaves
     # margin.r untouched, since there's no column to reserve space for.
     if n_rows > 0:
-        all_labels = shift_labels + period_labels + group_labels + pct_labels
+        all_labels = (
+            (shift_labels if not global_shift else [])
+            + (period_labels if have_period and not global_period else [])
+            + group_labels + pct_labels
+        )
         max_label_len = max(len(label) for label in all_labels)
         margin_r = min(220, max(110, 34 + 8 * max_label_len))
         combined.update_layout(margin=dict(r=margin_r))
