@@ -1,0 +1,75 @@
+/* WFRC brand palette (see CLAUDE.md) */
+:root {
+  --wfrc-navy: #1B3A5C;
+  --wfrc-teal: #1A8FAA;
+  --wfrc-amber: #F5A623;
+  --wfrc-light-teal: #E8F4F8;
+}
+
+.reveal {
+  font-size: 80%;
+  color: var(--wfrc-navy);
+}
+
+.reveal h1, .reveal h2, .reveal h3 {
+  color: var(--wfrc-navy);
+}
+
+.reveal h2 {
+  border-bottom: 3px solid var(--wfrc-amber);
+  padding-bottom: 0.2em;
+}
+
+.reveal strong {
+  color: var(--wfrc-teal);
+}
+
+.reveal .title-slide h1 {
+  color: var(--wfrc-navy);
+}
+
+.reveal .title-slide .subtitle {
+  color: var(--wfrc-teal);
+}
+
+.reveal ul, .reveal ol {
+  font-size: 65%;
+}
+
+.reveal pre code {
+  font-size: 0.85em;
+  background-color: var(--wfrc-light-teal);
+  border: 1px solid var(--wfrc-teal);
+  border-radius: 4px;
+}
+
+.reveal table th {
+  background-color: var(--wfrc-navy);
+  color: white;
+}
+
+.reveal table tr:nth-child(even) {
+  background-color: var(--wfrc-light-teal);
+}
+
+.reveal blockquote {
+  border-left: 4px solid var(--wfrc-amber);
+  background-color: var(--wfrc-light-teal);
+  padding: 0.5em 1em;
+}
+
+.reveal .footer {
+  color: var(--wfrc-teal);
+}
+
+.reveal .callout-note {
+  border-left: 4px solid var(--wfrc-amber);
+  background-color: var(--wfrc-light-teal);
+}
+
+.demo-cue {
+  text-align: center;
+  color: var(--wfrc-teal);
+  font-size: 1.3em;
+  font-weight: bold;
+}

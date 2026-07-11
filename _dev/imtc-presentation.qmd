@@ -1,0 +1,155 @@
+---
+title: "Managing TDM Scenario Runs as Code"
+subtitle: "A working pattern from WFRC — Interagency Modeling Technical Committee"
+author: "Bill Hereth, WFRC"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    embed-resources: true
+    width: 1280
+    height: 720
+    fig-align: center
+    css: styles.css
+    footer: "Wasatch Front Regional Council | TDM Run Management Framework"
+---
+
+## The Problem
+
+::: {.incremental}
+- A 14-scenario non-motorized sensitivity study took **over a month** to complete
+- Not because the model runs were slow — because of everything *around* them:
+  - manually editing Control Center files for each scenario
+  - tracking which model version ran which scenario
+  - reassembling scattered outputs into a writeup after the fact
+- This doesn't scale. More scenarios, more analysts, more studies — same manual overhead every time.
+:::
+
+::: {.notes}
+Every modeler in this room has some version of this story. Start here, not with the tool.
+:::
+
+## What This Is
+
+> A framework that manages **run sets** — scenarios, sensitivity tests, alternatives — as versioned configuration, sitting *around* the TDM.
+
+::: {.incremental}
+- It does **not** touch the TDM codebase, the Cube Voyager engine, or how the model runs internally
+- It manages: what changes between scenarios, what got run against which model version, and what came out
+- Built against WFRC's Cube Voyager TDM — the general pattern isn't Cube-specific, the implementation details are
+:::
+
+## Core Idea: One Override Mechanism
+
+Every scenario is a baseline Control Center file plus layered overrides — and **input file selection and sensitivity knobs are the same kind of thing**: just keys in a flat config.
+
+```yaml
+# run_sets/bring-work-trips-closer-to-home/scenarios/Closer01.yaml
+scenario_id: Closer01
+description: "Closer01 - 10% HBW trip redistribution by City Area"
+driver_script: hail-mary/__HailMary_1Subfolder_closer.s
+start_from_copy: Closer00
+
+overrides:
+  vizToolDir: '...\.vizTool'
+  RunDescription: "Closer01 - City Area 10% HBW trip redistribution"
+```
+
+Every override key is validated against the baseline **before the model is touched** — a typo fails in seconds, not after a multi-hour run.
+
+## How the Pieces Relate
+
+::: {.incremental}
+- **This framework repo** — config, orchestration code, curated outputs, run metadata, reports
+- **The TDM** — a separate repo, connected as a **git submodule**, checked out to whatever version a run set declares
+- Cube Voyager runs *in place* inside its own checkout — no forking, no parallel copies, no modification
+- One fixed batch entry point per TDM version; the framework doesn't know or care what happens inside a model run, only that it starts and finishes
+:::
+
+## Running a Scenario
+
+::: {.incremental}
+1. **Validate** every config/override key against the baseline
+2. **Resolve and check out** the requested TDM git tag — refuses on a dirty working tree
+3. **Render** the Control Center file: baseline → run-set overrides → scenario overrides → computed identity fields
+4. **Invoke** the TDM's batch entry point with the control file and scenario folder
+5. **Curate** outputs — glob-selected subset only, hard per-file size ceiling, raw outputs never enter git
+6. **Record** — write `run_metadata.json`, the source of truth for everything downstream
+:::
+
+## The Record
+
+```json
+{
+  "run_set_id": "bring-work-trips-closer-to-home",
+  "scenario_id": "Closer01",
+  "run_id": "20260710-133516-924e",
+  "status": "success",
+  "execution_mode": "manual",
+  "tdm": {
+    "requested_ref": "v10.0.0-beta.1-closer-to-home",
+    "resolved_commit": "1fc8a350...",
+    "dirty": false
+  },
+  "outputs": {
+    "inventory_count": 1182,
+    "inventory_total_bytes": 39352729618,
+    "curated_count": 8
+  }
+}
+```
+
+Every run — CLI-driven or manually executed — gets one of these. Committed, schema-validated, checksummed. That's the whole audit trail.
+
+## Let's Look at It Live {.demo-cue}
+
+::: {.demo-cue}
+tdmruns status → GitHub Pages report site
+:::
+
+::: {.notes}
+Switch to browser: https://wfrcanalytics.github.io/WF-TDM-Runs/
+Show the closer-to-home slides.html — point out the shift-level toggle and the
+new percent-change toggle (added this week) on one of the VHD charts.
+Then, if time: pull up one run_metadata.json in the GitHub repo directly.
+:::
+
+## Proof Points
+
+**non-motorized-2023** — the study that started this. 13 scenarios, run manually (block-format parsing wasn't solved yet), outputs curated and reported through the framework. Since retired: outputs purged, reports now read a small frozen snapshot instead of ~500 MB of curated CSVs.
+
+**bring-work-trips-closer-to-home** — currently running. 9 scenarios (3 geography types × 3 shift levels) plus baseline. As of this week, scenarios are executing through the **real CLI end-to-end** (`bin/RunModel.bat` → Cube Voyager), not just manual import — the Control Center block-format blocker that held back the first study is now solved for this one.
+
+## What's Not Solved Yet
+
+::: {.incremental}
+- **The Cube block-format parser was genuinely hard** — Cube Voyager's native `KEY = value` Control Center format, not YAML. Real engineering effort, not a config change.
+- **Exit-code handling is imperfect** — Voyager's cluster-shutdown step sometimes returns nonzero *after* a model finished successfully; runs get marked "failed" that actually aren't yet.
+- **Cube's per-machine licensing** caps throughput — this doesn't parallelize execution across machines.
+- **Two run sets have exercised this end-to-end so far.** Real, but not battle-tested.
+- **Requires git fluency** from analysts — a real onboarding cost.
+:::
+
+## What's Cube-Specific vs. General
+
+| WFRC/Cube-specific | Generalizes to any TDM |
+|---|---|
+| Native `.block` Control Center parsing | Versioned run configs as code |
+| Fixed batch entry point, driver-script staging | One override mechanism, validated before execution |
+| `Scenarios/_default/` baseline library convention | Curated outputs + size ceiling, raw outputs stay local |
+| Cube's exit-code/cluster-shutdown quirks | Structured run metadata as the audit trail |
+| | Automated reporting from that metadata |
+
+## Why We're Sharing This
+
+::: {.incremental}
+- Not asking for anything today — this is what we built, what it's bought us, and what it cost
+- If a similar pattern would help your agency's scenario management, happy to talk specifics
+- The repo, architecture decisions (ADRs), and both example run sets are there to look at
+:::
+
+## Questions
+
+**Repo:** `github.com/WFRCAnalytics/WF-TDM-Runs`
+**Live reports:** `wfrcanalytics.github.io/WF-TDM-Runs`
