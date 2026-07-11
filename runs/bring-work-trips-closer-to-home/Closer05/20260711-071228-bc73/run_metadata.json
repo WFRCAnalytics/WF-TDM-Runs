@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "run_set_id": "bring-work-trips-closer-to-home",
+  "scenario_id": "Closer05",
+  "run_id": "20260711-071228-bc73",
+  "status": "success",
+  "execution_mode": "manual",
+  "started_at": "2026-07-11T07:12:28.358792+00:00",
+  "finished_at": "2026-07-11T07:14:54.261913+00:00",
+  "framework_commit": "964b9911d99e56f2e19a001f6ec1de55ce6f49ea",
+  "tdm": {
+    "requested_ref": "v10.0.0-beta.1-closer-to-home",
+    "resolved_commit": "1fc8a350743446c8f009c031c2839f1e056ebb21",
+    "resolved_tag": "v10.0.0-beta.1-closer-to-home",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - OY_2027.block",
+    "run_set_overrides": {
+      "Run_Documentation": 0
+    },
+    "scenario_overrides": {
+      "vizToolDir": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\bring-work-trips-closer-to-home\\.vizTool",
+      "RunDescription": "Closer05 - Medium District 5% HBW trip redistribution"
+    }
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\bring-work-trips-closer-to-home\\Closer05",
+  "execution": {},
+  "outputs": {
+    "inventory_count": 1182,
+    "inventory_total_bytes": 39353372454,
+    "curated": [
+      {
+        "relative_path": "0_InputProcessing/SE_File.dbf",
+        "size_bytes": 1693167,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "0bcf0a9e63fe6aa3e91ad303400c29da1b172d909d6da8ed7a02a8992ee77911",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/SE_File.dbf"
+      },
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/_ZoneSummary_TripsByMode.csv",
+        "size_bytes": 12135435,
+        "entry_type": "datafile",
+        "columns": [
+          "Purpose",
+          "Period",
+          "PA",
+          "TAZID",
+          "All",
+          "Auto",
+          "Bike",
+          "Moto",
+          "NonM",
+          "Walk",
+          "tTrn"
+        ],
+        "sha256": "18e86555a4c9a09752c88653f1c02e489232046f433afba98f3a92e54696a8ac",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/_ZoneSummary_TripsByMode_filtered.csv"
+      },
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_Ok.mtx",
+        "size_bytes": 10702210,
+        "entry_type": "matrix",
+        "tabs": [
+          "motor",
+          "nonmotor"
+        ],
+        "format": "omx",
+        "sha256": "86d80c9575ba1bb34aae286f9f3d9ad9ded0d0a34bc805d510311de1f811a714",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/HBW_trips_allsegs_Ok.omx"
+      },
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_Pk.mtx",
+        "size_bytes": 10819369,
+        "entry_type": "matrix",
+        "tabs": [
+          "motor",
+          "nonmotor"
+        ],
+        "format": "omx",
+        "sha256": "bc940b53542785f7fae561a5fecdf484b293441cdadd87f416c6fc0d3ffab051",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/HBW_trips_allsegs_Pk.omx"
+      },
+      {
+        "relative_path": "4_ModeChoice/3_TransitAssign/_transit_brding_summary_route.csv",
+        "size_bytes": 26075,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "ddbf57458c609747244fc92eeabe511d7c70a6bdfdb2f581af71a2693b660a1b",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/_transit_brding_summary_route.csv"
+      },
+      {
+        "relative_path": "4_ModeChoice/4_Shares/Shares_Summary_long.csv",
+        "size_bytes": 2449,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "f508223900cc797f56136f51ffb84ac15d12109f0ac2b44267cfd88d3317c112",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/Shares_Summary_long.csv"
+      },
+      {
+        "relative_path": "5_AssignHwy/4_Summaries/Summary_SEGID.csv",
+        "size_bytes": 3558880,
+        "entry_type": "datafile",
+        "columns": [
+          "SEGID",
+          "DISTANCE",
+          "DIRECTION",
+          "FUNCGROUP",
+          "SUBAREAID",
+          "CO_FIPS",
+          "LANES",
+          "LANEMILES",
+          "FTCLASS",
+          "CAP1HL",
+          "AM_Vol",
+          "MD_Vol",
+          "PM_Vol",
+          "EV_Vol",
+          "DY_Vol",
+          "FF_Spd",
+          "AM_Spd",
+          "MD_Spd",
+          "PM_Spd",
+          "EV_Spd",
+          "DY_Spd",
+          "FF_Tme",
+          "AM_Tme",
+          "MD_Tme",
+          "PM_Tme",
+          "EV_Tme",
+          "DY_Tme",
+          "AM_CAP",
+          "MD_CAP",
+          "PM_CAP",
+          "EV_CAP",
+          "DY_CAP",
+          "AM_VC",
+          "MD_VC",
+          "PM_VC",
+          "EV_VC",
+          "MAX_VC",
+          "AM_VMT",
+          "MD_VMT",
+          "PM_VMT",
+          "EV_VMT",
+          "DY_VMT",
+          "AM_VMT_PC",
+          "MD_VMT_PC",
+          "PM_VMT_PC",
+          "EV_VMT_PC",
+          "DY_VMT_PC",
+          "AM_VMT_LT",
+          "MD_VMT_LT",
+          "PM_VMT_LT",
+          "EV_VMT_LT",
+          "DY_VMT_LT",
+          "AM_VMT_MD",
+          "MD_VMT_MD",
+          "PM_VMT_MD",
+          "EV_VMT_MD",
+          "DY_VMT_MD",
+          "AM_VMT_HV",
+          "MD_VMT_HV",
+          "PM_VMT_HV",
+          "EV_VMT_HV",
+          "DY_VMT_HV",
+          "FF_VHT",
+          "AM_VHT",
+          "MD_VHT",
+          "PM_VHT",
+          "EV_VHT",
+          "DY_VHT",
+          "AM_VHD",
+          "MD_VHD",
+          "PM_VHD",
+          "EV_VHD",
+          "DY_VHD"
+        ],
+        "sha256": "895a45adf0c15b81ed74ba136718e1cd26a861b0a3b7ca41d577ff719d3529ff",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/Summary_SEGID_filtered.csv"
+      },
+      {
+        "relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv",
+        "size_bytes": 35207547,
+        "entry_type": "datafile",
+        "columns": [
+          "TAZID",
+          "Metric",
+          "Purpose",
+          "Period",
+          "PA",
+          "Total"
+        ],
+        "sha256": "0bad3fb6651bf2d7754d90304b82e01033be3bb81f3463cff55187f3a79fea33",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/TAZ-Based Metrics_filtered.csv"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_AM.mtx",
+        "size_bytes": 37405676,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "f64d3e1d19fcb17732d627a055ecd7e94214ecb700e2314bfe55061f899287f7",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/Skm_AM.omx"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_EV.mtx",
+        "size_bytes": 37354290,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "35cfbe23058a721287829790ea38f90948ea5f75f5ebd09ef5c49588dc253023",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/Skm_EV.omx"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_MD.mtx",
+        "size_bytes": 37396740,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "93e52af02fbdc80c82c93aab91b4e228fe043b38733692982a2605f5fc90e73a",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/Skm_MD.omx"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_PM.mtx",
+        "size_bytes": 37451405,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "508109075248cdbcf3bbb2e4b2a68a14eee41f58ced4e0dd891bc0bb85241dff",
+        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer05/20260711-071228-bc73/outputs/Skm_PM.omx"
+      }
+    ]
+  },
+  "error": null
+}
