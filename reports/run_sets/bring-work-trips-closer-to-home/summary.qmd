@@ -132,6 +132,11 @@ cong_primary = congested_miles[
 cong_base = cong_primary['base_congested_miles'].sum()
 cong_delta = cong_primary['delta_congested_miles'].sum()
 
+transit_primary = transit[(transit['geography_label'] == 'City Area') & (transit['shift_pct'] == PRIMARY_SHIFT_PCT)]
+transit_delta = transit_primary['delta_Boardings'].sum()
+transit_base = transit_primary['base_Boardings'].sum()
+pct_transit = transit_delta / transit_base * 100
+
 # Scale-of-mechanism number: how many baseline daily HBW trips actually
 # get redistributed at this shift level, and what share of all HBW trips
 # that represents -- see compute_city_area_shift_trips()'s own docstring
@@ -155,8 +160,9 @@ display(Markdown(
     "to households\" (see [Free Time Added Back](#free-time-added-back)).\n"
     "- Medium District and Workshop Area shifts produce **similar-direction, somewhat smaller** reductions "
     "at this shift level — see the [cross-scale comparison](#cross-scale-comparison).\n"
-    "- **Transit ridership on TRAX, FrontRunner, and bus all decline slightly** under all three geography types — "
-    "shortening commutes reduces the number of trips long enough for transit to compete on, an "
+    f"- **Transit ridership on TRAX, FrontRunner, and bus all decline slightly** under all three geography types — "
+    f"about **{abs(transit_delta):,.1f} fewer daily boardings ({abs(pct_transit):.1f}%)** region-wide under City "
+    "Area — shortening commutes reduces the number of trips long enough for transit to compete on, an "
     "important, non-obvious side effect (see [Transit Ridership](#transit-ridership)).\n"
     "\n**For funding and capacity-prioritization decisions**, which tend to focus on the Peak period and on "
     "corridors already near or over capacity:\n\n"
@@ -213,7 +219,6 @@ def _big_picture(y_col, y_title, title):
         labels={'geography_label': '', y_col: y_title, 'shift_label': 'Shift Level'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
-    fig.update_traces(texttemplate='%{y:+.1f}%', textposition='outside', textfont=dict(size=9))
     for trace in fig.data:
         if trace.hovertemplate:
             trace.hovertemplate = trace.hovertemplate.replace('%{y}', '%{y:+,.3r}%')

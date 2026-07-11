@@ -14,7 +14,6 @@ format:
     css: styles.css
     footer: "Wasatch Front Regional Council | TDM Run Management Framework"
     include-before-body: ../about_back_link.html
-    include-in-header: ../slide_text_scale.html
 ---
 
 ## The Problem

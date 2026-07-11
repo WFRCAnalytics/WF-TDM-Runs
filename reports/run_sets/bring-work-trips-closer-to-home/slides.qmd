@@ -108,7 +108,13 @@ def _big_picture(y_col, y_title, title):
         labels={'geography_label': '', y_col: y_title, 'shift_label': 'Shift'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
-    fig.update_layout(height=420, width=HALF_WIDTH, title=dict(text=title, font_size=14))
+    for trace in fig.data:
+        if trace.hovertemplate:
+            trace.hovertemplate = trace.hovertemplate.replace('%{y}', '%{y:+,.3r}%')
+    fig.update_layout(
+        height=420, width=HALF_WIDTH, title=dict(text=title, font_size=14),
+        yaxis=dict(tickformat='.1f', ticksuffix='%'),
+    )
     return fig
 ```
 

@@ -86,5 +86,3 @@ for rs_id in run_set_ids:
         })
     display(pd.DataFrame(rows))
 ```
-
-**[About this framework →](about/index.qmd)** — what it is, how it works, and what it's bought us so far.

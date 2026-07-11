@@ -369,27 +369,11 @@ def figure_with_shift_toggle(
                     "produce the same trace structure as build_fig(sub)."
                 )
 
-    # Bar charts get a value label on every bar (texttemplate reformats
-    # trace.y at render time, so it doesn't need to be recomputed when the
-    # shift/period/group toggle swaps which traces are visible -- each
-    # trace already carries its own fixed y and texttemplate). Not applied
-    # to line/scatter charts (trip-length distribution's per-bin line, or
-    # the VMT-vs-VHT/HH scatter's own city-label text) -- a label per point
-    # there would be unreadably dense or would clobber an existing text
-    # channel already in use for point identification.
+    # No per-bar value labels -- tried, but they cluttered every chart with
+    # a toggle-heavy layout; hover (below) carries the same rounded value
+    # on demand instead. is_bar_chart still distinguishes bar charts from
+    # line/scatter charts for other purposes below.
     is_bar_chart = bool(per_cell_figs[cells[0]].data) and per_cell_figs[cells[0]].data[0].type == "bar"
-    if is_bar_chart:
-        for f in per_cell_figs.values():
-            for trace in f.data:
-                trace.texttemplate = "%{y:+,.0f}"
-                trace.textposition = "outside"
-                trace.textfont = dict(size=9)
-        if per_cell_pct_figs is not None:
-            for f in per_cell_pct_figs.values():
-                for trace in f.data:
-                    trace.texttemplate = "%{y:+.1f}%"
-                    trace.textposition = "outside"
-                    trace.textfont = dict(size=9)
 
     # Plotly Express's own auto-generated hovertemplate leaves %{x}/%{y}
     # unformatted, so hovering shows the raw float (often a dozen decimal
@@ -576,26 +560,19 @@ def figure_with_shift_toggle(
         pct_range = _fixed_range(trace.y for f in per_cell_pct_figs.values() for trace in f.data)
         value_axis_title = value_axis_title or combined.layout.yaxis.title.text
         pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
-        n_all_traces = len(cells) * n_traces
 
         def _pct_args(pos):
             if pos == 0:
                 layout_extra = {
                     "yaxis.title.text": value_axis_title, "yaxis.range": abs_range,
-                    "yaxis.tickformat": "", "yaxis.ticksuffix": "",
+                    "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "",
                 }
-                restyle = {"y": abs_y}
-                if is_bar_chart:
-                    restyle["texttemplate"] = ["%{y:+,.0f}"] * n_all_traces
-                return [restyle, layout_extra]
+                return [{"y": abs_y}, layout_extra]
             layout_extra = {
                 "yaxis.title.text": pct_axis_title, "yaxis.range": pct_range,
                 "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "%",
             }
-            restyle = {"y": pct_y}
-            if is_bar_chart:
-                restyle["texttemplate"] = ["%{y:+.1f}%"] * n_all_traces
-            return [restyle, layout_extra]
+            return [{"y": pct_y}, layout_extra]
         updatemenus += _col_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
 
     # Legend moves to a horizontal band above the plot's own top-left edge
