@@ -442,9 +442,12 @@ def build_corridor_orientation_summary(segid_df: pd.DataFrame, crosswalk: pd.Dat
 
 def build_vmt_vhd_by_county_facility(segid_df: pd.DataFrame, hh_df: pd.DataFrame) -> pd.DataFrame:
     """VMT/VHD by county + facility type, plus a Region row per facility
-    type -- memo section 6's headline (VHD) and explanatory (VMT) tables."""
+    type -- memo section 6's headline (VHD) and explanatory (VMT) tables.
+    Excludes FTCLASS == "Local" -- a tiny, incidental slice of SEGID rows
+    (21 of ~4,500 in a typical scenario) not part of the facility-type
+    breakdown the memo asks for."""
     fips_to_name = hh_df[["CO_FIPS", "CO_NAME"]].drop_duplicates().set_index("CO_FIPS")["CO_NAME"]
-    df = segid_df.copy()
+    df = segid_df[segid_df["FTCLASS"] != "Local"].copy()
     df["CO_NAME"] = df["CO_FIPS"].map(fips_to_name)
 
     by_county = df.groupby(["scenario_id", "CO_NAME", "FTCLASS"], as_index=False).agg(

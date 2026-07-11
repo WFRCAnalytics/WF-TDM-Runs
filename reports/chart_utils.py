@@ -19,6 +19,18 @@ area. Fixed by also pinning the title near the very top of the figure
 (TITLE_DEFAULTS) and reserving enough top margin (MARGIN_DEFAULTS) for
 both, verified against single-line and two-line (title+<br><sup>subtitle)
 titles alike.
+
+The top margin stacks three tiers, top to bottom: title (SLIDE_TITLE,
+pinned near the absolute top of the figure via container-relative y, so
+its position doesn't shift with margin/plot-height changes) -> toggle
+buttons, where present (figure_with_shift_toggle's updatemenus, plot-area-
+relative y) -> legend (SLIDE_LEGEND, also plot-area-relative, closest tier
+to the plot). Toggle buttons used to float above the legend, even above
+the title on some charts -- moved below the title on purpose, since
+buttons floating above everything else read as disconnected from the
+chart they control. SLIDE_MARGIN's t is sized for exactly this three-tier
+stack; if any tier's y moves, re-check the other two don't collide (see
+the pixel-math approach in the session that introduced this ordering).
 """
 import math
 
@@ -33,16 +45,18 @@ import plotly.io as pio
 CHART_CONFIG = {"displayModeBar": False}
 
 # Legend: a horizontal band top-left (clear of Plotly's top-right modebar),
-# floated high enough (y=1.1) to clear the title below it.
-SLIDE_LEGEND = dict(orientation="h", yanchor="bottom", y=1.1, xanchor="left", x=0)
+# the tier closest to the plot -- sits right at the plot's own top edge
+# (y=1.0), below both the title and (where present) the toggle buttons.
+SLIDE_LEGEND = dict(orientation="h", yanchor="bottom", y=1.0, xanchor="left", x=0)
 
 # Title: pinned near the very top of the figure so it has a fixed, known
 # position regardless of legend/margin -- font_size is left to each chart.
 SLIDE_TITLE = dict(y=0.97, yanchor="top")
 
-# Enough reserved top margin for a two-line title (text + <br><sup>subtitle)
-# plus the legend band above it, without either being clipped or cramped.
-SLIDE_MARGIN = dict(t=90)
+# Enough reserved top margin for a two-line title (text + <br><sup>subtitle),
+# the toggle-button row below it, and the legend band below that, without
+# any tier being clipped or cramped against another.
+SLIDE_MARGIN = dict(t=140)
 
 
 def use_slide_chart_defaults():
@@ -187,7 +201,7 @@ def figure_with_shift_toggle(
     updatemenus = [
         dict(
             type="buttons", direction="right", buttons=buttons, showactive=True,
-            x=1, xanchor="right", y=1.32, yanchor="bottom", pad=dict(r=5, t=5),
+            x=1, xanchor="right", y=1.15, yanchor="bottom", pad=dict(r=5, t=5),
         )
     ]
 
@@ -206,7 +220,7 @@ def figure_with_shift_toggle(
                 dict(label="Absolute", method="update", args=[{"y": abs_y}, {"yaxis.title.text": value_axis_title, "yaxis.range": abs_range}]),
                 dict(label="% Change", method="update", args=[{"y": pct_y}, {"yaxis.title.text": pct_axis_title, "yaxis.range": pct_range}]),
             ],
-            x=0, xanchor="left", y=1.32, yanchor="bottom", pad=dict(r=5, t=5),
+            x=0, xanchor="left", y=1.15, yanchor="bottom", pad=dict(r=5, t=5),
         ))
 
     combined.update_layout(updatemenus=updatemenus)

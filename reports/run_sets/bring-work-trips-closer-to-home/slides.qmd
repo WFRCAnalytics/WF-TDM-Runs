@@ -11,6 +11,7 @@ format:
     height: 720
     fig-align: center
     footer: "Wasatch Front Regional Council | Bringing Work Trips Closer to Home"
+    include-before-body: ../../back_link.html
 execute:
   echo: false
   warning: false
@@ -222,7 +223,7 @@ freeway_city['pct_DY_VHD'] = freeway_city['delta_DY_VHD'] / freeway_city['base_D
 
 def _build_freeway_county(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
-        sub, x='corridor_label', y=y_col, color='CO_NAME', barmode='stack',
+        sub, x='corridor_label', y=y_col, color='CO_NAME', barmode='group',
         category_orders={'corridor_label': freeway_order, 'CO_NAME': COUNTY_ORDER},
         labels={'corridor_label': 'Freeway Corridor', y_col: 'Δ Daily VHD (hrs)', 'CO_NAME': 'County'},
     )
@@ -300,13 +301,14 @@ fig.show(config=CHART_CONFIG)
 ::: {.column width="50%"}
 ```{python}
 region_hh = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['geography_label'].isin(GEO_ORDER))].copy()
+region_hh['delta_VHT_PER_HH_min'] = region_hh['delta_VHT_PER_HH'] * 60
 region_hh['pct_VHT_PER_HH'] = region_hh['delta_VHT_PER_HH'] / region_hh['base_VHT_PER_HH'] * 100
 
-def _build_vht_region(sub, y_col='delta_VHT_PER_HH'):
+def _build_vht_region(sub, y_col='delta_VHT_PER_HH_min'):
     fig = px.bar(
         sub, x='geography_label', y=y_col, color='geography_label',
         category_orders={'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'geography_label': '', y_col: 'Δ Peak VHT/HH (hrs)'},
+        labels={'geography_label': '', y_col: 'Δ Peak VHT/HH (min)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(showlegend=False)
@@ -314,7 +316,7 @@ def _build_vht_region(sub, y_col='delta_VHT_PER_HH'):
 
 fig = figure_with_shift_toggle(
     region_hh, _build_vht_region, pct_col='pct_VHT_PER_HH',
-    value_axis_title='Δ Peak VHT/HH (hrs)', pct_axis_title='Δ Peak VHT/HH (%)',
+    value_axis_title='Δ Peak VHT/HH (min)', pct_axis_title='Δ Peak VHT/HH (%)',
 )
 fig.update_layout(height=420, title=dict(text='Peak VHT / Household', font_size=14))
 fig.show(config=CHART_CONFIG)
@@ -358,10 +360,13 @@ def _build_td(sub):
         color_discrete_map={**GEO_COLORS, 'Baseline': '#898781'},
         labels={'bin_label': 'HBW Trip Length', 'share_pct': 'Share of Trips (%)', 'geography_label': 'Scenario'},
     )
+    fig.update_traces(selector=dict(name='Baseline'), line=dict(color='black', dash='dash', width=2), marker=dict(color='black'))
     return fig
 
 fig = figure_with_shift_toggle(td, _build_td, always_include=[0])
 fig.update_layout(height=460, title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>2-mile bins</sup>', font_size=15))
+fig.update_xaxes(range=[-0.5, loader.DISTANCE_BIN_EDGES.index(30) - 0.5])
+fig.update_yaxes(range=[0, 25])
 fig.show(config=CHART_CONFIG)
 ```
 
@@ -374,6 +379,7 @@ Shorter trips become more common, longer trips less common — the mechanism wor
 ```{python}
 city_df = city_results[city_results['scenario_id'] != loader.BASELINE_SCENARIO].copy()
 city_df['pct_trip_length'] = city_df['delta_trip_length'] / city_df['base_trip_length'] * 100
+city_df['delta_VHT_PER_HH_min'] = city_df['delta_VHT_PER_HH'] * 60
 city_df['pct_VHT_PER_HH'] = city_df['delta_VHT_PER_HH'] / city_df['base_VHT_PER_HH'] * 100
 
 def _build_city_tl(sub, y_col='delta_trip_length'):
@@ -396,11 +402,11 @@ fig.show(config=CHART_CONFIG)
 :::
 ::: {.column width="50%"}
 ```{python}
-def _build_city_vht(sub, y_col='delta_VHT_PER_HH'):
+def _build_city_vht(sub, y_col='delta_VHT_PER_HH_min'):
     fig = px.bar(
         sub, x='city_label', y=y_col, category_orders={'city_label': CITY_ORDER},
         color_discrete_sequence=[GEO_COLORS['City Area']],
-        labels={'city_label': '', y_col: 'Δ Peak VHT/HH (hrs)'},
+        labels={'city_label': '', y_col: 'Δ Peak VHT/HH (min)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-20)
@@ -408,7 +414,7 @@ def _build_city_vht(sub, y_col='delta_VHT_PER_HH'):
 
 fig = figure_with_shift_toggle(
     city_df, _build_city_vht, pct_col='pct_VHT_PER_HH',
-    value_axis_title='Δ Peak VHT/HH (hrs)', pct_axis_title='Δ Peak VHT/HH (%)',
+    value_axis_title='Δ Peak VHT/HH (min)', pct_axis_title='Δ Peak VHT/HH (%)',
 )
 fig.update_layout(height=420, title=dict(text='Δ Peak VHT/HH by City', font_size=14))
 fig.show(config=CHART_CONFIG)
@@ -431,10 +437,10 @@ rows = []
 for geo in GEO_ORDER:
     vhd = vmt_vhd_primary[(vmt_vhd_primary['CO_NAME'] == 'Region') & (vmt_vhd_primary['geography_label'] == geo)]['delta_DY_VHD'].sum()
     vmt = vmt_vhd_primary[(vmt_vhd_primary['CO_NAME'] == 'Region') & (vmt_vhd_primary['geography_label'] == geo)]['delta_DY_VMT'].sum()
-    hh = vht_hh_primary[(vht_hh_primary['CO_NAME'] == 'Region') & (vht_hh_primary['geography_label'] == geo)]['delta_VHT_PER_HH'].iloc[0]
+    hh_min = vht_hh_primary[(vht_hh_primary['CO_NAME'] == 'Region') & (vht_hh_primary['geography_label'] == geo)]['delta_VHT_PER_HH'].iloc[0] * 60
     tl = trip_length_primary[(trip_length_primary['CO_NAME'] == 'Region') & (trip_length_primary['geography_label'] == geo)]['delta_trip_length'].iloc[0]
     rows.append({'Geography': geo, 'Δ VHD (hrs)': f'{vhd:+,.0f}', 'Δ VMT (mi)': f'{vmt:+,.0f}',
-                 'Δ Peak VHT/HH': f'{hh:+.3f}', 'Δ Trip Length (mi)': f'{tl:+.2f}'})
+                 'Δ Peak VHT/HH (min)': f'{hh_min:+.2f}', 'Δ Trip Length (mi)': f'{tl:+.2f}'})
 display(pd.DataFrame(rows).style.hide(axis='index')
         .set_table_styles([{'selector': 'th', 'props': [('background-color', '#2a78d6'), ('color', 'white')]}]))
 ```

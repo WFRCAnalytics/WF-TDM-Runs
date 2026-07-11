@@ -13,6 +13,7 @@ format:
     height: 720
     fig-align: center
     footer: "Wasatch Front Regional Council | Non-Motorized Sensitivity Analysis"
+    include-before-body: ../../back_link.html
 execute:
   echo: false
   warning: false
