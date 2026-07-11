@@ -38,13 +38,13 @@
         "relative_path": "0_InputProcessing/SE_File_WFv920-E3_BY_SensitivityTest_11_2019.dbf",
         "size_bytes": 1685567,
         "sha256": "766e59623ee9de62a55f371c49af5586bc81b22ee961b5345404b92974a1b6c4",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/non-motorized-2023/S11/20260702-220844-5e98/outputs/SE_File_WFv920-E3_BY_SensitivityTest_11_2019.dbf"
+        "repo_path": "runs/non-motorized-2023/S11/20260702-220844-5e98/outputs/SE_File_WFv920-E3_BY_SensitivityTest_11_2019.dbf"
       },
       {
         "relative_path": "4_ModeChoice/2_DetailedTripMatrices/BY_SensitivityTest_11_2019_ZoneSummary_TripsByMode.csv",
         "size_bytes": 39280455,
         "sha256": "c720a30d007f0975e1af73f4192b2ede34a143caf3bb5aa23ca634b81338692c",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/non-motorized-2023/S11/20260702-220844-5e98/outputs/BY_SensitivityTest_11_2019_ZoneSummary_TripsByMode.csv"
+        "repo_path": "runs/non-motorized-2023/S11/20260702-220844-5e98/outputs/BY_SensitivityTest_11_2019_ZoneSummary_TripsByMode.csv"
       }
     ],
     "retired": true,

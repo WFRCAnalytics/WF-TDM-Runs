@@ -53,10 +53,10 @@ def test_copy_selected_flattens_to_dest_dir(tmp_path):
     entries = out.inventory(folder)
     selected = out.select(entries, [{"datafile": "reports/*.csv"}])
     dest = tmp_path / "curated"
-    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path)
     assert (dest / "a.csv").is_file()
     assert not (dest / "reports").exists()
-    assert curated[0]["repo_path"] == (dest / "a.csv").as_posix()
+    assert curated[0]["repo_path"] == (dest / "a.csv").relative_to(tmp_path).as_posix()
     assert len(curated[0]["sha256"]) == 64
 
 
@@ -70,7 +70,7 @@ def test_copy_selected_raises_on_filename_collision(tmp_path):
     selected = out.select(entries, [{"datafile": "*/a.csv"}])
     assert len(selected) == 2
     with pytest.raises(OutputCollectionError):
-        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
+        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1, repo_root=tmp_path)
 
 
 # ---------------------------------------------------------------------------
@@ -109,12 +109,12 @@ def test_copy_selected_writes_column_filtered_csv(tmp_path):
         entries, [{"datafile": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
     )
     dest = tmp_path / "curated"
-    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1)
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path)
 
     out_path = dest / "TAZ-Based Metrics_filtered.csv"
     assert out_path.is_file()
     assert out_path.read_text().splitlines()[0] == "TAZID,Total"
-    assert curated[0]["repo_path"] == out_path.as_posix()
+    assert curated[0]["repo_path"] == out_path.relative_to(tmp_path).as_posix()
     assert curated[0]["size_bytes"] == out_path.stat().st_size
 
 
@@ -141,7 +141,7 @@ def test_copy_selected_raises_and_cleans_up_when_filtered_output_still_too_big(t
     )
     dest = tmp_path / "curated"
     with pytest.raises(OutputCollectionError):
-        out.copy_selected(folder, selected, dest, max_file_size_mb=0.0001)
+        out.copy_selected(folder, selected, dest, max_file_size_mb=0.0001, repo_root=tmp_path)
     assert not (dest / "TAZ-Based Metrics_filtered.csv").exists()
 
 
@@ -154,7 +154,7 @@ def test_copy_selected_raises_when_declared_column_missing(tmp_path):
     )
     dest = tmp_path / "curated"
     with pytest.raises(OutputCollectionError, match="NoSuchColumn"):
-        out.copy_selected(folder, selected, dest, max_file_size_mb=1)
+        out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path)
 
 
 # ---------------------------------------------------------------------------
@@ -169,7 +169,7 @@ def test_curate_stays_success_when_something_matches(tmp_path):
     output_spec = {"include": [{"datafile": "reports/*.csv"}], "max_file_size_mb": 1}
     run_dir = tmp_path / "run"
 
-    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None, tmp_path)
 
     assert status == "success"
     assert error is None
@@ -185,7 +185,7 @@ def test_curate_stays_success_when_no_outputs_declared(tmp_path):
     output_spec = {"include": [], "max_file_size_mb": 1}
     run_dir = tmp_path / "run"
 
-    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None, tmp_path)
 
     assert status == "success"
     assert error is None
@@ -201,7 +201,7 @@ def test_curate_fails_when_declared_patterns_match_nothing(tmp_path):
     output_spec = {"include": [{"datafile": "nonexistent/*.csv"}], "max_file_size_mb": 1}
     run_dir = tmp_path / "run"
 
-    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None, tmp_path)
 
     assert status == "failed"
     assert "nonexistent/*.csv" in error
@@ -215,7 +215,7 @@ def test_curate_preserves_and_appends_to_existing_error_on_no_match(tmp_path):
     run_dir = tmp_path / "run"
 
     status, error, curated = out.curate(
-        folder, inventory, output_spec, run_dir, "failed", "model exited with code 2."
+        folder, inventory, output_spec, run_dir, "failed", "model exited with code 2.", tmp_path
     )
 
     assert status == "failed"
@@ -230,7 +230,7 @@ def test_curate_fails_when_curation_itself_raises(tmp_path):
     output_spec = {"include": [{"datafile": "skims/*.mtx"}], "max_file_size_mb": 1}  # big.mtx is 2 MB
     run_dir = tmp_path / "run"
 
-    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None)
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None, tmp_path)
 
     assert status == "failed"
     assert "exceed the 1 MB limit" in error
@@ -299,7 +299,7 @@ def test_copy_selected_matrix_entry_requires_voyager_exe(tmp_path):
     entries = out.inventory(folder)
     selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}])
     with pytest.raises(OutputCollectionError, match="Voyager"):
-        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
+        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1, repo_root=tmp_path)
 
 
 def test_copy_selected_matrix_entry_extracts_and_checksums(tmp_path, monkeypatch):
@@ -316,11 +316,11 @@ def test_copy_selected_matrix_entry_extracts_and_checksums(tmp_path, monkeypatch
     selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}])
     dest = tmp_path / "curated"
 
-    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, voyager_exe="fake.exe")
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path, voyager_exe="fake.exe")
 
     out_path = dest / "Skm_DY.omx"
     assert out_path.is_file()
-    assert curated[0]["repo_path"] == out_path.as_posix()
+    assert curated[0]["repo_path"] == out_path.relative_to(tmp_path).as_posix()
     assert len(curated[0]["sha256"]) == 64
     # the small extracted OMX is checked, not the huge source .mtx
     assert curated[0]["size_bytes"] == out_path.stat().st_size
@@ -343,11 +343,11 @@ def test_copy_selected_passes_declared_matrix_format_through(tmp_path, monkeypat
     selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"], "format": "mtx"}])
     dest = tmp_path / "curated"
 
-    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, voyager_exe="fake.exe")
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path, voyager_exe="fake.exe")
 
     assert captured["output_format"] == "mtx"
     assert (dest / "Skm_DY.mtx").is_file()
-    assert curated[0]["repo_path"] == (dest / "Skm_DY.mtx").as_posix()
+    assert curated[0]["repo_path"] == (dest / "Skm_DY.mtx").relative_to(tmp_path).as_posix()
 
 
 # ---------------------------------------------------------------------------
@@ -420,7 +420,7 @@ def test_copy_selected_network_entry_requires_voyager_exe(tmp_path):
     entries = out.inventory(folder)
     selected = out.select(entries, [{"network": "5_AssignHwy/2a_Networks/*.net", "fields": ["SEGID"]}])
     with pytest.raises(OutputCollectionError, match="Voyager"):
-        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1)
+        out.copy_selected(folder, selected, tmp_path / "curated", max_file_size_mb=1, repo_root=tmp_path)
 
 
 def test_copy_selected_network_entry_exports_and_checksums(tmp_path, monkeypatch):
@@ -441,11 +441,11 @@ def test_copy_selected_network_entry_exports_and_checksums(tmp_path, monkeypatch
     selected = out.select(entries, [{"network": "5_AssignHwy/2a_Networks/*.net", "fields": ["SEGID"]}])
     dest = tmp_path / "curated"
 
-    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, voyager_exe="fake.exe")
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path, voyager_exe="fake.exe")
 
     out_path = dest / "_Assigned.geojson"
     assert out_path.is_file()
-    assert curated[0]["repo_path"] == out_path.as_posix()
+    assert curated[0]["repo_path"] == out_path.relative_to(tmp_path).as_posix()
     assert len(curated[0]["sha256"]) == 64
     # the small exported GeoJSON is checked, not the huge source .net
     assert curated[0]["size_bytes"] == out_path.stat().st_size
@@ -474,8 +474,8 @@ def test_copy_selected_passes_declared_network_format_through(tmp_path, monkeypa
     )
     dest = tmp_path / "curated"
 
-    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, voyager_exe="fake.exe")
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path, voyager_exe="fake.exe")
 
     assert captured["output_format"] == "net"
     assert (dest / "_Assigned.net").is_file()
-    assert curated[0]["repo_path"] == (dest / "_Assigned.net").as_posix()
+    assert curated[0]["repo_path"] == (dest / "_Assigned.net").relative_to(tmp_path).as_posix()

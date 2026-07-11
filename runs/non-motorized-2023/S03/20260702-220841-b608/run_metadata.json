@@ -38,7 +38,7 @@
         "relative_path": "4_ModeChoice/2_DetailedTripMatrices/BY_SensitivityTest_03_2019_ZoneSummary_TripsByMode.csv",
         "size_bytes": 39280455,
         "sha256": "dc672ebd548855b688fbf3bc00d48a5addc308bde7a93065954dea9ff430e60d",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/non-motorized-2023/S03/20260702-220841-b608/outputs/BY_SensitivityTest_03_2019_ZoneSummary_TripsByMode.csv"
+        "repo_path": "runs/non-motorized-2023/S03/20260702-220841-b608/outputs/BY_SensitivityTest_03_2019_ZoneSummary_TripsByMode.csv"
       }
     ],
     "retired": true,

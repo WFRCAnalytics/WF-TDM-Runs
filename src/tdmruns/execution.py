@@ -201,7 +201,7 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     full_inventory = out.inventory(folder)
     run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
     status, error, curated = out.curate(
-        folder, full_inventory, output_spec, run_dir, status, error,
+        folder, full_inventory, output_spec, run_dir, status, error, repo_root,
         voyager_exe=local_layer.get("Voyager_EXE"),
     )
 
@@ -291,7 +291,7 @@ def import_manual_run(
     full_inventory = out.inventory(scenario_folder)
     run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
     status, error, curated = out.curate(
-        scenario_folder, full_inventory, output_spec, run_dir, "success", None,
+        scenario_folder, full_inventory, output_spec, run_dir, "success", None, repo_root,
         voyager_exe=local_layer.get("Voyager_EXE"),
     )
 

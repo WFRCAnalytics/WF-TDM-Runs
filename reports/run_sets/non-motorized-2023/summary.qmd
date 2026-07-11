@@ -7,7 +7,6 @@ format:
     toc-depth: 3
     toc-title: "Contents"
     embed-resources: true
-    theme: flatly
 execute:
   echo: false
   warning: false

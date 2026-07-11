@@ -182,6 +182,7 @@ def copy_selected(
     selected: list,
     dest_dir: Path,
     max_file_size_mb: float,
+    repo_root: Path,
     voyager_exe: str = None,
 ) -> list:
     """Copies each selected file directly into dest_dir, flattened to just
@@ -252,7 +253,7 @@ def copy_selected(
                 **entry,
                 "size_bytes": size_bytes,
                 "sha256": _sha256(dst),
-                "repo_path": dst.as_posix(),
+                "repo_path": dst.resolve().relative_to(repo_root.resolve()).as_posix(),
             }
         )
     return curated
@@ -265,6 +266,7 @@ def curate(
     run_dir: Path,
     status: str,
     error: str,
+    repo_root: Path,
     voyager_exe: str = None,
 ) -> tuple:
     """Selects+copies whatever outputs.include matches out of full_inventory
@@ -292,6 +294,7 @@ def curate(
                 selected,
                 run_dir / "outputs",
                 output_spec["max_file_size_mb"],
+                repo_root,
                 voyager_exe=voyager_exe,
             )
         except Exception as e:  # noqa: BLE001 -- recorded in metadata, not swallowed silently

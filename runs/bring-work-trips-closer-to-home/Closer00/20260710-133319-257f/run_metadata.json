@@ -38,7 +38,7 @@
         "entry_type": "file",
         "columns": null,
         "sha256": "0bcf0a9e63fe6aa3e91ad303400c29da1b172d909d6da8ed7a02a8992ee77911",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/SE_File.dbf"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/SE_File.dbf"
       },
       {
         "relative_path": "4_ModeChoice/2_DetailedTripMatrices/_ZoneSummary_TripsByMode.csv",
@@ -58,7 +58,7 @@
           "tTrn"
         ],
         "sha256": "d851c25c5aab9cee36d24233a16857965597795d028c53da82d54db5429a4dd8",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/_ZoneSummary_TripsByMode_filtered.csv"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/_ZoneSummary_TripsByMode_filtered.csv"
       },
       {
         "relative_path": "4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_pkok.mtx",
@@ -69,7 +69,7 @@
           "nonmotor"
         ],
         "sha256": "d43b00e1f4fb3676b002f6360ea954bb7286c72c2b3ca69dea398bbb4f9f006f",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/HBW_trips_allsegs_pkok.omx"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/HBW_trips_allsegs_pkok.omx"
       },
       {
         "relative_path": "4_ModeChoice/3_TransitAssign/_transit_brding_summary_route.csv",
@@ -77,7 +77,7 @@
         "entry_type": "file",
         "columns": null,
         "sha256": "d48ad4ef187fc6ca22cf62968b1a6a8562e907850ac6086352071cf7c8989b53",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/_transit_brding_summary_route.csv"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/_transit_brding_summary_route.csv"
       },
       {
         "relative_path": "4_ModeChoice/4_Shares/Shares_Summary_long.csv",
@@ -85,7 +85,7 @@
         "entry_type": "file",
         "columns": null,
         "sha256": "0b56dcd6ce16cb5e9ea7bd96bfb9bde8dd89d0122f75232d7d80aecda61d1a4f",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/Shares_Summary_long.csv"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/Shares_Summary_long.csv"
       },
       {
         "relative_path": "5_AssignHwy/4_Summaries/Summary_SEGID.csv",
@@ -167,7 +167,7 @@
           "DY_VHD"
         ],
         "sha256": "42b2279462c46894aee10c37a3d0f714ecdf7d01520329126aa9b00244071272",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/Summary_SEGID_filtered.csv"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/Summary_SEGID_filtered.csv"
       },
       {
         "relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv",
@@ -182,7 +182,7 @@
           "Total"
         ],
         "sha256": "40e82db5e6a379484fe682b66bdfc9165ee1aac74a3353819569c172f73c477d",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/TAZ-Based Metrics_filtered.csv"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/TAZ-Based Metrics_filtered.csv"
       },
       {
         "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_DY.mtx",
@@ -192,7 +192,7 @@
           "GP_Dist"
         ],
         "sha256": "ef100e5333327c2ac8582593634481940ffb1332bdea8d9c16d75110d20c043a",
-        "repo_path": "M:/GitHub/WF-TDM-Runs/runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/Skm_DY.omx"
+        "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/20260710-133319-257f/outputs/Skm_DY.omx"
       }
     ]
   },
