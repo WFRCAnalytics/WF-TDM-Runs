@@ -1,16 +1,21 @@
 """Shared data-loading and aggregation logic for reports/run_sets/non-motorized-2023's
 summary.qmd and slides.qmd -- previously duplicated verbatim between the two.
 
-Retirement-aware at exactly two leaf functions, load_scenario() and load_se():
-each prefers a frozen snapshot (written by `tdmruns snapshot-run-set`, read via
-report_data.is_retired()) once one exists, falling back to a live read from
-whatever tdmruns import-manual-run(-set) most recently curated under runs/.
-Everything else here -- aggregation, deltas, chart-ready tables -- is unchanged
-business logic shared by both the live and retired cases.
+Retirement-aware at its leaf functions -- load_scenario(), load_se(),
+smldst_tazs(), taz_dist_table(), dist_areas_table() -- each preferring a
+frozen snapshot (written by `tdmruns snapshot-run-set`, read via
+report_data.is_retired()) once one exists, falling back to a live read
+otherwise: load_scenario()/load_se() from whatever tdmruns
+import-manual-run(-set) most recently curated under runs/; the rest
+straight from the (gitignored) tdm/ working tree. Everything else here --
+aggregation, deltas, chart-ready tables -- is unchanged business logic
+shared by both the live and retired cases.
 
-The base year (test_id 0) and the TAZ/district shapefiles are always read live
-from the (gitignored) tdm/ working tree, never frozen -- see CLAUDE.md's note
-on this run set's retirement for why that's an accepted limitation.
+The base year (test_id 0) and the TAZ/district geometry were originally
+always read live from tdm/, never frozen -- CI (which never has tdm/
+checked out with real data) surfaced this as a real gap, not just a
+theoretical one, so the snapshot now covers these too. See
+report_snapshot.py.
 """
 import glob
 import os
@@ -85,9 +90,15 @@ def _taz_shapefile() -> str:
     return matches[0]
 
 
-def smldst_tazs() -> set:
+def smldst_tazs_from_tdm() -> set:
     taz_gdf = gpd.read_file(_taz_shapefile())
     return set(taz_gdf[taz_gdf["DISTSML"].isin(SMLDST_LST)]["TAZID"].astype(int).tolist())
+
+
+def smldst_tazs() -> set:
+    if rd.is_retired(RUN_SET_ID):
+        return set(pd.read_csv(_snapshot_path("smldst_tazs.csv"))["TAZID"].astype(int).tolist())
+    return smldst_tazs_from_tdm()
 
 
 def _latest_runs() -> dict:
@@ -129,18 +140,22 @@ def load_scenario_from_runs(test_id: int) -> pd.DataFrame:
     return df
 
 
+def load_baseline_from_tdm() -> pd.DataFrame:
+    path = os.path.join(
+        TDM_BASELINE_DIR, "BY_2019", "4_ModeChoice",
+        "2_DetailedTripMatrices", "BY_2019_ZoneSummary_TripsByMode.csv",
+    )
+    df = pd.read_csv(path)
+    df = df[(df["Period"] == "Dy") & (df["PA"] == "P")][KEEP_COLS]
+    df["test_id"] = 0
+    return df
+
+
 def load_scenario(test_id: int) -> pd.DataFrame:
-    if test_id == 0:
-        path = os.path.join(
-            TDM_BASELINE_DIR, "BY_2019", "4_ModeChoice",
-            "2_DetailedTripMatrices", "BY_2019_ZoneSummary_TripsByMode.csv",
-        )
-        df = pd.read_csv(path)
-        df = df[(df["Period"] == "Dy") & (df["PA"] == "P")][KEEP_COLS]
-        df["test_id"] = 0
-        return df
     if rd.is_retired(RUN_SET_ID):
         return pd.read_csv(_snapshot_path(f"S{test_id:02d}_trips.csv"))
+    if test_id == 0:
+        return load_baseline_from_tdm()
     return load_scenario_from_runs(test_id)
 
 
@@ -205,21 +220,48 @@ def build_full_delta(raw_df: pd.DataFrame, smldst_taz_set: set) -> pd.DataFrame:
     return pd.concat([local_delta, region_delta], ignore_index=True)
 
 
-def build_geo_centerization(raw_df: pd.DataFrame) -> pd.DataFrame:
-    """The district-level table behind the 'Where Centerization Has an
-    Effect' chart. taz_dist (TAZ->district name) and dist_areas (district
-    geometry, for area_acres) are read live from tdm/ -- see module
-    docstring. t10_se/t11_se (DISTMED/TOTHH) go through load_se(), so they
-    come from the snapshot once retired."""
-    t10_all = raw_df[raw_df["test_id"] == 10].groupby("TAZID")[["All", "NonM"]].sum().reset_index()
-    t11_all = raw_df[raw_df["test_id"] == 11].groupby("TAZID")[["All", "NonM"]].sum().reset_index()
-
+def taz_dist_from_tdm() -> pd.DataFrame:
     taz_dist = gpd.read_file(os.path.join(
         TDM_BASELINE_DIR, "BY_2019", "0_InputProcessing", "SE_File_WFv920-E3_BY_2019.dbf"
     ))[["Z", "DISTMED", "DMED_NAME"]]
     taz_dist = taz_dist.rename(columns={"Z": "TAZID"})
     taz_dist["TAZID"] = taz_dist["TAZID"].astype(int)
     taz_dist["DISTMED"] = taz_dist["DISTMED"].astype(int)
+    return taz_dist
+
+
+def taz_dist_table() -> pd.DataFrame:
+    if rd.is_retired(RUN_SET_ID):
+        return pd.read_csv(_snapshot_path("taz_dist.csv"))
+    return taz_dist_from_tdm()
+
+
+def dist_areas_from_tdm() -> pd.DataFrame:
+    dist_areas = gpd.read_file(os.path.join(
+        TDM_ROOT, "1_Inputs", "1_TAZ", "Districts", "Dist_Medium.shp"
+    ))[["DISTMED", "geometry"]]
+    dist_areas["DISTMED"] = dist_areas["DISTMED"].astype(int)
+    dist_areas["area_acres"] = dist_areas.geometry.area / 4046.86
+    return dist_areas[["DISTMED", "area_acres"]]
+
+
+def dist_areas_table() -> pd.DataFrame:
+    if rd.is_retired(RUN_SET_ID):
+        return pd.read_csv(_snapshot_path("dist_areas.csv"))
+    return dist_areas_from_tdm()
+
+
+def build_geo_centerization(raw_df: pd.DataFrame) -> pd.DataFrame:
+    """The district-level table behind the 'Where Centerization Has an
+    Effect' chart. taz_dist (TAZ->district name) and dist_areas (district
+    area_acres, derived from geometry) go through taz_dist_table()/
+    dist_areas_table(), retirement-aware like everything else here -- see
+    module docstring. t10_se/t11_se (DISTMED/TOTHH) go through load_se(),
+    so they come from the snapshot once retired too."""
+    t10_all = raw_df[raw_df["test_id"] == 10].groupby("TAZID")[["All", "NonM"]].sum().reset_index()
+    t11_all = raw_df[raw_df["test_id"] == 11].groupby("TAZID")[["All", "NonM"]].sum().reset_index()
+
+    taz_dist = taz_dist_table()
 
     def district_nm(trips):
         df = trips.merge(taz_dist, on="TAZID", how="left")
@@ -233,11 +275,7 @@ def build_geo_centerization(raw_df: pd.DataFrame) -> pd.DataFrame:
     t10_se = load_se("S10")
     t11_se = load_se("S11")
 
-    dist_areas = gpd.read_file(os.path.join(
-        TDM_ROOT, "1_Inputs", "1_TAZ", "Districts", "Dist_Medium.shp"
-    ))[["DISTMED", "geometry"]]
-    dist_areas["DISTMED"] = dist_areas["DISTMED"].astype(int)
-    dist_areas["area_acres"] = dist_areas.geometry.area / 4046.86
+    dist_areas = dist_areas_table()
 
     hh = t10_se.groupby("DISTMED")["TOTHH"].sum().rename("HH_T10").to_frame()
     hh["HH_T11"] = t11_se.groupby("DISTMED")["TOTHH"].sum()
@@ -259,10 +297,9 @@ def build_geo_centerization(raw_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load() -> dict:
-    """Everything both summary.qmd and slides.qmd need. raw_df/full_delta
-    prefer the frozen snapshot for test scenarios 1-13 once retired; the
-    base year and geo_centerization's taz_dist/dist_areas pieces are always
-    read live from tdm/."""
+    """Everything both summary.qmd and slides.qmd need. Every leaf read here
+    (base year, S01-S13, smldst_tazs, taz_dist, dist_areas) prefers the
+    frozen snapshot once this run set is retired -- see module docstring."""
     raw_df = build_raw_df()
     tazs = smldst_tazs()
     full_delta = build_full_delta(raw_df, tazs)
