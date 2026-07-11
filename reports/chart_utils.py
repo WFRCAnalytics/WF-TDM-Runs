@@ -53,7 +53,8 @@ def use_slide_chart_defaults():
 
 
 def figure_with_shift_toggle(
-    df, build_fig, shift_col="shift_pct", default_shift=10, shift_label_fmt="{v}%", always_include=()
+    df, build_fig, shift_col="shift_pct", default_shift=10, shift_label_fmt="{v}%", always_include=(),
+    pct_col=None, value_axis_title=None, pct_axis_title=None,
 ):
     """Builds one figure per available shift_pct value in df (via
     build_fig(subset_df_for_that_shift) -- typically a small wrapper around
@@ -80,6 +81,24 @@ def figure_with_shift_toggle(
     own -- for a chart like the trip-length distribution that wants the
     baseline curve shown alongside whichever shift level is selected, not a
     separate "0%" toggle option.
+
+    pct_col, if given, names a second y-column already present in df (e.g.
+    "pct_DY_VHD", each row's delta expressed as a percent of its own
+    baseline) that lets a viewer judge a change's size relative to the
+    baseline, not just its raw units. build_fig must then accept a second,
+    optional `y_col` argument (defaulting to whichever column it hardcodes
+    for the absolute case, e.g. `def _build(sub, y_col='delta_DY_VHD')`) so
+    it can be called again with y_col=pct_col -- same grouping/category
+    order, only the y-column differs, so the resulting traces line up 1:1
+    with the absolute-mode traces by position.
+
+    This adds a second, independent row of buttons ("Absolute" / "% Change")
+    that restyles trace.y (and the y-axis title) for every trace at once,
+    rather than toggling visibility -- so it composes cleanly with the
+    shift-level toggle: switching shift level never resets the value-mode
+    choice, and switching value mode never resets which shift level is
+    showing, because the two button rows act on disjoint trace properties
+    (visible vs. y).
     """
     all_values = sorted(df[shift_col].unique())
     shift_levels = [v for v in all_values if v not in always_include]
@@ -100,6 +119,19 @@ def figure_with_shift_toggle(
                 "identical across shift levels for the toggle to swap between them cleanly."
             )
 
+    per_shift_pct_figs = None
+    if pct_col is not None:
+        per_shift_pct_figs = {
+            s: build_fig(df[df[shift_col].isin([*always_include, s])], y_col=pct_col) for s in shift_levels
+        }
+        for s, f in per_shift_pct_figs.items():
+            if len(f.data) != n_traces:
+                raise ValueError(
+                    f"Percent-mode figure for shift level {s} produced {len(f.data)} trace(s), "
+                    f"expected {n_traces} -- build_fig(sub, y_col=pct_col) must produce the same "
+                    "trace structure as build_fig(sub)."
+                )
+
     combined = go.Figure()
     for s in shift_levels:
         for trace in per_shift_figs[s].data:
@@ -114,12 +146,26 @@ def figure_with_shift_toggle(
             visible[i * n_traces + j] = True
         buttons.append(dict(label=shift_label_fmt.format(v=s), method="update", args=[{"visible": visible}]))
 
-    combined.update_layout(
-        updatemenus=[
-            dict(
-                type="buttons", direction="right", buttons=buttons, showactive=True,
-                x=1, xanchor="right", y=1.32, yanchor="bottom", pad=dict(r=5, t=5),
-            )
-        ]
-    )
+    updatemenus = [
+        dict(
+            type="buttons", direction="right", buttons=buttons, showactive=True,
+            x=1, xanchor="right", y=1.32, yanchor="bottom", pad=dict(r=5, t=5),
+        )
+    ]
+
+    if per_shift_pct_figs is not None:
+        abs_y = [list(per_shift_figs[s].data[j].y) for s in shift_levels for j in range(n_traces)]
+        pct_y = [list(per_shift_pct_figs[s].data[j].y) for s in shift_levels for j in range(n_traces)]
+        value_axis_title = value_axis_title or combined.layout.yaxis.title.text
+        pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
+        updatemenus.append(dict(
+            type="buttons", direction="right", showactive=True,
+            buttons=[
+                dict(label="Absolute", method="update", args=[{"y": abs_y}, {"yaxis.title.text": value_axis_title}]),
+                dict(label="% Change", method="update", args=[{"y": pct_y}, {"yaxis.title.text": pct_axis_title}]),
+            ],
+            x=0, xanchor="left", y=1.32, yanchor="bottom", pad=dict(r=5, t=5),
+        ))
+
+    combined.update_layout(updatemenus=updatemenus)
     return combined

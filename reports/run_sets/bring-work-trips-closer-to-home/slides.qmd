@@ -95,19 +95,23 @@ This deck extends automatically as more scenarios complete.
 ```{python}
 #| fig-align: center
 vhd_region_df = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)]
-vhd_region_df = vhd_region_df.groupby(['geography_label', 'shift_pct'], as_index=False)['delta_DY_VHD'].sum()
+vhd_region_df = vhd_region_df.groupby(['geography_label', 'shift_pct'], as_index=False)[['delta_DY_VHD', 'base_DY_VHD']].sum()
+vhd_region_df['pct_DY_VHD'] = vhd_region_df['delta_DY_VHD'] / vhd_region_df['base_DY_VHD'] * 100
 
-def _build_vhd_region(sub):
+def _build_vhd_region(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
-        sub, x='geography_label', y='delta_DY_VHD', color='geography_label',
+        sub, x='geography_label', y=y_col, color='geography_label',
         category_orders={'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'geography_label': '', 'delta_DY_VHD': 'Δ Daily VHD (hrs)'},
+        labels={'geography_label': '', y_col: 'Δ Daily VHD (hrs)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(showlegend=False)
     return fig
 
-fig = figure_with_shift_toggle(vhd_region_df, _build_vhd_region)
+fig = figure_with_shift_toggle(
+    vhd_region_df, _build_vhd_region, pct_col='pct_DY_VHD',
+    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+)
 fig.update_layout(height=460, title=dict(text='Change in Daily Vehicle-Hours of Delay, Region', font_size=15))
 fig.show()
 ```
@@ -120,18 +124,22 @@ vhd_df = vmt_vhd.copy()
 vhd_df['CO_NAME'] = pd.Categorical(vhd_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
 vhd_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
     ['CO_NAME', 'geography_label', 'shift_pct'], as_index=False, observed=True
-)['delta_DY_VHD'].sum()
+)[['delta_DY_VHD', 'base_DY_VHD']].sum()
+vhd_by_county['pct_DY_VHD'] = vhd_by_county['delta_DY_VHD'] / vhd_by_county['base_DY_VHD'] * 100
 
-def _build_vhd_county(sub):
+def _build_vhd_county(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
-        sub, x='CO_NAME', y='delta_DY_VHD', color='geography_label', barmode='group',
+        sub, x='CO_NAME', y=y_col, color='geography_label', barmode='group',
         category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'CO_NAME': 'County', 'delta_DY_VHD': 'Δ Daily VHD (hrs)', 'geography_label': 'Geography'},
+        labels={'CO_NAME': 'County', y_col: 'Δ Daily VHD (hrs)', 'geography_label': 'Geography'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(vhd_by_county, _build_vhd_county)
+fig = figure_with_shift_toggle(
+    vhd_by_county, _build_vhd_county, pct_col='pct_DY_VHD',
+    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+)
 fig.update_layout(height=460, title=dict(text='Change in Daily VHD by County', font_size=15))
 fig.show()
 ```
@@ -142,18 +150,22 @@ fig.show()
 #| fig-align: center
 vmt_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
     ['CO_NAME', 'geography_label', 'shift_pct'], as_index=False, observed=True
-)['delta_DY_VMT'].sum()
+)[['delta_DY_VMT', 'base_DY_VMT']].sum()
+vmt_by_county['pct_DY_VMT'] = vmt_by_county['delta_DY_VMT'] / vmt_by_county['base_DY_VMT'] * 100
 
-def _build_vmt_county(sub):
+def _build_vmt_county(sub, y_col='delta_DY_VMT'):
     fig = px.bar(
-        sub, x='CO_NAME', y='delta_DY_VMT', color='geography_label', barmode='group',
+        sub, x='CO_NAME', y=y_col, color='geography_label', barmode='group',
         category_orders={'CO_NAME': COUNTY_ORDER, 'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'CO_NAME': 'County', 'delta_DY_VMT': 'Δ Daily VMT (mi)', 'geography_label': 'Geography'},
+        labels={'CO_NAME': 'County', y_col: 'Δ Daily VMT (mi)', 'geography_label': 'Geography'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(vmt_by_county, _build_vmt_county)
+fig = figure_with_shift_toggle(
+    vmt_by_county, _build_vmt_county, pct_col='pct_DY_VMT',
+    value_axis_title='Δ Daily VMT (mi)', pct_axis_title='Δ Daily VMT (%)',
+)
 fig.update_layout(height=460, title=dict(text='Change in Daily VMT by County', font_size=15))
 fig.show()
 ```
@@ -175,18 +187,22 @@ city_corr_all = corridor_volumes[
     (corridor_volumes['geography_label'] == 'City Area') & (corridor_volumes['corridor_label'].isin(top8_order))
 ].copy()
 city_corr_all['corridor_label'] = pd.Categorical(city_corr_all['corridor_label'], categories=top8_order, ordered=True)
+city_corr_all['pct_DY_VHD'] = city_corr_all['delta_DY_VHD'] / city_corr_all['base_DY_VHD'] * 100
 
-def _build_top8(sub):
+def _build_top8(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
-        sub, x='corridor_label', y='delta_DY_VHD', color_discrete_sequence=[GEO_COLORS['City Area']],
+        sub, x='corridor_label', y=y_col, color_discrete_sequence=[GEO_COLORS['City Area']],
         category_orders={'corridor_label': top8_order},
-        labels={'corridor_label': 'Corridor', 'delta_DY_VHD': 'Δ Daily VHD (hrs)'},
+        labels={'corridor_label': 'Corridor', y_col: 'Δ Daily VHD (hrs)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-30)
     return fig
 
-fig = figure_with_shift_toggle(city_corr_all, _build_top8)
+fig = figure_with_shift_toggle(
+    city_corr_all, _build_top8, pct_col='pct_DY_VHD',
+    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+)
 fig.update_layout(height=460, title=dict(text='Top 8 Corridors by VHD Reduction — City Area', font_size=15))
 fig.show()
 ```
@@ -202,18 +218,22 @@ freeway_order = freeway_primary.groupby('corridor_label')['delta_DY_VHD'].sum().
 
 freeway_city = freeway_by_county[freeway_by_county['geography_label'] == 'City Area'].copy()
 freeway_city['corridor_label'] = pd.Categorical(freeway_city['corridor_label'], categories=freeway_order, ordered=True)
+freeway_city['pct_DY_VHD'] = freeway_city['delta_DY_VHD'] / freeway_city['base_DY_VHD'] * 100
 
-def _build_freeway_county(sub):
+def _build_freeway_county(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
-        sub, x='corridor_label', y='delta_DY_VHD', color='CO_NAME', barmode='stack',
+        sub, x='corridor_label', y=y_col, color='CO_NAME', barmode='stack',
         category_orders={'corridor_label': freeway_order, 'CO_NAME': COUNTY_ORDER},
-        labels={'corridor_label': 'Freeway Corridor', 'delta_DY_VHD': 'Δ Daily VHD (hrs)', 'CO_NAME': 'County'},
+        labels={'corridor_label': 'Freeway Corridor', y_col: 'Δ Daily VHD (hrs)', 'CO_NAME': 'County'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-20)
     return fig
 
-fig = figure_with_shift_toggle(freeway_city, _build_freeway_county)
+fig = figure_with_shift_toggle(
+    freeway_city, _build_freeway_county, pct_col='pct_DY_VHD',
+    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+)
 fig.update_layout(height=460, title=dict(text='Freeway Corridor VHD Change by County — City Area', font_size=15))
 fig.show()
 ```
@@ -224,19 +244,23 @@ I-15's reduction concentrates in Salt Lake and Utah counties, where its own dail
 
 ```{python}
 #| fig-align: center
-orientation_df = corridor_orientation[corridor_orientation['scenario_id'] != loader.BASELINE_SCENARIO]
+orientation_df = corridor_orientation[corridor_orientation['scenario_id'] != loader.BASELINE_SCENARIO].copy()
+orientation_df['pct_DY_VHD'] = orientation_df['delta_DY_VHD'] / orientation_df['base_DY_VHD'] * 100
 
-def _build_orientation(sub):
+def _build_orientation(sub, y_col='delta_DY_VHD'):
     fig = px.bar(
-        sub, x='orientation', y='delta_DY_VHD', color='geography_label', barmode='group',
+        sub, x='orientation', y=y_col, color='geography_label', barmode='group',
         category_orders={'orientation': ['N/S', 'E/W', 'Loop'], 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'orientation': 'Corridor Orientation', 'delta_DY_VHD': 'Δ Daily VHD (hrs)', 'geography_label': 'Geography'},
+        labels={'orientation': 'Corridor Orientation', y_col: 'Δ Daily VHD (hrs)', 'geography_label': 'Geography'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(orientation_df, _build_orientation)
+fig = figure_with_shift_toggle(
+    orientation_df, _build_orientation, pct_col='pct_DY_VHD',
+    value_axis_title='Δ Daily VHD (hrs)', pct_axis_title='Δ Daily VHD (%)',
+)
 fig.update_layout(height=460, title=dict(text='Change in Daily VHD by Corridor Orientation', font_size=15))
 fig.show()
 ```
@@ -247,19 +271,23 @@ North/south corridors (I-15, Redwood Road, Mountain View Corridor, Bangerter Hig
 
 ```{python}
 #| fig-align: center
-transit_df = transit[transit['scenario_id'] != loader.BASELINE_SCENARIO]
+transit_df = transit[transit['scenario_id'] != loader.BASELINE_SCENARIO].copy()
+transit_df['pct_Boardings'] = transit_df['delta_Boardings'] / transit_df['base_Boardings'] * 100
 
-def _build_transit(sub):
+def _build_transit(sub, y_col='delta_Boardings'):
     fig = px.bar(
-        sub, x='line_label', y='delta_Boardings', color='geography_label', barmode='group',
+        sub, x='line_label', y=y_col, color='geography_label', barmode='group',
         category_orders={'line_label': TRANSIT_LINE_ORDER, 'geography_label': GEO_ORDER},
         color_discrete_map=GEO_COLORS,
-        labels={'line_label': 'Line', 'delta_Boardings': 'Δ Daily Boardings', 'geography_label': 'Geography'},
+        labels={'line_label': 'Line', y_col: 'Δ Daily Boardings', 'geography_label': 'Geography'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(transit_df, _build_transit)
+fig = figure_with_shift_toggle(
+    transit_df, _build_transit, pct_col='pct_Boardings',
+    value_axis_title='Δ Daily Boardings', pct_axis_title='Δ Daily Boardings (%)',
+)
 fig.update_layout(height=460, title=dict(text='Change in Daily Boardings — Rail Lines &amp; Bus', font_size=15))
 fig.show()
 ```
@@ -271,38 +299,46 @@ fig.show()
 :::: {.columns}
 ::: {.column width="50%"}
 ```{python}
-region_hh = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['geography_label'].isin(GEO_ORDER))]
+region_hh = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['geography_label'].isin(GEO_ORDER))].copy()
+region_hh['pct_VHT_PER_HH'] = region_hh['delta_VHT_PER_HH'] / region_hh['base_VHT_PER_HH'] * 100
 
-def _build_vht_region(sub):
+def _build_vht_region(sub, y_col='delta_VHT_PER_HH'):
     fig = px.bar(
-        sub, x='geography_label', y='delta_VHT_PER_HH', color='geography_label',
+        sub, x='geography_label', y=y_col, color='geography_label',
         category_orders={'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'geography_label': '', 'delta_VHT_PER_HH': 'Δ Peak VHT/HH (hrs)'},
+        labels={'geography_label': '', y_col: 'Δ Peak VHT/HH (hrs)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(showlegend=False)
     return fig
 
-fig = figure_with_shift_toggle(region_hh, _build_vht_region)
+fig = figure_with_shift_toggle(
+    region_hh, _build_vht_region, pct_col='pct_VHT_PER_HH',
+    value_axis_title='Δ Peak VHT/HH (hrs)', pct_axis_title='Δ Peak VHT/HH (%)',
+)
 fig.update_layout(height=420, title=dict(text='Peak VHT / Household', font_size=14))
 fig.show()
 ```
 :::
 ::: {.column width="50%"}
 ```{python}
-region_tl = trip_length[(trip_length['CO_NAME'] == 'Region') & (trip_length['geography_label'].isin(GEO_ORDER))]
+region_tl = trip_length[(trip_length['CO_NAME'] == 'Region') & (trip_length['geography_label'].isin(GEO_ORDER))].copy()
+region_tl['pct_trip_length'] = region_tl['delta_trip_length'] / region_tl['base_trip_length'] * 100
 
-def _build_tl_region(sub):
+def _build_tl_region(sub, y_col='delta_trip_length'):
     fig = px.bar(
-        sub, x='geography_label', y='delta_trip_length', color='geography_label',
+        sub, x='geography_label', y=y_col, color='geography_label',
         category_orders={'geography_label': GEO_ORDER}, color_discrete_map=GEO_COLORS,
-        labels={'geography_label': '', 'delta_trip_length': 'Δ HBW Trip Length (mi)'},
+        labels={'geography_label': '', y_col: 'Δ HBW Trip Length (mi)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(showlegend=False)
     return fig
 
-fig = figure_with_shift_toggle(region_tl, _build_tl_region)
+fig = figure_with_shift_toggle(
+    region_tl, _build_tl_region, pct_col='pct_trip_length',
+    value_axis_title='Δ HBW Trip Length (mi)', pct_axis_title='Δ HBW Trip Length (%)',
+)
 fig.update_layout(height=420, title=dict(text='Avg. HBW Trip Length', font_size=14))
 fig.show()
 ```
@@ -336,36 +372,44 @@ Shorter trips become more common, longer trips less common — the mechanism wor
 :::: {.columns}
 ::: {.column width="50%"}
 ```{python}
-city_df = city_results[city_results['scenario_id'] != loader.BASELINE_SCENARIO]
+city_df = city_results[city_results['scenario_id'] != loader.BASELINE_SCENARIO].copy()
+city_df['pct_trip_length'] = city_df['delta_trip_length'] / city_df['base_trip_length'] * 100
+city_df['pct_VHT_PER_HH'] = city_df['delta_VHT_PER_HH'] / city_df['base_VHT_PER_HH'] * 100
 
-def _build_city_tl(sub):
+def _build_city_tl(sub, y_col='delta_trip_length'):
     fig = px.bar(
-        sub, x='city_label', y='delta_trip_length', category_orders={'city_label': CITY_ORDER},
+        sub, x='city_label', y=y_col, category_orders={'city_label': CITY_ORDER},
         color_discrete_sequence=[GEO_COLORS['City Area']],
-        labels={'city_label': '', 'delta_trip_length': 'Δ Trip Length (mi)'},
+        labels={'city_label': '', y_col: 'Δ Trip Length (mi)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-20)
     return fig
 
-fig = figure_with_shift_toggle(city_df, _build_city_tl)
+fig = figure_with_shift_toggle(
+    city_df, _build_city_tl, pct_col='pct_trip_length',
+    value_axis_title='Δ Trip Length (mi)', pct_axis_title='Δ Trip Length (%)',
+)
 fig.update_layout(height=420, title=dict(text='Δ HBW Trip Length by City', font_size=14))
 fig.show()
 ```
 :::
 ::: {.column width="50%"}
 ```{python}
-def _build_city_vht(sub):
+def _build_city_vht(sub, y_col='delta_VHT_PER_HH'):
     fig = px.bar(
-        sub, x='city_label', y='delta_VHT_PER_HH', category_orders={'city_label': CITY_ORDER},
+        sub, x='city_label', y=y_col, category_orders={'city_label': CITY_ORDER},
         color_discrete_sequence=[GEO_COLORS['City Area']],
-        labels={'city_label': '', 'delta_VHT_PER_HH': 'Δ Peak VHT/HH (hrs)'},
+        labels={'city_label': '', y_col: 'Δ Peak VHT/HH (hrs)'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.update_layout(xaxis_tickangle=-20)
     return fig
 
-fig = figure_with_shift_toggle(city_df, _build_city_vht)
+fig = figure_with_shift_toggle(
+    city_df, _build_city_vht, pct_col='pct_VHT_PER_HH',
+    value_axis_title='Δ Peak VHT/HH (hrs)', pct_axis_title='Δ Peak VHT/HH (%)',
+)
 fig.update_layout(height=420, title=dict(text='Δ Peak VHT/HH by City', font_size=14))
 fig.show()
 ```
