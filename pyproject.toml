@@ -17,6 +17,16 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
+# Everything reports/ needs to render (reports/*.py, run_sets/*/report_loader.py,
+# and the .qmd files' setup cells) beyond the base dependencies above -- pulled
+# in by publish-report.yml and by the "july2025" Jupyter kernel used locally.
+reports = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "plotly>=5.0",
+    "jupyter>=1.0",
+    "ipykernel>=6.0",
+]
 
 [project.scripts]
 tdmruns = "tdmruns.cli:main"
