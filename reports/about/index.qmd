@@ -14,6 +14,7 @@ format:
     css: styles.css
     footer: "Wasatch Front Regional Council | TDM Run Management Framework"
     include-before-body: ../about_back_link.html
+    include-in-header: ../slide_text_scale.html
 ---
 
 ## The Problem
@@ -52,7 +53,7 @@ Every modeler in this room has some version of this story. Start here, not with 
 ## Workflow: From Idea to Report
 
 ```{mermaid}
-flowchart TD
+flowchart LR
     A[Brainstorm concept] --> B[Prepare scoping document]
     B --> C{Review and revise}
     C -->|revise| B

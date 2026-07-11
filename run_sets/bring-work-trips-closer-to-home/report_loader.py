@@ -276,17 +276,20 @@ def load_corridor_crosswalk() -> pd.DataFrame:
 
 
 def load_city_taz_lookup() -> pd.DataFrame:
-    """TAZID -> city_label for TARGET_CITIES only, via WFv1000_TAZ.dbf's
-    CITY_UGRC code -- always read live from tdm/ (static model geometry
+    """TAZID -> city_label + CO_NAME for TARGET_CITIES only, via
+    WFv1000_TAZ.dbf's CITY_UGRC code (CO_NAME straight from the same file
+    -- every TARGET_CITIES city sits entirely within one county, confirmed
+    empirically) -- always read live from tdm/ (static model geometry
     input, not a per-run output), matching non-motorized-2023's TAZ/district
     shapefile precedent and this run set's own corridor-geometry lookup."""
     import geopandas as gpd
     gdf = gpd.read_file(TAZ_DBF)
-    out = pd.DataFrame(gdf[["TAZID", "CITY_UGRC"]])
+    out = pd.DataFrame(gdf[["TAZID", "CITY_UGRC", "CO_NAME"]])
     out["TAZID"] = out["TAZID"].astype(int)
+    out["CO_NAME"] = out["CO_NAME"].str.title()
     code_to_label = {code: label for label, code in TARGET_CITIES.items()}
     out["city_label"] = out["CITY_UGRC"].map(code_to_label)
-    return out[out["city_label"].notna()][["TAZID", "city_label"]]
+    return out[out["city_label"].notna()][["TAZID", "city_label", "CO_NAME"]]
 
 
 # 5_AssignHwy/5_FinalNetSkims/*Skm_<sub_period>.mtx, one file per
@@ -669,7 +672,11 @@ def build_city_results(
     -- the one geography type whose redistribution is actually scoped by
     these same city boundaries (CITY_UGRC). Available at whichever City
     Area shift levels (5%/10%/25%) have a curated run, same as everywhere
-    else in this module."""
+    else in this module. Also carries each city's CO_NAME (from
+    city_lookup, one county per city) for county-colored city-level charts
+    -- there's no per-city VHD here (VHD is a link-level network summary
+    with a county code, not a city one, so a genuine per-city VHD would
+    need a new link-to-city spatial join that doesn't exist yet)."""
     city_scenarios = SCENARIO_META[
         (SCENARIO_META["geography_label"] == "City Area") | (SCENARIO_META["scenario_id"] == BASELINE_SCENARIO)
     ]["scenario_id"].tolist()
@@ -705,7 +712,7 @@ def build_city_results(
 
     agg = df.groupby(["scenario_id", "city_label"], as_index=False).agg(
         VMT=("VMT", "sum"), PEAK_VHT=("PEAK_VHT", "sum"), PMT=("PMT", "sum"),
-        Trips=("Trips", "sum"), TOTHH=("TOTHH", "sum"),
+        Trips=("Trips", "sum"), TOTHH=("TOTHH", "sum"), CO_NAME=("CO_NAME", "first"),
     )
     agg["VHT_PER_HH"] = agg["PEAK_VHT"] / agg["TOTHH"]
     agg["trip_length"] = agg["PMT"] / agg["Trips"]

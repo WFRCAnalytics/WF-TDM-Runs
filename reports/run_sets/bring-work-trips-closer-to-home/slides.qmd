@@ -13,6 +13,7 @@ format:
     footer: "Wasatch Front Regional Council | Bringing Work Trips Closer to Home"
     include-before-body: ../../back_link.html
     include-after-body: ../../global_shift_toggle.html
+    include-in-header: ../../slide_text_scale.html
 execute:
   echo: false
   warning: false
@@ -216,40 +217,43 @@ fig.show(config=CHART_CONFIG)
 Shorter commutes mean less driving; less driving on congested facilities is why delay falls.
 :::
 
-## VMT vs. VHD by County {.smaller}
+## VMT vs. VHT/Household by City {.smaller}
 
 ```{python}
 #| fig-align: center
-scatter_df = vmt_vhd[
-    (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO) & (vmt_vhd['CO_NAME'] != 'Region')
-].groupby(['CO_NAME', 'geography_label', 'shift_pct', 'period'], as_index=False, observed=True)[['delta_DY_VMT', 'delta_DY_VHD']].sum()
-NON_REGION_COUNTIES = [c for c in COUNTY_ORDER if c != 'Region']
-scatter_df['CO_NAME'] = pd.Categorical(scatter_df['CO_NAME'], categories=NON_REGION_COUNTIES, ordered=True)
+scatter_df = city_results[city_results['scenario_id'] != loader.BASELINE_SCENARIO].copy()
+scatter_df['pct_VMT'] = scatter_df['delta_VMT'] / scatter_df['base_VMT'] * 100
+scatter_df['pct_VHT_PER_HH'] = scatter_df['delta_VHT_PER_HH'] / scatter_df['base_VHT_PER_HH'] * 100
 COUNTY_COLORS = {'Salt Lake': '#2a78d6', 'Davis': '#1baf7a', 'Utah': '#eda100', 'Weber': '#d6604d', 'Box Elder': '#8a6fbf'}
+CITY_COUNTY_ORDER = sorted(scatter_df['CO_NAME'].unique(), key=lambda c: COUNTY_ORDER.index(c))
 
 def _build_vmt_vs_vhd(sub):
     fig = px.scatter(
-        sub, x='delta_DY_VMT', y='delta_DY_VHD', color='CO_NAME',
-        category_orders={'CO_NAME': NON_REGION_COUNTIES},
+        sub, x='pct_VMT', y='pct_VHT_PER_HH', color='CO_NAME', text='city_label',
+        category_orders={'CO_NAME': CITY_COUNTY_ORDER},
         color_discrete_map=COUNTY_COLORS,
-        labels={'delta_DY_VMT': 'Δ VMT (mi)', 'delta_DY_VHD': 'Δ VHD (hrs)', 'CO_NAME': 'County'},
+        labels={'pct_VMT': 'Δ Daily HBW VMT (%)', 'pct_VHT_PER_HH': 'Δ Peak VHT/HH (%)', 'CO_NAME': 'County'},
     )
-    fig.update_traces(marker=dict(size=13, line=dict(width=1, color='white')))
+    fig.update_traces(marker=dict(size=13, line=dict(width=1, color='white')), textposition='top center')
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.add_vline(x=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(
-    scatter_df, _build_vmt_vs_vhd,
-    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    group_col='geography_label', default_group='City Area', group_order=GEO_ORDER,
-    global_shift=True,
-)
-fig.update_layout(height=440, title=dict(text='Δ VMT vs. Δ VHD, by County', font_size=15))
+fig = figure_with_shift_toggle(scatter_df, _build_vmt_vs_vhd, global_shift=True)
+
+def _fixed(vals, pad_frac=0.10):
+    lo, hi = vals.min(), vals.max()
+    span = hi - lo
+    pad = span * pad_frac if span else (abs(hi) * pad_frac or 1)
+    return [lo - pad, hi + pad]
+
+fig.update_xaxes(range=_fixed(scatter_df['pct_VMT']), tickformat='.1f', ticksuffix='%')
+fig.update_yaxes(range=_fixed(scatter_df['pct_VHT_PER_HH']), tickformat='.1f', ticksuffix='%')
+fig.update_layout(height=440, title=dict(text='Δ VMT vs. Δ VHT/HH, by City — City Area<br><sup>% of baseline</sup>', font_size=15))
 fig.show(config=CHART_CONFIG)
 ```
 
-Lower-left quadrant (less VMT, less VHD) is the expected pattern — delay reductions tracking driving reductions county by county.
+Lower-left quadrant (less VMT, less VHT/HH) is the expected pattern. City Area scenario only — VHT/HH is only computed per-city under this geography type.
 
 ## Severe Congestion: Miles Over Capacity {.smaller}
 
@@ -574,7 +578,7 @@ cross_abs_styler = pd.DataFrame(abs_rows).style.format({
     'Δ VHD (hrs)': '{:+,.0f}', 'Δ VMT (mi)': '{:+,.0f}', 'Δ Peak VHT/HH (min)': '{:+.2f}', 'Δ Trip Length (mi)': '{:+.2f}',
 }).hide(axis='index').set_table_styles(cross_slide_style)
 cross_pct_styler = pd.DataFrame(pct_rows).style.format({
-    'Δ VHD (%)': '{:+.2f}%', 'Δ VMT (%)': '{:+.2f}%', 'Δ Peak VHT/HH (%)': '{:+.2f}%', 'Δ Trip Length (%)': '{:+.2f}%',
+    'Δ VHD (%)': '{:+.1f}%', 'Δ VMT (%)': '{:+.1f}%', 'Δ Peak VHT/HH (%)': '{:+.1f}%', 'Δ Trip Length (%)': '{:+.1f}%',
 }).hide(axis='index').set_table_styles(cross_slide_style)
 display(HTML(styled_table_with_toggle('tbl-cross-scale-slide', cross_abs_styler, cross_pct_styler)))
 ```
@@ -595,4 +599,4 @@ Fixed at the 10% shift level, Peak period (AM+PM). City Area and Medium District
 
 ## Questions
 
-**[Full write-up →](summary.html)** &nbsp;|&nbsp; **[About this framework →](../../about/index.html)**
+**[Full write-up →](summary.html)**

@@ -73,7 +73,7 @@ PERIOD_ORDER = loader.PERIOD_ORDER  # ['Peak', 'Off-Peak', 'Daily']
 PRIMARY_SHIFT_PCT = 10
 ```
 
-**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Slides view](slides.html) &nbsp;|&nbsp; [About this framework](../../about/index.html)
+**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Slides view](slides.html)
 
 ```{python}
 #| echo: false
@@ -195,9 +195,11 @@ def _big_picture(y_col, y_title, title):
         labels={'geography_label': '', y_col: y_title, 'shift_label': 'Shift Level'},
     )
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_traces(texttemplate='%{y:+.1f}%', textposition='outside', textfont=dict(size=9))
     fig.update_layout(
         title=dict(text=title, font_size=15),
         height=420, margin=dict(t=80, b=60),
+        yaxis=dict(tickformat='.1f', ticksuffix='%'),
     )
     return fig
 
@@ -328,46 +330,55 @@ Region-wide, the shift reduces daily VMT across all geography types — City Are
 
 ---
 
-## VMT vs. VHD by County {#vmt-vs-vhd}
+## VMT vs. VHT/Household by City {#vmt-vs-vhd}
 
-Each point is one county's change in daily VMT (x-axis) plotted against its change in VHD (y-axis), for whichever shift level, period, and geography type is selected below — a way to see whether delay reductions track driving reductions county by county, not just region-wide. Points in the lower-left quadrant (less VMT, less VHD) are the expected pattern; a county landing elsewhere would suggest its delay change is coming more from re-routing/assignment effects than from less driving overall.
+Each point is one of the ten target cities' change in daily HBW VMT (x-axis) plotted against its change in Peak-period VHT per household (y-axis), both shown as a percent of that city's own baseline, colored by county — a way to see whether "less driving" and "time given back to households" track together at the city level, not just region-wide. Points in the lower-left quadrant (less VMT, less VHT/HH) are the expected pattern. **City Area scenario only** — VHT/HH is only computed per-city under City Area, the one geography type whose redistribution boundaries are these same cities (Medium District/Workshop Area use different, larger target areas and aren't shown here); VHD itself (vehicle-hours of delay) isn't included since it's only available at the county level (a link-level network measure, not a per-city one — see the Appendix). Both axes stay fixed across every shift level so switching levels doesn't rescale the plot.
 
 ```{python}
 #| label: fig-vmt-vs-vhd
 
-scatter_df = vmt_vhd[
-    (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO) & (vmt_vhd['CO_NAME'] != 'Region')
-].groupby(['CO_NAME', 'geography_label', 'shift_pct', 'period'], as_index=False, observed=True)[['delta_DY_VMT', 'delta_DY_VHD']].sum()
-NON_REGION_COUNTIES = [c for c in COUNTY_ORDER if c != 'Region']
-scatter_df['CO_NAME'] = pd.Categorical(scatter_df['CO_NAME'], categories=NON_REGION_COUNTIES, ordered=True)
+scatter_df = city_results[city_results['scenario_id'] != loader.BASELINE_SCENARIO].copy()
+scatter_df['pct_VMT'] = scatter_df['delta_VMT'] / scatter_df['base_VMT'] * 100
+scatter_df['pct_VHT_PER_HH'] = scatter_df['delta_VHT_PER_HH'] / scatter_df['base_VHT_PER_HH'] * 100
 COUNTY_COLORS = {'Salt Lake': '#2a78d6', 'Davis': '#1baf7a', 'Utah': '#eda100', 'Weber': '#d6604d', 'Box Elder': '#8a6fbf'}
+CITY_COUNTY_ORDER = sorted(scatter_df['CO_NAME'].unique(), key=lambda c: COUNTY_ORDER.index(c))
 
 def _build_vmt_vs_vhd(sub):
     fig = px.scatter(
-        sub, x='delta_DY_VMT', y='delta_DY_VHD', color='CO_NAME',
-        category_orders={'CO_NAME': NON_REGION_COUNTIES},
+        sub, x='pct_VMT', y='pct_VHT_PER_HH', color='CO_NAME', text='city_label',
+        category_orders={'CO_NAME': CITY_COUNTY_ORDER},
         color_discrete_map=COUNTY_COLORS,
-        labels={'delta_DY_VMT': 'Change in VMT (miles/day)', 'delta_DY_VHD': 'Change in VHD (hours/day)', 'CO_NAME': 'County'},
+        labels={'pct_VMT': 'Δ Daily HBW VMT (%)', 'pct_VHT_PER_HH': 'Δ Peak VHT/HH (%)', 'CO_NAME': 'County'},
     )
-    fig.update_traces(marker=dict(size=13, line=dict(width=1, color='white')))
+    fig.update_traces(marker=dict(size=13, line=dict(width=1, color='white')), textposition='top center')
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.add_vline(x=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(
-    scatter_df, _build_vmt_vs_vhd,
-    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
-    group_col='geography_label', default_group='City Area', group_order=GEO_ORDER,
-)
+fig = figure_with_shift_toggle(scatter_df, _build_vmt_vs_vhd)
+
+# figure_with_shift_toggle only auto-fixes the y-axis range across shift
+# levels (built for bar charts, where x is categorical) -- this chart's
+# x-axis is also a continuous value, so it needs the same fixed-range
+# treatment explicitly, or switching shift levels would rescale both axes
+# and make magnitudes hard to compare across levels.
+def _fixed(vals, pad_frac=0.10):
+    lo, hi = vals.min(), vals.max()
+    span = hi - lo
+    pad = span * pad_frac if span else (abs(hi) * pad_frac or 1)
+    return [lo - pad, hi + pad]
+
+fig.update_xaxes(range=_fixed(scatter_df['pct_VMT']), tickformat='.1f', ticksuffix='%')
+fig.update_yaxes(range=_fixed(scatter_df['pct_VHT_PER_HH']), tickformat='.1f', ticksuffix='%')
 fig.update_layout(
-    title=dict(text='Change in VMT vs. Change in VHD, by County', font_size=15),
+    title=dict(text='Change in VMT vs. Change in VHT/HH, by City<br><sup>City Area scenario, % of baseline</sup>', font_size=15),
     height=480, margin=dict(t=80),
     legend_title_text='County',
 )
 fig.show(config=CHART_CONFIG)
 ```
 
-Salt Lake and Utah counties show the largest movement on both axes under every geography type — consistent with them carrying the most VMT and VHD to begin with, so the same proportional shift produces the largest absolute change there.
+Salt Lake County's cities (Salt Lake City, West Jordan, Mill Creek) and Utah County's (Saratoga Springs, Provo, Payson) show the most movement, consistent with the [city-level results](#city-level-results) below — Saratoga Springs stands out as the largest mover on both axes.
 
 ---
 
@@ -422,7 +433,7 @@ cm_base_primary = cm_primary['base_congested_miles']
 cm_primary['pct_congested_miles'] = (
     (cm_primary['delta_congested_miles'] / cm_base_primary.where(cm_base_primary > 0, 1) * 100).where(cm_base_primary > 0, 0.0)
 )
-cm_primary['CO_NAME'] = pd.Categorical(cm_primary['CO_NAME'], categories=NON_REGION_COUNTIES, ordered=True)
+cm_primary['CO_NAME'] = pd.Categorical(cm_primary['CO_NAME'], categories=[c for c in COUNTY_ORDER if c != 'Region'], ordered=True)
 cm_primary = cm_primary.sort_values(['CO_NAME', 'FTCLASS'])
 
 def _cm_table_style(styler, caption):
@@ -528,7 +539,7 @@ fig = figure_with_shift_toggle(
 )
 fig.update_layout(
     title=dict(text='Corridor VHD Change — Medium District &amp; Workshop Area<br><sup>Same corridor order as City Area above</sup>', font_size=14),
-    height=420, margin=dict(t=80),
+    height=560, margin=dict(t=80, b=140),
 )
 fig.show(config=CHART_CONFIG)
 ```
@@ -877,7 +888,7 @@ city_abs_styler = _city_table_style(
     city_caption,
 )
 city_pct_styler = _city_table_style(
-    city_pct.style.format({'Δ Daily HBW VMT (%)': '{:+.2f}%', 'Δ Peak VHT/HH (%)': '{:+.2f}%', 'Δ Trip Length (%)': '{:+.2f}%'}),
+    city_pct.style.format({'Δ Daily HBW VMT (%)': '{:+.1f}%', 'Δ Peak VHT/HH (%)': '{:+.1f}%', 'Δ Trip Length (%)': '{:+.1f}%'}),
     city_caption,
 )
 display(HTML(styled_table_with_toggle('tbl-city', city_abs_styler, city_pct_styler)))
@@ -979,9 +990,9 @@ cross_abs_styler = _cross_table_style(pd.DataFrame(abs_rows).style.format({
     'Δ Transit Boardings': '{:+,.0f}',
 }))
 cross_pct_styler = _cross_table_style(pd.DataFrame(pct_rows).style.format({
-    'Δ VHD (%)': '{:+.2f}%', 'Δ VMT (%)': '{:+.2f}%',
-    'Δ Peak VHT/HH (%)': '{:+.2f}%', 'Δ HBW Trip Length (%)': '{:+.2f}%',
-    'Δ Transit Boardings (%)': '{:+.2f}%',
+    'Δ VHD (%)': '{:+.1f}%', 'Δ VMT (%)': '{:+.1f}%',
+    'Δ Peak VHT/HH (%)': '{:+.1f}%', 'Δ HBW Trip Length (%)': '{:+.1f}%',
+    'Δ Transit Boardings (%)': '{:+.1f}%',
 }))
 display(HTML(styled_table_with_toggle('tbl-cross-scale', cross_abs_styler, cross_pct_styler)))
 ```
@@ -1018,7 +1029,7 @@ This is a **sketch-level, order-of-magnitude test**, not a land-use or economic 
 
 **Freeway/orientation groupings.** `run_sets/bring-work-trips-closer-to-home/report_loader.py`'s `FREEWAY_CORRIDORS` and `CORRIDOR_ORIENTATION` are a manual, corridor-level classification (not a per-segment geometric analysis): freeway/expressway status matches the scoping memo's own grouping and is consistent with each corridor's dominant `FTCLASS` in `Summary_SEGID.csv`; orientation (N/S vs. E/W) reflects each corridor's predominant real-world heading, except I-215, which loops around Salt Lake County and gets its own "Loop" category rather than being forced into either.
 
-**City-level results.** The ten cities (`TARGET_CITIES` in `report_loader.py`) were picked to span the region's size range and geography, from a small, newer, rapidly-growing city (Saratoga Springs) to the region's largest, most job-dense city (Salt Lake City), with a mix of established (Ogden, Layton), mid-size (West Jordan, Provo), and smaller suburban (Roy, North Salt Lake, Mill Creek, Payson) cities in between, spanning Weber, Davis, Salt Lake, and Utah counties. Matched to `WFv1000_TAZ.dbf`'s `CITY_UGRC` codes (`OGD`/`LAY`/`SLC`/`WJC`/`SAR`/`ROY`/`NSL`/`MLC`/`PVO`/`PAY`, confirmed against `tdm/1_Inputs/1_TAZ/Districts/City.dbf`'s `CITY_NAME` field); only meaningful under the City Area scenarios, since that's the geography type whose redistribution is actually scoped by these same city boundaries.
+**City-level results.** The ten cities (`TARGET_CITIES` in `report_loader.py`) were picked to span the region's size range and geography, from a small, newer, rapidly-growing city (Saratoga Springs) to the region's largest, most job-dense city (Salt Lake City), with a mix of established (Ogden, Layton), mid-size (West Jordan, Provo), and smaller suburban (Roy, North Salt Lake, Mill Creek, Payson) cities in between, spanning Weber, Davis, Salt Lake, and Utah counties. Matched to `WFv1000_TAZ.dbf`'s `CITY_UGRC` codes (`OGD`/`LAY`/`SLC`/`WJC`/`SAR`/`ROY`/`NSL`/`MLC`/`PVO`/`PAY`, confirmed against `tdm/1_Inputs/1_TAZ/Districts/City.dbf`'s `CITY_NAME` field); only meaningful under the City Area scenarios, since that's the geography type whose redistribution is actually scoped by these same city boundaries. Each city sits entirely within one county (also confirmed against `WFv1000_TAZ.dbf`), so `build_city_results()` can carry a single `CO_NAME` per city for county-colored city-level charts (e.g. the [VMT vs. VHT/HH scatter](#vmt-vs-vhd)). There's no per-city VHD: VHD comes from `Summary_SEGID`, a link-level network summary carrying a county code (`CO_FIPS`) per link, not a city one — attributing delay to individual cities would need a new link-to-city spatial join that doesn't exist yet, so city-level charts pair VMT against VHT/household (both already computed per-city from TAZ-level production summaries) instead of VHD.
 
 **Bus aggregate.** `_transit_brding_summary_route.csv`'s own `Mode` field distinguishes TRAX/streetcar rail (7) and FrontRunner commuter rail (8) from everything else (4 = local bus, 5 = BRT, 6 = express, 9 = premium/other) — the "Bus (all non-rail)" category sums every route in that latter group (roughly 160 individual route codes) rather than enumerating them by name.
 

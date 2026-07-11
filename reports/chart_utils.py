@@ -127,6 +127,27 @@ def _button_style(active: bool) -> dict:
     )
 
 
+# Plotly sizes an updatemenu button to its own label text plus `pad`, with
+# no direct "button width" property -- so to make every toggle button the
+# same width (rather than each one shrink-wrapped to its own label), we pad
+# the SHORTER labels extra on both sides to approximate the width of the
+# longest label used anywhere in this toggle system ("Medium District",
+# one of the group_col values) at the button font size. This is an
+# approximation (proportional-font glyph widths aren't uniform per
+# character), not exact pixel matching, but visually evens out button
+# widths across a page whose buttons otherwise range from "5%" to "Medium
+# District".
+_BUTTON_REF_LABEL = "Medium District"
+_BUTTON_CHAR_PX = 6.5
+_BUTTON_BASE_PAD = 6
+
+
+def _button_pad(label: str) -> dict:
+    extra = max(0.0, (len(_BUTTON_REF_LABEL) - len(label)) * _BUTTON_CHAR_PX / 2)
+    side = _BUTTON_BASE_PAD + extra
+    return dict(l=side, r=side, t=4, b=4)
+
+
 def _row_highlight(indices: list, active_pos: int) -> dict:
     """Relayout dict recoloring every sibling single-button menu in a row
     (indices, their position in the figure's combined updatemenus list) so
@@ -170,7 +191,7 @@ def _col_menus(labels: list, indices: list, active_pos: int, y_positions: list, 
         menus.append(dict(
             type="buttons", direction="right", showactive=False,
             x=x, xanchor="left",
-            y=y, yanchor="middle", pad=dict(l=6, r=6, t=4, b=4),
+            y=y, yanchor="middle", pad=_button_pad(label),
             bgcolor=style["bgcolor"], font=style["font"],
             bordercolor=style["bordercolor"], borderwidth=style["borderwidth"],
             buttons=[dict(label=label, method="update", args=args)],
@@ -344,6 +365,28 @@ def figure_with_shift_toggle(
                     "produce the same trace structure as build_fig(sub)."
                 )
 
+    # Bar charts get a value label on every bar (texttemplate reformats
+    # trace.y at render time, so it doesn't need to be recomputed when the
+    # shift/period/group toggle swaps which traces are visible -- each
+    # trace already carries its own fixed y and texttemplate). Not applied
+    # to line/scatter charts (trip-length distribution's per-bin line, or
+    # the VMT-vs-VHT/HH scatter's own city-label text) -- a label per point
+    # there would be unreadably dense or would clobber an existing text
+    # channel already in use for point identification.
+    is_bar_chart = bool(per_cell_figs[cells[0]].data) and per_cell_figs[cells[0]].data[0].type == "bar"
+    if is_bar_chart:
+        for f in per_cell_figs.values():
+            for trace in f.data:
+                trace.texttemplate = "%{y:+,.0f}"
+                trace.textposition = "outside"
+                trace.textfont = dict(size=9)
+        if per_cell_pct_figs is not None:
+            for f in per_cell_pct_figs.values():
+                for trace in f.data:
+                    trace.texttemplate = "%{y:+.1f}%"
+                    trace.textposition = "outside"
+                    trace.textfont = dict(size=9)
+
     default_cell = (default_shift, default_period, default_group)
     combined = go.Figure()
     for key in cells:
@@ -498,11 +541,26 @@ def figure_with_shift_toggle(
         pct_range = _fixed_range(trace.y for f in per_cell_pct_figs.values() for trace in f.data)
         value_axis_title = value_axis_title or combined.layout.yaxis.title.text
         pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
+        n_all_traces = len(cells) * n_traces
 
         def _pct_args(pos):
             if pos == 0:
-                return [{"y": abs_y}, {"yaxis.title.text": value_axis_title, "yaxis.range": abs_range}]
-            return [{"y": pct_y}, {"yaxis.title.text": pct_axis_title, "yaxis.range": pct_range}]
+                layout_extra = {
+                    "yaxis.title.text": value_axis_title, "yaxis.range": abs_range,
+                    "yaxis.tickformat": "", "yaxis.ticksuffix": "",
+                }
+                restyle = {"y": abs_y}
+                if is_bar_chart:
+                    restyle["texttemplate"] = ["%{y:+,.0f}"] * n_all_traces
+                return [restyle, layout_extra]
+            layout_extra = {
+                "yaxis.title.text": pct_axis_title, "yaxis.range": pct_range,
+                "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "%",
+            }
+            restyle = {"y": pct_y}
+            if is_bar_chart:
+                restyle["texttemplate"] = ["%{y:+.1f}%"] * n_all_traces
+            return [restyle, layout_extra]
         updatemenus += _col_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
 
     # Legend moves to a horizontal band above the plot's own top-left edge
