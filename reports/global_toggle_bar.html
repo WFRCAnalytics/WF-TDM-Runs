@@ -11,6 +11,11 @@
     <button type="button" data-axis="period" data-value="Off-Peak">Off-Peak</button>
     <button type="button" data-axis="period" data-value="Daily">Daily</button>
   </div>
+  <div class="wfrc-global-toggle-row">
+    <span class="wfrc-global-toggle-label">Value</span>
+    <button type="button" data-pct="Absolute">Change</button>
+    <button type="button" data-pct="% Change">% Change</button>
+  </div>
 </div>
 <style>
 .wfrc-global-toggle-bar {
@@ -77,23 +82,43 @@
   //     without clicking one silently resetting the other back to some
   //     assumed default -- the gap a single-axis-only version of this had.
   //
+  // A third, independent control ("Value": Change / % Change) drives
+  // figure_with_shift_toggle(..., global_pct=True)'s wfrcPctLevels meta --
+  // {"Absolute": {y, relayout}, "% Change": {y, relayout}}, keyed directly
+  // on the label rather than a composite key, because the Absolute/%
+  // Change row is y-swap-based (not visibility-based) and was already
+  // fully independent of shift/period/group in the per-chart version of
+  // this toggle (see chart_utils.py's figure_with_shift_toggle docstring)
+  // -- so it doesn't need to participate in wfrcGlobalLevels' composite-key
+  // scheme at all, just its own separate Plotly.update call.
+  //
   // This bar keeps one page-level `state` object (current shift, current
-  // period) and, on every click, recomputes each chart's own composite key
-  // from whichever axes THAT chart actually declared, so a chart tracking
-  // only one axis isn't affected by the other.
-  var state = { shift: "10%", period: "Peak" };
+  // period, current value mode) and, on every click, recomputes each
+  // chart's own composite key from whichever axes THAT chart actually
+  // declared, so a chart tracking only one axis isn't affected by the
+  // other, and applies the value-mode entry (if the chart has one)
+  // independently of both.
+  var state = { shift: "10%", period: "Peak", pct: "Absolute" };
 
   function applyToChart(div) {
     var meta = div.layout && div.layout.meta;
+
     var axes = meta && meta.wfrcGlobalAxes;
     var levels = meta && meta.wfrcGlobalLevels;
-    if (!axes || !levels) return;
-    var axisNames = Object.keys(axes);
-    if (axisNames.length === 0) return;
-    var key = axisNames.map(function (a) { return state[a]; }).join("|");
-    var entry = levels[key];
-    if (!entry) return;
-    Plotly.update(div, { visible: entry.visible }, entry.relayout || {});
+    if (axes && levels) {
+      var axisNames = Object.keys(axes);
+      if (axisNames.length > 0) {
+        var key = axisNames.map(function (a) { return state[a]; }).join("|");
+        var entry = levels[key];
+        if (entry) Plotly.update(div, { visible: entry.visible }, entry.relayout || {});
+      }
+    }
+
+    var pctLevels = meta && meta.wfrcPctLevels;
+    if (pctLevels) {
+      var pctEntry = pctLevels[state.pct];
+      if (pctEntry) Plotly.update(div, { y: pctEntry.y }, pctEntry.relayout || {});
+    }
   }
 
   function applyAll() {
@@ -106,7 +131,13 @@
     });
   }
 
-  document.querySelectorAll("#wfrc-global-toggle-bar button").forEach(function (btn) {
+  function updatePctHighlight() {
+    document.querySelectorAll('#wfrc-global-toggle-bar button[data-pct]').forEach(function (btn) {
+      btn.classList.toggle("wfrc-active", btn.dataset.pct === state.pct);
+    });
+  }
+
+  document.querySelectorAll("#wfrc-global-toggle-bar button[data-axis]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var axis = btn.dataset.axis;
       state[axis] = btn.dataset.value;
@@ -115,12 +146,22 @@
     });
   });
 
+  document.querySelectorAll("#wfrc-global-toggle-bar button[data-pct]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      state.pct = btn.dataset.pct;
+      updatePctHighlight();
+      applyAll();
+    });
+  });
+
   // Default selection on load matches every chart's own default_shift/
-  // default_period (10%, Peak -- PRIMARY_SHIFT_PCT / "Peak" in slides.qmd)
-  // -- just highlights the buttons to match what's already visible, no
-  // Plotly.update needed since every chart already renders that way by
-  // default.
+  // default_period/Absolute-mode default (10%, Peak, Absolute --
+  // PRIMARY_SHIFT_PCT / "Peak" in slides.qmd, and figure_with_shift_toggle's
+  // own Absolute-first pct ordering) -- just highlights the buttons to
+  // match what's already visible, no Plotly.update needed since every
+  // chart already renders that way by default.
   updateButtonHighlight("shift");
   updateButtonHighlight("period");
+  updatePctHighlight();
 })();
 </script>

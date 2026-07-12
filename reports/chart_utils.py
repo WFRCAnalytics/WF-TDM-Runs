@@ -205,7 +205,7 @@ def figure_with_shift_toggle(
     pct_col=None, value_axis_title=None, pct_axis_title=None,
     period_col=None, default_period=None, period_order=None,
     group_col=None, default_group=None, group_order=None, group_label_fmt="{v}",
-    global_shift=False, global_period=False, numeric_x=False,
+    global_shift=False, global_period=False, global_pct=False, numeric_x=False,
 ):
     """Builds one figure per available shift_pct value in df (via
     build_fig(subset_df_for_that_shift) -- typically a small wrapper around
@@ -313,10 +313,25 @@ def figure_with_shift_toggle(
     carrying its own buttons for that dimension. A chart missing the
     relevant meta key (e.g. one with no period_col at all) is silently
     skipped by the global control -- not every chart on a deck has to
-    support every globalized dimension. group/pct columns, if present, are
+    support every globalized dimension. group columns, if present, are
     unaffected and still render per-chart regardless of global_shift/
     global_period. summary.qmd's charts don't use either (both default to
     False), so they keep their own per-chart buttons as before.
+
+    global_pct=True works the same way for the Absolute/% Change row
+    (requires pct_col): suppresses this chart's own local Absolute/%
+    Change buttons and instead stashes `combined.layout.meta["wfrcPctLevels"]`
+    -- a dict keyed "Absolute"/"% Change", each holding the {y: [...]}
+    restyle and yaxis relayout (title/range/tickformat/ticksuffix) a local
+    button's "args" would have carried. Unlike wfrcGlobalLevels (shift/
+    period), this isn't folded into the same composite-key object, because
+    the Absolute/% Change row is y-swap-based, not visibility-based, and
+    was already fully independent of shift/period/group (see above) --
+    every trace's y-values for both modes are precomputed across ALL
+    shift/period/group cells at once, so which mode is active never needs
+    to know the chart's current shift/period/group selection. group_col,
+    if present, is unaffected and still renders per-chart regardless of
+    global_pct.
     """
     have_period = period_col is not None
     have_group = group_col is not None
@@ -465,11 +480,11 @@ def figure_with_shift_toggle(
         group_indices = list(range(next_idx, next_idx + len(group_labels)))
         next_idx += len(group_indices)
     pct_indices = []
-    if per_cell_pct_figs is not None:
+    if per_cell_pct_figs is not None and not global_pct:
         pct_indices = list(range(next_idx, next_idx + len(pct_labels)))
         next_idx += len(pct_indices)
 
-    n_rows = int(not global_shift) + int(have_period and not global_period) + int(have_group) + int(per_cell_pct_figs is not None)
+    n_rows = int(not global_shift) + int(have_period and not global_period) + int(have_group) + int(per_cell_pct_figs is not None and not global_pct)
     # Lay out each present toggle group as its own vertically-stacked block
     # in the right-hand column, top to bottom in build order -- a cursor
     # walks down from COL_TOP_Y, each group claiming one y position per
@@ -493,7 +508,7 @@ def figure_with_shift_toggle(
         row_y["period"] = _alloc_col(len(period_labels))
     if have_group:
         row_y["group"] = _alloc_col(len(group_labels))
-    if per_cell_pct_figs is not None:
+    if per_cell_pct_figs is not None and not global_pct:
         row_y["pct"] = _alloc_col(len(pct_labels))
 
     # Clicking any one visibility-based row's button resets the OTHER
@@ -516,6 +531,13 @@ def figure_with_shift_toggle(
         return out
 
     updatemenus = []
+    # Accumulated once at the end via combined.update_layout(meta=meta_updates)
+    # instead of one update_layout(meta=...) call per dimension -- Plotly's
+    # update_layout does not merge nested dict-valued properties like meta
+    # across separate calls, so a second call would silently clobber keys
+    # a first call had already set (wfrcGlobalAxes/wfrcGlobalLevels vs.
+    # wfrcPctLevels below).
+    meta_updates = {}
     global_axes = []
     if global_shift:
         global_axes.append("shift")
@@ -558,10 +580,8 @@ def figure_with_shift_toggle(
                 ),
                 "relayout": _other_row_reset("__global__"),
             }
-        combined.update_layout(meta={
-            "wfrcGlobalAxes": {a: [axis_label_fns[a](v) for v in axis_values[a]] for a in global_axes},
-            "wfrcGlobalLevels": levels_meta,
-        })
+        meta_updates["wfrcGlobalAxes"] = {a: [axis_label_fns[a](v) for v in axis_values[a]] for a in global_axes}
+        meta_updates["wfrcGlobalLevels"] = levels_meta
 
     if not global_shift:
         def _shift_args(pos):
@@ -596,20 +616,31 @@ def figure_with_shift_toggle(
         pct_range = _fixed_range(trace.y for f in per_cell_pct_figs.values() for trace in f.data)
         value_axis_title = value_axis_title or combined.layout.yaxis.title.text
         pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
+        abs_relayout = {
+            "yaxis.title.text": value_axis_title, "yaxis.range": abs_range,
+            "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "",
+        }
+        pct_relayout = {
+            "yaxis.title.text": pct_axis_title, "yaxis.range": pct_range,
+            "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "%",
+        }
 
-        def _pct_args(pos):
-            if pos == 0:
-                layout_extra = {
-                    "yaxis.title.text": value_axis_title, "yaxis.range": abs_range,
-                    "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "",
-                }
-                return [{"y": abs_y}, layout_extra]
-            layout_extra = {
-                "yaxis.title.text": pct_axis_title, "yaxis.range": pct_range,
-                "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "%",
+        if global_pct:
+            # See figure_with_shift_toggle's global_pct docstring paragraph
+            # and reports/global_toggle_bar.html's "Value" row -- abs_y/
+            # pct_y already span every shift/period/group cell at once, so
+            # this pair of entries needs no composite key the way
+            # wfrcGlobalLevels does.
+            meta_updates["wfrcPctLevels"] = {
+                "Absolute": {"y": abs_y, "relayout": abs_relayout},
+                "% Change": {"y": pct_y, "relayout": pct_relayout},
             }
-            return [{"y": pct_y}, layout_extra]
-        updatemenus += _col_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
+        else:
+            def _pct_args(pos):
+                if pos == 0:
+                    return [{"y": abs_y}, abs_relayout]
+                return [{"y": pct_y}, pct_relayout]
+            updatemenus += _col_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
 
     # Legend moves to a horizontal band above the plot's own top-left edge
     # (same position use_slide_chart_defaults() gives slides) so it never
@@ -627,11 +658,14 @@ def figure_with_shift_toggle(
         all_labels = (
             (shift_labels if not global_shift else [])
             + (period_labels if have_period and not global_period else [])
-            + group_labels + pct_labels
+            + group_labels
+            + (pct_labels if per_cell_pct_figs is not None and not global_pct else [])
         )
         max_label_len = max(len(label) for label in all_labels)
         margin_r = min(220, max(110, 34 + 8 * max_label_len))
         combined.update_layout(margin=dict(r=margin_r))
+    if meta_updates:
+        combined.update_layout(meta=meta_updates)
     combined.update_layout(updatemenus=updatemenus)
     return combined
 
