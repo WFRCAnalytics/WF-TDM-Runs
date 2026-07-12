@@ -31,7 +31,7 @@ import sys
 from IPython.display import HTML
 
 sys.path.insert(0, os.path.join('..', '..'))
-from chart_utils import use_slide_chart_defaults, figure_with_shift_toggle, styled_table_with_toggle, CHART_CONFIG
+from chart_utils import use_slide_chart_defaults, figure_with_shift_toggle, styled_table_with_toggle, attach_global_pct_meta, CHART_CONFIG
 use_slide_chart_defaults()
 
 sys.path.insert(0, os.path.join('..', '..', '..', 'run_sets', 'bring-work-trips-closer-to-home'))
@@ -99,7 +99,7 @@ region_shift['pct_DY_VHD'] = region_shift['delta_DY_VHD'] / region_shift['base_D
 region_shift['shift_label'] = region_shift['shift_pct'].apply(lambda v: f'{int(v)}%')
 shift_label_order = [f'{int(s)}%' for s in sorted(region_shift['shift_pct'].unique())]
 
-def _big_picture(y_col, y_title, title):
+def _big_picture_variant(y_col, y_title, suffix):
     fig = px.bar(
         region_shift, x='geography_label', y=y_col, color='shift_label',
         barmode='group',
@@ -110,23 +110,37 @@ def _big_picture(y_col, y_title, title):
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     for trace in fig.data:
         if trace.hovertemplate:
-            trace.hovertemplate = trace.hovertemplate.replace('%{y}', '%{y:+,.3r}%')
-    fig.update_layout(
-        height=420, width=HALF_WIDTH, title=dict(text=title, font_size=14),
-        yaxis=dict(tickformat='.1f', ticksuffix='%'),
-    )
+            trace.hovertemplate = trace.hovertemplate.replace('%{y}', f'%{{y:+,.3r}}{suffix}')
     return fig
+
+# This chart already shows every shift level at once (grouped bars), with
+# no shift/period toggle of its own -- so it doesn't go through
+# figure_with_shift_toggle. It still participates in the deck-wide Value
+# (Change/% Change) row via attach_global_pct_meta: build both an
+# absolute (delta) and a percent variant with identical trace structure,
+# start the visible figure on the absolute one (matching the deck's
+# Absolute default elsewhere), and stash the percent swap into
+# layout.meta for global_toggle_bar.html to pick up.
+def _big_picture(abs_col, pct_col, abs_title, pct_title, title):
+    abs_fig = _big_picture_variant(abs_col, abs_title, '')
+    pct_fig = _big_picture_variant(pct_col, pct_title, '%')
+    abs_range, _pct_range = attach_global_pct_meta(abs_fig, abs_fig, pct_fig, abs_title, pct_title)
+    abs_fig.update_layout(
+        height=420, width=HALF_WIDTH, title=dict(text=title, font_size=14),
+        yaxis=dict(tickformat='.1f', ticksuffix='', range=abs_range),
+    )
+    return abs_fig
 ```
 
 :::: {.columns}
 ::: {.column width="50%"}
 ```{python}
-_big_picture('pct_DY_VHD', 'Δ VHD (%)', 'VHD, All Shift Levels').show(config=CHART_CONFIG)
+_big_picture('delta_DY_VHD', 'pct_DY_VHD', 'Δ VHD (hrs)', 'Δ VHD (%)', 'VHD, All Shift Levels').show(config=CHART_CONFIG)
 ```
 :::
 ::: {.column width="50%"}
 ```{python}
-_big_picture('pct_DY_VMT', 'Δ VMT (%)', 'VMT, All Shift Levels').show(config=CHART_CONFIG)
+_big_picture('delta_DY_VMT', 'pct_DY_VMT', 'Δ VMT (mi)', 'Δ VMT (%)', 'VMT, All Shift Levels').show(config=CHART_CONFIG)
 ```
 :::
 ::::

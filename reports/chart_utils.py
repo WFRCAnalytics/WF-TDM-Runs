@@ -105,6 +105,58 @@ def _fixed_range(y_lists, pad_frac=0.08):
     return [lo - pad, hi + pad]
 
 
+def _pct_mode_relayout(axis_title, rng, suffix):
+    return {
+        "yaxis.title.text": axis_title, "yaxis.range": rng,
+        "yaxis.tickformat": ".1f", "yaxis.ticksuffix": suffix,
+    }
+
+
+def attach_global_pct_meta(fig, abs_fig, pct_fig, value_axis_title, pct_axis_title):
+    """For a chart NOT built via figure_with_shift_toggle (e.g. one that
+    already shows every shift level at once as grouped bars, with no
+    shift/period toggle of its own -- see slides.qmd's "Big Picture" chart)
+    that should still participate in global_toggle_bar.html's deck-wide
+    Value (Change/% Change) row.
+
+    abs_fig/pct_fig are two versions of the SAME chart (same
+    category_orders/color_discrete_map, differing only in which column
+    was plotted) -- same one-trace-per-category-combo requirement
+    figure_with_shift_toggle's own pct_col support has. Their y-values are
+    read off and stashed into fig.layout.meta['wfrcPctLevels'], structured
+    exactly like figure_with_shift_toggle(..., global_pct=True) produces,
+    so global_toggle_bar.html's existing JS (which only looks for that
+    meta key, regardless of how a chart was built) picks it up with no
+    changes needed there.
+
+    Does not touch fig's own traces/y-values -- fig is presumably already
+    showing abs_fig's data (the deck's Absolute default). Returns
+    (abs_range, pct_range) -- the same fixed, padded ranges stashed for
+    the click handler -- so the caller can also set fig's OWN initial
+    yaxis range to match (fig.update_layout(yaxis=dict(range=abs_range)))
+    if the un-toggled view should already sit where a click would
+    otherwise snap it to, without having to reach back into
+    fig.layout.meta to recover it.
+    """
+    if len(abs_fig.data) != len(pct_fig.data):
+        raise ValueError(
+            f"abs_fig has {len(abs_fig.data)} trace(s), pct_fig has {len(pct_fig.data)} -- "
+            "both must produce the same trace structure for the Value toggle to swap "
+            "between them cleanly."
+        )
+    abs_y = [list(t.y) for t in abs_fig.data]
+    pct_y = [list(t.y) for t in pct_fig.data]
+    abs_range = _fixed_range(t.y for t in abs_fig.data)
+    pct_range = _fixed_range(t.y for t in pct_fig.data)
+    meta = dict(fig.layout.meta or {})
+    meta["wfrcPctLevels"] = {
+        "Absolute": {"y": abs_y, "relayout": _pct_mode_relayout(value_axis_title, abs_range, "")},
+        "% Change": {"y": pct_y, "relayout": _pct_mode_relayout(pct_axis_title, pct_range, "%")},
+    }
+    fig.update_layout(meta=meta)
+    return abs_range, pct_range
+
+
 _NO_PERIOD = "__no_period__"
 _NO_GROUP = "__no_group__"
 
@@ -616,14 +668,8 @@ def figure_with_shift_toggle(
         pct_range = _fixed_range(trace.y for f in per_cell_pct_figs.values() for trace in f.data)
         value_axis_title = value_axis_title or combined.layout.yaxis.title.text
         pct_axis_title = pct_axis_title or f"{value_axis_title} (%)"
-        abs_relayout = {
-            "yaxis.title.text": value_axis_title, "yaxis.range": abs_range,
-            "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "",
-        }
-        pct_relayout = {
-            "yaxis.title.text": pct_axis_title, "yaxis.range": pct_range,
-            "yaxis.tickformat": ".1f", "yaxis.ticksuffix": "%",
-        }
+        abs_relayout = _pct_mode_relayout(value_axis_title, abs_range, "")
+        pct_relayout = _pct_mode_relayout(pct_axis_title, pct_range, "%")
 
         if global_pct:
             # See figure_with_shift_toggle's global_pct docstring paragraph
