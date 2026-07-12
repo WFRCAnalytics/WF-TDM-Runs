@@ -13,7 +13,6 @@ format:
     footer: "Wasatch Front Regional Council | Bringing Work Trips Closer to Home"
     include-before-body: ../../back_link.html
     include-after-body: ../../global_toggle_bar.html
-    include-in-header: ../../slide_text_scale.html
 execute:
   echo: false
   warning: false
@@ -26,12 +25,16 @@ jupyter: july2025
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import os
 import sys
 from IPython.display import HTML
 
 sys.path.insert(0, os.path.join('..', '..'))
-from chart_utils import use_slide_chart_defaults, figure_with_shift_toggle, styled_table_with_toggle, attach_global_pct_meta, CHART_CONFIG
+from chart_utils import (
+    use_slide_chart_defaults, figure_with_shift_toggle, styled_table_with_toggle,
+    attach_global_pct_meta, attach_global_period_meta, CHART_CONFIG,
+)
 use_slide_chart_defaults()
 
 sys.path.insert(0, os.path.join('..', '..', '..', 'run_sets', 'bring-work-trips-closer-to-home'))
@@ -86,22 +89,21 @@ HALF_WIDTH = 540
 This is a directional, order-of-magnitude check, not a land-use forecast — see the caveats slide.
 :::
 
-## Big Picture: All Shift Levels at Once {.smaller}
-
+## Big Picture: All Shift Levels at Once
 ```{python}
 SHIFT_COLORS = {'5%': '#a6cee3', '10%': '#3182bd', '25%': '#08306b'}
 
 region_shift = vmt_vhd[
-    (vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO) & (vmt_vhd['period'] == 'Peak')
-].groupby(['geography_label', 'shift_pct'], as_index=False)[['delta_DY_VMT', 'base_DY_VMT', 'delta_DY_VHD', 'base_DY_VHD']].sum()
+    (vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)
+].groupby(['geography_label', 'shift_pct', 'period'], as_index=False)[['delta_DY_VMT', 'base_DY_VMT', 'delta_DY_VHD', 'base_DY_VHD']].sum()
 region_shift['pct_DY_VMT'] = region_shift['delta_DY_VMT'] / region_shift['base_DY_VMT'] * 100
 region_shift['pct_DY_VHD'] = region_shift['delta_DY_VHD'] / region_shift['base_DY_VHD'] * 100
 region_shift['shift_label'] = region_shift['shift_pct'].apply(lambda v: f'{int(v)}%')
 shift_label_order = [f'{int(s)}%' for s in sorted(region_shift['shift_pct'].unique())]
 
-def _big_picture_variant(y_col, y_title, suffix):
+def _big_picture_variant(sub, y_col, y_title, suffix):
     fig = px.bar(
-        region_shift, x='geography_label', y=y_col, color='shift_label',
+        sub, x='geography_label', y=y_col, color='shift_label',
         barmode='group',
         category_orders={'geography_label': GEO_ORDER, 'shift_label': shift_label_order},
         color_discrete_map=SHIFT_COLORS,
@@ -114,22 +116,41 @@ def _big_picture_variant(y_col, y_title, suffix):
     return fig
 
 # This chart already shows every shift level at once (grouped bars), with
-# no shift/period toggle of its own -- so it doesn't go through
-# figure_with_shift_toggle. It still participates in the deck-wide Value
-# (Change/% Change) row via attach_global_pct_meta: build both an
-# absolute (delta) and a percent variant with identical trace structure,
-# start the visible figure on the absolute one (matching the deck's
-# Absolute default elsewhere), and stash the percent swap into
-# layout.meta for global_toggle_bar.html to pick up.
+# no shift toggle of its own -- so it doesn't go through
+# figure_with_shift_toggle. It still participates in TWO of the deck-wide
+# rows via chart_utils' standalone helpers:
+#   - Period: attach_global_period_meta builds one full chart per period
+#     and concatenates their traces, only the default period's slice
+#     visible -- same period_col mechanism figure_with_shift_toggle uses,
+#     just without a shift-cell axis alongside it.
+#   - Value (Change/% Change): attach_global_pct_meta needs abs/pct
+#     figures whose trace lists match whatever attach_global_period_meta
+#     just built (all periods concatenated), so period must be wired up
+#     FIRST -- see that helper's own docstring.
 def _big_picture(abs_col, pct_col, abs_title, pct_title, title):
-    abs_fig = _big_picture_variant(abs_col, abs_title, '')
-    pct_fig = _big_picture_variant(pct_col, pct_title, '%')
-    abs_range, _pct_range = attach_global_pct_meta(abs_fig, abs_fig, pct_fig, abs_title, pct_title)
-    abs_fig.update_layout(
+    abs_by_period = {
+        p: _big_picture_variant(region_shift[region_shift['period'] == p], abs_col, abs_title, '')
+        for p in PERIOD_ORDER
+    }
+    pct_by_period = {
+        p: _big_picture_variant(region_shift[region_shift['period'] == p], pct_col, pct_title, '%')
+        for p in PERIOD_ORDER
+    }
+
+    fig = abs_by_period['Peak']
+    attach_global_period_meta(fig, abs_by_period, PERIOD_ORDER, default_period='Peak')
+
+    pct_combined = go.Figure()
+    for p in PERIOD_ORDER:
+        for trace in pct_by_period[p].data:
+            pct_combined.add_trace(trace)
+
+    abs_range, _pct_range = attach_global_pct_meta(fig, fig, pct_combined, abs_title, pct_title)
+    fig.update_layout(
         height=420, width=HALF_WIDTH, title=dict(text=title, font_size=14),
-        yaxis=dict(tickformat='.1f', ticksuffix='', range=abs_range),
+        yaxis=dict(tickformat='.0f', ticksuffix='', range=abs_range),
     )
-    return abs_fig
+    return fig
 ```
 
 :::: {.columns}
@@ -147,8 +168,7 @@ _big_picture('delta_DY_VMT', 'pct_DY_VMT', 'Δ VMT (mi)', 'Δ VMT (%)', 'VMT, Al
 
 Every shift level at once, region-wide, Peak period — no toggle needed to see how the effect scales with shift size.
 
-## Congestion: Region-Wide VHD {.smaller}
-
+## Congestion: Region-Wide VHD
 ```{python}
 #| fig-align: center
 vhd_region_df = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)]
@@ -175,8 +195,7 @@ fig.update_layout(height=460, title=dict(text='Change in Vehicle-Hours of Delay,
 fig.show(config=CHART_CONFIG)
 ```
 
-## VHD by County {.smaller}
-
+## VHD by County
 ```{python}
 #| fig-align: center
 vhd_df = vmt_vhd.copy()
@@ -205,8 +224,7 @@ fig.update_layout(height=460, title=dict(text='Change in VHD by County', font_si
 fig.show(config=CHART_CONFIG)
 ```
 
-## Why: Vehicle Miles Traveled {.smaller}
-
+## Why: Vehicle Miles Traveled
 ```{python}
 #| fig-align: center
 vmt_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
@@ -237,8 +255,7 @@ fig.show(config=CHART_CONFIG)
 Shorter commutes mean less driving; less driving on congested facilities is why delay falls.
 :::
 
-## VMT vs. VHT/Household by City {.smaller}
-
+## VMT vs. VHT/Household by City
 ```{python}
 #| fig-align: center
 scatter_df = city_results[city_results['scenario_id'] != loader.BASELINE_SCENARIO].copy()
@@ -247,36 +264,42 @@ scatter_df['pct_VHT_PER_HH'] = scatter_df['delta_VHT_PER_HH'] / scatter_df['base
 COUNTY_COLORS = {'Salt Lake': '#2a78d6', 'Davis': '#1baf7a', 'Utah': '#eda100', 'Weber': '#d6604d', 'Box Elder': '#8a6fbf'}
 CITY_COUNTY_ORDER = sorted(scatter_df['CO_NAME'].unique(), key=lambda c: COUNTY_ORDER.index(c))
 
-def _build_vmt_vs_vhd(sub):
+# x_col/y_col default to the ABSOLUTE (raw-unit) columns -- figure_with_
+# shift_toggle's own Absolute mode always calls build_fig(sub) with no
+# kwargs, so the defaults here have to be the Absolute pair; the % Change
+# mode calls build_fig(sub, x_col=pct_x_col, y_col=pct_col) explicitly.
+# VHT/HH here is Peak-period only by construction (build_city_results()
+# sums PEAK_VHT, not a period-toggle-able total) -- so this chart, unlike
+# most others in the deck, has no Period axis to globalize; only Shift
+# and Value (Change/% Change) apply.
+def _build_vmt_vs_vhd(sub, x_col='delta_VMT', y_col='delta_VHT_PER_HH'):
+    x_label = 'Δ Daily HBW VMT (mi)' if x_col == 'delta_VMT' else 'Δ Daily HBW VMT (%)'
+    y_label = 'Δ Peak VHT/HH (hrs)' if y_col == 'delta_VHT_PER_HH' else 'Δ Peak VHT/HH (%)'
     fig = px.scatter(
-        sub, x='pct_VMT', y='pct_VHT_PER_HH', color='CO_NAME', text='city_label',
+        sub, x=x_col, y=y_col, color='CO_NAME', text='city_label',
         category_orders={'CO_NAME': CITY_COUNTY_ORDER},
         color_discrete_map=COUNTY_COLORS,
-        labels={'pct_VMT': 'Δ Daily HBW VMT (%)', 'pct_VHT_PER_HH': 'Δ Peak VHT/HH (%)', 'CO_NAME': 'County'},
+        labels={x_col: x_label, y_col: y_label, 'CO_NAME': 'County'},
     )
     fig.update_traces(marker=dict(size=13, line=dict(width=1, color='white')), textposition='top center')
     fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     fig.add_vline(x=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(scatter_df, _build_vmt_vs_vhd, global_shift=True, numeric_x=True)
-
-def _fixed(vals, pad_frac=0.10):
-    lo, hi = vals.min(), vals.max()
-    span = hi - lo
-    pad = span * pad_frac if span else (abs(hi) * pad_frac or 1)
-    return [lo - pad, hi + pad]
-
-fig.update_xaxes(range=_fixed(scatter_df['pct_VMT']), tickformat='.1f', ticksuffix='%')
-fig.update_yaxes(range=_fixed(scatter_df['pct_VHT_PER_HH']), tickformat='.1f', ticksuffix='%')
-fig.update_layout(height=440, title=dict(text='Δ VMT vs. Δ VHT/HH, by City — City Area<br><sup>% of baseline</sup>', font_size=15))
+fig = figure_with_shift_toggle(
+    scatter_df, _build_vmt_vs_vhd,
+    pct_col='pct_VHT_PER_HH', pct_x_col='pct_VMT',
+    value_axis_title='Δ Peak VHT/HH (hrs)', pct_axis_title='Δ Peak VHT/HH (%)',
+    x_value_axis_title='Δ Daily HBW VMT (mi)', x_pct_axis_title='Δ Daily HBW VMT (%)',
+    global_shift=True, global_pct=True, numeric_x=True,
+)
+fig.update_layout(height=440, title=dict(text='Δ VMT vs. Δ VHT/HH, by City — City Area', font_size=15))
 fig.show(config=CHART_CONFIG)
 ```
 
 Lower-left quadrant (less VMT, less VHT/HH) is the expected pattern. City Area scenario only — VHT/HH is only computed per-city under this geography type.
 
-## Severe Congestion: Miles Over Capacity {.smaller}
-
+## Severe Congestion: Miles Over Capacity
 ```{python}
 #| fig-align: center
 cm_ft = congested_miles[(congested_miles['CO_NAME'] == 'Region') & (congested_miles['scenario_id'] != loader.BASELINE_SCENARIO)].copy()
@@ -308,8 +331,7 @@ fig.show(config=CHART_CONFIG)
 
 Miles of roadway with volume/capacity > 1.0 — a length-based capacity read, distinct from delay (VHD), more directly comparable to how funding/capacity-expansion needs are scoped.
 
-## Corridor Highlights — City Area {.smaller}
-
+## Corridor Highlights — City Area
 ```{python}
 #| fig-align: center
 city_corr_primary = corridor_volumes[
@@ -346,8 +368,7 @@ fig.show(config=CHART_CONFIG)
 
 I-15, Redwood Road, Mountain View Corridor, and I-215 see the largest reductions (Peak period, ranking fixed at the primary shift level).
 
-## Freeway Corridors by County {.smaller}
-
+## Freeway Corridors by County
 ```{python}
 #| fig-align: center
 freeway_primary = city_corr_primary[city_corr_primary['corridor_label'].isin(loader.FREEWAY_CORRIDORS)]
@@ -379,8 +400,7 @@ fig.show(config=CHART_CONFIG)
 
 I-15's reduction concentrates in Salt Lake and Utah counties, where its own daily VHD is largest to begin with.
 
-## Corridor Orientation: N/S vs. E/W {.smaller}
-
+## Corridor Orientation: N/S vs. E/W
 ```{python}
 #| fig-align: center
 orientation_df = corridor_orientation[corridor_orientation['scenario_id'] != loader.BASELINE_SCENARIO].copy()
@@ -408,8 +428,7 @@ fig.show(config=CHART_CONFIG)
 
 North/south corridors (I-15, Redwood Road, Mountain View Corridor, Bangerter Highway...) carry most of the reduction — the region's heaviest-volume facilities run north/south.
 
-## Transit Ridership {.smaller}
-
+## Transit Ridership
 ```{python}
 #| fig-align: center
 transit_df = transit[transit['scenario_id'] != loader.BASELINE_SCENARIO].copy()
@@ -436,8 +455,7 @@ fig.show(config=CHART_CONFIG)
 
 "Bus" aggregates every non-rail route (~160 local/BRT/express codes). Shorter commutes mean fewer trips long enough for transit to compete on — ridership dips slightly on every line, including bus.
 
-## Free Time &amp; Trip Length {.smaller}
-
+## Free Time &amp; Trip Length
 :::: {.columns}
 ::: {.column width="50%"}
 ```{python}
@@ -492,8 +510,7 @@ fig.show(config=CHART_CONFIG)
 :::
 ::::
 
-## Trip Length Distribution {.smaller}
-
+## Trip Length Distribution
 ```{python}
 #| fig-align: center
 td = trip_length_dist.copy()
@@ -517,8 +534,7 @@ fig.show(config=CHART_CONFIG)
 
 Shorter trips become more common, longer trips less common — the mechanism working as intended, region-wide.
 
-## What This Means for a City {.smaller}
-
+## What This Means for a City
 :::: {.columns}
 ::: {.column width="50%"}
 ```{python}
@@ -571,8 +587,7 @@ fig.show(config=CHART_CONFIG)
 
 Ogden, Layton, Salt Lake City, West Jordan, Saratoga Springs, Roy, North Salt Lake, Mill Creek, Provo, Payson — City Area scenario. Saratoga Springs sees the largest change; Salt Lake City the smallest (already the region's largest local job base).
 
-## Cross-Scale Comparison {.smaller}
-
+## Cross-Scale Comparison
 ```{python}
 #| echo: false
 #| output: asis
@@ -606,8 +621,7 @@ display(HTML(styled_table_with_toggle('tbl-cross-scale-slide', cross_abs_styler,
 
 Fixed at the 10% shift level, Peak period (AM+PM). City Area and Medium District track closely; Workshop Area is consistently smaller — the coarsest geography, fewer areas region-wide.
 
-## Caveats {.smaller}
-
+## Caveats
 :::  {.incremental}
 - **Not a real land-use/economic forecast** — no businesses relocate, no zoning changes simulated
 - **Feasibility not checked** — model doesn't confirm the area could hold the added jobs

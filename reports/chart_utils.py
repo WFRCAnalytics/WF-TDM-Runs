@@ -105,10 +105,10 @@ def _fixed_range(y_lists, pad_frac=0.08):
     return [lo - pad, hi + pad]
 
 
-def _pct_mode_relayout(axis_title, rng, suffix):
+def _pct_mode_relayout(axis_title, rng, suffix, axis="yaxis"):
     return {
-        "yaxis.title.text": axis_title, "yaxis.range": rng,
-        "yaxis.tickformat": ".1f", "yaxis.ticksuffix": suffix,
+        f"{axis}.title.text": axis_title, f"{axis}.range": rng,
+        f"{axis}.tickformat": ".0f", f"{axis}.ticksuffix": suffix,
     }
 
 
@@ -155,6 +155,63 @@ def attach_global_pct_meta(fig, abs_fig, pct_fig, value_axis_title, pct_axis_tit
     }
     fig.update_layout(meta=meta)
     return abs_range, pct_range
+
+
+def attach_global_period_meta(fig, period_figs, period_order, default_period=None):
+    """For a chart NOT built via figure_with_shift_toggle that shows one
+    time-of-day period at a time but has no shift/group toggle of its own
+    (e.g. slides.qmd's "Big Picture" chart, where shift level is shown as
+    a color group rather than toggled) -- wires it into
+    global_toggle_bar.html's deck-wide Period row.
+
+    period_figs: {period_label: go.Figure}, one full chart per period, all
+    with the same trace count/order (same category_orders/
+    color_discrete_map -- same requirement figure_with_shift_toggle's own
+    period_col support has). REPLACES fig.data with every period's traces
+    concatenated in period_order, only default_period's slice visible, and
+    stashes fig.layout.meta['wfrcGlobalAxes']/['wfrcGlobalLevels']
+    structured exactly like figure_with_shift_toggle(..., global_period=True)
+    would produce for a chart with no OTHER globalized axis (period is the
+    whole composite key on its own, since this chart has no shift toggle to
+    combine it with) -- global_toggle_bar.html's existing JS picks it up
+    with no changes.
+
+    Composable with attach_global_pct_meta: call this FIRST, since it
+    changes fig's trace count/order -- build a matching per-period pct
+    figure (same period-concatenation, pct columns instead) and pass THAT
+    as pct_fig to attach_global_pct_meta afterward, so its abs_y/pct_y
+    arrays line up with fig.data's now-expanded trace list.
+    """
+    if default_period is None or default_period not in period_figs:
+        default_period = period_order[0]
+    n = len(period_figs[period_order[0]].data)
+    for p in period_order:
+        if len(period_figs[p].data) != n:
+            raise ValueError(
+                f"period {p!r} produced {len(period_figs[p].data)} trace(s), expected {n} "
+                f"(from {period_order[0]!r}) -- every period must produce the same trace "
+                "structure for the Period toggle to swap between them cleanly."
+            )
+    # Snapshot every period's traces into a plain list BEFORE touching
+    # fig.data -- fig is very often period_figs[default_period] itself
+    # (the caller's natural starting point), so clearing fig.data in place
+    # would silently wipe that period's own traces out from under
+    # period_figs[default_period].data before the loop below gets to read
+    # them back, undercounting that period's contribution to the combined
+    # figure.
+    all_period_traces = [(p, trace) for p in period_order for trace in list(period_figs[p].data)]
+    fig.data = []
+    for p, trace in all_period_traces:
+        trace.visible = p == default_period
+        fig.add_trace(trace)
+    levels_meta = {
+        p: {"visible": [pp == p for pp in period_order for _ in range(n)], "relayout": {}}
+        for p in period_order
+    }
+    meta = dict(fig.layout.meta or {})
+    meta["wfrcGlobalAxes"] = {"period": list(period_order)}
+    meta["wfrcGlobalLevels"] = levels_meta
+    fig.update_layout(meta=meta)
 
 
 _NO_PERIOD = "__no_period__"
@@ -255,6 +312,7 @@ def _col_menus(labels: list, indices: list, active_pos: int, y_positions: list, 
 def figure_with_shift_toggle(
     df, build_fig, shift_col="shift_pct", default_shift=10, shift_label_fmt="{v}%", always_include=(),
     pct_col=None, value_axis_title=None, pct_axis_title=None,
+    pct_x_col=None, x_value_axis_title=None, x_pct_axis_title=None,
     period_col=None, default_period=None, period_order=None,
     group_col=None, default_group=None, group_order=None, group_label_fmt="{v}",
     global_shift=False, global_period=False, global_pct=False, numeric_x=False,
@@ -307,6 +365,20 @@ def figure_with_shift_toggle(
     at once, separately for Absolute and % Change mode, so neither button
     row rescales the axis when clicked -- only _fixed_range's own padding
     changes the range, never a click.
+
+    pct_x_col, if given (only meaningful alongside pct_col and
+    numeric_x=True -- see the VMT-vs-VHT/HH scatter), names a second
+    x-column the same way pct_col names a second y-column, for a chart
+    whose x is ALSO a continuous value that should swap on the same
+    Absolute/% Change click (e.g. a scatter plotting one metric's % against
+    another's, that should also be viewable in each metric's raw units).
+    build_fig must then accept a matching optional `x_col` argument the
+    same way it accepts `y_col`. x_value_axis_title/x_pct_axis_title name
+    the x-axis titles for each mode, mirroring value_axis_title/
+    pct_axis_title for y; the x-axis range/tickformat are fixed the same
+    way the y-axis range is. Every chart WITHOUT pct_x_col keeps its
+    existing behavior exactly -- x is left alone, not touched by the
+    Absolute/% Change toggle at all.
 
     period_col, if given, names a column (e.g. "period", values like "Peak"/
     "Off-Peak"/"Daily") that adds another, independent row of buttons
@@ -490,10 +562,23 @@ def figure_with_shift_toggle(
     # default cell) so toggling restyles which bars are visible without
     # also rescaling the axis -- a rescale on every click makes it hard to
     # judge whether one selection's effect is actually bigger than
-    # another's at a glance.
+    # another's at a glance. tickformat is set here too (not just in the
+    # pct-toggle relayouts below) so the axis has no decimal point on
+    # FIRST render, before any button has been clicked -- Plotly Express's
+    # own auto-formatting shows decimals for small-magnitude metrics (e.g.
+    # VHT/household, a few hundredths) otherwise.
     abs_range = _fixed_range(trace.y for f in per_cell_figs.values() for trace in f.data)
     if abs_range is not None:
-        combined.update_layout(yaxis=dict(range=abs_range))
+        combined.update_layout(yaxis=dict(range=abs_range, tickformat=".0f"))
+
+    # Same, for x, but only when this chart also swaps x on the pct toggle
+    # (pct_x_col) -- every other chart's x is a category axis (bar labels),
+    # which has no tickformat/range to fix in the first place.
+    abs_x_range = None
+    if pct_x_col is not None:
+        abs_x_range = _fixed_range(trace.x for f in per_cell_figs.values() for trace in f.data)
+        if abs_x_range is not None:
+            combined.update_layout(xaxis=dict(range=abs_x_range, tickformat=".0f"))
 
     def _visible_for(fixed_shift=None, fixed_period=None, fixed_group=None):
         visible = []
@@ -671,21 +756,39 @@ def figure_with_shift_toggle(
         abs_relayout = _pct_mode_relayout(value_axis_title, abs_range, "")
         pct_relayout = _pct_mode_relayout(pct_axis_title, pct_range, "%")
 
+        abs_x = pct_x = None
+        if pct_x_col is not None:
+            abs_x = [list(per_cell_figs[key].data[j].x) for key in cells for j in range(n_traces)]
+            pct_x = [list(per_cell_pct_figs[key].data[j].x) for key in cells for j in range(n_traces)]
+            pct_x_range = _fixed_range(trace.x for f in per_cell_pct_figs.values() for trace in f.data)
+            x_value_axis_title = x_value_axis_title or combined.layout.xaxis.title.text
+            x_pct_axis_title = x_pct_axis_title or f"{x_value_axis_title} (%)"
+            abs_relayout = {**abs_relayout, **_pct_mode_relayout(x_value_axis_title, abs_x_range, "", axis="xaxis")}
+            pct_relayout = {**pct_relayout, **_pct_mode_relayout(x_pct_axis_title, pct_x_range, "%", axis="xaxis")}
+
         if global_pct:
             # See figure_with_shift_toggle's global_pct docstring paragraph
             # and reports/global_toggle_bar.html's "Value" row -- abs_y/
             # pct_y already span every shift/period/group cell at once, so
             # this pair of entries needs no composite key the way
             # wfrcGlobalLevels does.
-            meta_updates["wfrcPctLevels"] = {
-                "Absolute": {"y": abs_y, "relayout": abs_relayout},
-                "% Change": {"y": pct_y, "relayout": pct_relayout},
-            }
+            entry_abs = {"y": abs_y, "relayout": abs_relayout}
+            entry_pct = {"y": pct_y, "relayout": pct_relayout}
+            if pct_x_col is not None:
+                entry_abs["x"] = abs_x
+                entry_pct["x"] = pct_x
+            meta_updates["wfrcPctLevels"] = {"Absolute": entry_abs, "% Change": entry_pct}
         else:
             def _pct_args(pos):
                 if pos == 0:
-                    return [{"y": abs_y}, abs_relayout]
-                return [{"y": pct_y}, pct_relayout]
+                    trace_update = {"y": abs_y}
+                    if pct_x_col is not None:
+                        trace_update["x"] = abs_x
+                    return [trace_update, abs_relayout]
+                trace_update = {"y": pct_y}
+                if pct_x_col is not None:
+                    trace_update["x"] = pct_x
+                return [trace_update, pct_relayout]
             updatemenus += _col_menus(pct_labels, pct_indices, 0, row_y["pct"], _pct_args)
 
     # Legend moves to a horizontal band above the plot's own top-left edge

@@ -84,8 +84,10 @@
   //
   // A third, independent control ("Value": Change / % Change) drives
   // figure_with_shift_toggle(..., global_pct=True)'s wfrcPctLevels meta --
-  // {"Absolute": {y, relayout}, "% Change": {y, relayout}}, keyed directly
-  // on the label rather than a composite key, because the Absolute/%
+  // {"Absolute": {y, relayout}, "% Change": {y, relayout}} (plus an "x"
+  // key too, for a chart that also swaps x on this toggle -- pct_x_col,
+  // e.g. a scatter comparing two metrics), keyed directly on the label
+  // rather than a composite key, because the Absolute/%
   // Change row is y-swap-based (not visibility-based) and was already
   // fully independent of shift/period/group in the per-chart version of
   // this toggle (see chart_utils.py's figure_with_shift_toggle docstring)
@@ -117,7 +119,15 @@
     var pctLevels = meta && meta.wfrcPctLevels;
     if (pctLevels) {
       var pctEntry = pctLevels[state.pct];
-      if (pctEntry) Plotly.update(div, { y: pctEntry.y }, pctEntry.relayout || {});
+      if (pctEntry) {
+        // x is only present for a chart that ALSO swaps its x-axis on this
+        // toggle (figure_with_shift_toggle's pct_x_col, e.g. a scatter
+        // comparing two metrics) -- every other chart's entry has no "x"
+        // key, so this stays a y-only restyle exactly as before.
+        var traceUpdate = { y: pctEntry.y };
+        if (pctEntry.x) traceUpdate.x = pctEntry.x;
+        Plotly.update(div, traceUpdate, pctEntry.relayout || {});
+      }
     }
   }
 
