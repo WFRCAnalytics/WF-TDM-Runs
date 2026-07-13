@@ -39,6 +39,7 @@ import math
 
 import plotly.graph_objects as go
 import plotly.io as pio
+from PIL import ImageFont
 
 # Passed to every fig.show() call (see the .qmd files) to hide Plotly's own
 # top-right modebar (zoom/pan/download icons) -- these reports are static,
@@ -240,20 +241,25 @@ def _button_style(active: bool) -> dict:
 # Plotly sizes an updatemenu button to its own label text plus `pad`, with
 # no direct "button width" property -- so to make every toggle button the
 # same width (rather than each one shrink-wrapped to its own label), we pad
-# the SHORTER labels extra on both sides to approximate the width of the
-# longest label used anywhere in this toggle system ("Medium District",
-# one of the group_col values) at the button font size. This is an
-# approximation (proportional-font glyph widths aren't uniform per
-# character), not exact pixel matching, but visually evens out button
-# widths across a page whose buttons otherwise range from "5%" to "Medium
-# District".
+# the SHORTER labels extra on both sides to match the rendered width of the
+# longest label used anywhere in this toggle system ("Medium District", one
+# of the group_col values) at the button font size. Width is measured with
+# Pillow against its own bundled scalable font (not a per-character count
+# heuristic, and not the system's installed Arial/Helvetica, which may not
+# even be present on a CI runner) so the padding is reproducible across
+# whatever machine renders the report. This is still an approximation --
+# Pillow's bundled font's metrics aren't identical to whatever font the
+# browser actually renders the button label with -- but it's much closer
+# than assuming every character is the same width.
 _BUTTON_REF_LABEL = "Medium District"
-_BUTTON_CHAR_PX = 6.5
 _BUTTON_BASE_PAD = 6
+_BUTTON_FONT_SIZE = 11
+_BUTTON_MEASURE_FONT = ImageFont.load_default(size=_BUTTON_FONT_SIZE)
+_BUTTON_REF_WIDTH_PX = _BUTTON_MEASURE_FONT.getlength(_BUTTON_REF_LABEL)
 
 
 def _button_pad(label: str) -> dict:
-    extra = max(0.0, (len(_BUTTON_REF_LABEL) - len(label)) * _BUTTON_CHAR_PX / 2)
+    extra = max(0.0, (_BUTTON_REF_WIDTH_PX - _BUTTON_MEASURE_FONT.getlength(label)) / 2)
     side = _BUTTON_BASE_PAD + extra
     return dict(l=side, r=side, t=4, b=4)
 
@@ -598,7 +604,7 @@ def figure_with_shift_toggle(
     shift_labels = [shift_label_fmt.format(v=s) for s in shift_levels]
     period_labels = [str(p) for p in periods] if have_period else []
     group_labels = [group_label_fmt.format(v=g) for g in groups] if have_group else []
-    pct_labels = ["Absolute", "% Change"] if per_cell_pct_figs is not None else []
+    pct_labels = ["Change", "% Change"] if per_cell_pct_figs is not None else []
 
     # global_shift=True (or global_period=True) skips reserving a row/index
     # block for that dimension entirely -- no local buttons are built for
@@ -870,7 +876,7 @@ def styled_table_with_toggle(table_id: str, abs_styler, pct_styler, default: str
 {_TABLE_TOGGLE_SCRIPT}
 <div>
   <span id="{table_id}_btn_abs" style="{_TABLE_BUTTON_CSS}background:{abs_bg};color:{abs_fg};"
-        onclick="wfrcToggleTable('{table_id}', 'abs')">Absolute</span>
+        onclick="wfrcToggleTable('{table_id}', 'abs')">Change</span>
   <span id="{table_id}_btn_pct" style="{_TABLE_BUTTON_CSS}background:{pct_bg};color:{pct_fg};"
         onclick="wfrcToggleTable('{table_id}', 'pct')">% Change</span>
 </div>
