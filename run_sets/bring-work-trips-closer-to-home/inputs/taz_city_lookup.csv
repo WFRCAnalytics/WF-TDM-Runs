@@ -1,0 +1,3563 @@
+TAZID,CITY_UGRC,CO_NAME
+1,,Box Elder
+2,,Box Elder
+3,,Box Elder
+4,,Box Elder
+5,,Box Elder
+6,,Box Elder
+7,,Box Elder
+8,,Box Elder
+9,,Box Elder
+10,,Box Elder
+11,,Box Elder
+12,,Box Elder
+13,,Box Elder
+14,,Box Elder
+15,BGM,Box Elder
+16,BGM,Box Elder
+17,BGM,Box Elder
+18,BGM,Box Elder
+19,BGM,Box Elder
+20,BGM,Box Elder
+21,BGM,Box Elder
+22,BGM,Box Elder
+23,BGM,Box Elder
+24,BGM,Box Elder
+25,BGM,Box Elder
+26,BGM,Box Elder
+27,BGM,Box Elder
+28,BGM,Box Elder
+29,BGM,Box Elder
+30,BGM,Box Elder
+31,BGM,Box Elder
+32,BGM,Box Elder
+33,BGM,Box Elder
+34,BGM,Box Elder
+35,BGM,Box Elder
+36,BGM,Box Elder
+37,BGM,Box Elder
+38,BGM,Box Elder
+39,BGM,Box Elder
+40,BGM,Box Elder
+41,BGM,Box Elder
+42,BGM,Box Elder
+43,BGM,Box Elder
+44,BGM,Box Elder
+45,BGM,Box Elder
+46,BGM,Box Elder
+47,BGM,Box Elder
+48,BGM,Box Elder
+49,BGM,Box Elder
+50,BGM,Box Elder
+51,BGM,Box Elder
+52,BGM,Box Elder
+53,BGM,Box Elder
+54,BGM,Box Elder
+55,BGM,Box Elder
+56,BGM,Box Elder
+57,BGM,Box Elder
+58,BGM,Box Elder
+59,BGM,Box Elder
+60,BGM,Box Elder
+61,BGM,Box Elder
+62,BGM,Box Elder
+63,BGM,Box Elder
+64,BGM,Box Elder
+65,BGM,Box Elder
+66,BGM,Box Elder
+67,BGM,Box Elder
+68,BGM,Box Elder
+69,BGM,Box Elder
+70,BGM,Box Elder
+71,BGM,Box Elder
+72,BGM,Box Elder
+73,,Box Elder
+74,BGM,Box Elder
+75,BGM,Box Elder
+76,BGM,Box Elder
+77,BGM,Box Elder
+78,BGM,Box Elder
+79,BGM,Box Elder
+80,BGM,Box Elder
+81,BGM,Box Elder
+82,BGM,Box Elder
+83,BGM,Box Elder
+84,BGM,Box Elder
+85,BGM,Box Elder
+86,PER,Box Elder
+87,PER,Box Elder
+88,PER,Box Elder
+89,PER,Box Elder
+90,PER,Box Elder
+91,PER,Box Elder
+92,PER,Box Elder
+93,PER,Box Elder
+94,PER,Box Elder
+95,PER,Box Elder
+96,PER,Box Elder
+97,PER,Box Elder
+98,PER,Box Elder
+99,PER,Box Elder
+100,PER,Box Elder
+101,PER,Box Elder
+102,PER,Box Elder
+103,PER,Box Elder
+104,PER,Box Elder
+105,PER,Box Elder
+106,PER,Box Elder
+107,PER,Box Elder
+108,PER,Box Elder
+109,WIL,Box Elder
+110,WIL,Box Elder
+111,WIL,Box Elder
+112,WIL,Box Elder
+113,WIL,Box Elder
+114,WIL,Box Elder
+115,WIL,Box Elder
+116,WIL,Box Elder
+117,WIL,Box Elder
+118,WIL,Box Elder
+119,WIL,Box Elder
+120,WIL,Box Elder
+121,WIL,Box Elder
+122,WIL,Box Elder
+123,WIL,Box Elder
+124,WIL,Box Elder
+125,WIL,Box Elder
+126,WIL,Box Elder
+127,WIL,Box Elder
+128,WIL,Box Elder
+129,WIL,Box Elder
+130,WIL,Box Elder
+131,WIL,Box Elder
+132,,Box Elder
+133,,Box Elder
+134,,Box Elder
+135,,Box Elder
+136,,Box Elder
+137,,Box Elder
+138,,Box Elder
+139,,Box Elder
+140,,Box Elder
+141,,Box Elder
+142,,Box Elder
+143,,Box Elder
+144,,Box Elder
+145,,Box Elder
+146,,Box Elder
+147,,Box Elder
+148,,Box Elder
+149,,Box Elder
+150,MAU,Box Elder
+151,,Box Elder
+152,,Box Elder
+153,,Box Elder
+154,,Weber
+155,,Weber
+156,,Weber
+157,,Weber
+158,,Weber
+159,,Weber
+160,,Weber
+161,,Weber
+162,,Weber
+163,,Weber
+164,,Weber
+165,,Weber
+166,,Weber
+167,,Weber
+168,,Weber
+169,,Weber
+170,,Weber
+171,,Weber
+172,,Weber
+173,,Weber
+174,,Weber
+175,,Weber
+176,,Weber
+177,,Weber
+178,,Weber
+179,,Weber
+180,,Weber
+181,,Weber
+182,,Weber
+183,,Weber
+184,,Weber
+185,,Weber
+186,,Weber
+187,,Weber
+188,,Weber
+189,,Weber
+190,,Weber
+191,,Weber
+192,,Weber
+193,,Weber
+194,,Weber
+195,,Weber
+196,,Weber
+197,,Weber
+198,,Weber
+199,PLN,Weber
+200,PLN,Weber
+201,PLN,Weber
+202,PLN,Weber
+203,PLN,Weber
+204,PLN,Weber
+205,PLN,Weber
+206,PLN,Weber
+207,PLN,Weber
+208,PLN,Weber
+209,PLN,Weber
+210,PLN,Weber
+211,PLN,Weber
+212,PLN,Weber
+213,PLN,Weber
+214,PLN,Weber
+215,PLN,Weber
+216,PLN,Weber
+217,PLN,Weber
+218,PLN,Weber
+219,PLN,Weber
+220,PLN,Weber
+221,PLN,Weber
+222,PLN,Weber
+223,PLN,Weber
+224,FRR,Weber
+225,FRR,Weber
+226,FRR,Weber
+227,FRR,Weber
+228,FRR,Weber
+229,FRR,Weber
+230,FRR,Weber
+231,FRR,Weber
+232,FRR,Weber
+233,FRR,Weber
+234,FRR,Weber
+235,FRR,Weber
+236,FRR,Weber
+237,FRR,Weber
+238,FRR,Weber
+239,PVW,Weber
+240,PVW,Weber
+241,PVW,Weber
+242,PVW,Weber
+243,PVW,Weber
+244,PVW,Weber
+245,PVW,Weber
+246,PVW,Weber
+247,PVW,Weber
+248,PVW,Weber
+249,PVW,Weber
+250,PVW,Weber
+251,PVW,Weber
+252,PVW,Weber
+253,PVW,Weber
+254,PVW,Weber
+255,PVW,Weber
+256,PVW,Weber
+257,PVW,Weber
+258,PVW,Weber
+259,PVW,Weber
+260,NOG,Weber
+261,NOG,Weber
+262,NOG,Weber
+263,NOG,Weber
+264,NOG,Weber
+265,NOG,Weber
+266,NOG,Weber
+267,NOG,Weber
+268,NOG,Weber
+269,NOG,Weber
+270,NOG,Weber
+271,NOG,Weber
+272,NOG,Weber
+273,NOG,Weber
+274,NOG,Weber
+275,NOG,Weber
+276,NOG,Weber
+277,NOG,Weber
+278,NOG,Weber
+279,NOG,Weber
+280,NOG,Weber
+281,NOG,Weber
+282,NOG,Weber
+283,NOG,Weber
+284,NOG,Weber
+285,NOG,Weber
+286,NOG,Weber
+287,NOG,Weber
+288,HAR,Weber
+289,HAR,Weber
+290,HAR,Weber
+291,HAR,Weber
+292,HAR,Weber
+293,HAR,Weber
+294,HAR,Weber
+295,MSL,Weber
+296,MSL,Weber
+297,MSL,Weber
+298,MSL,Weber
+299,MSL,Weber
+300,MSL,Weber
+301,MSL,Weber
+302,MSL,Weber
+303,MSL,Weber
+304,MSL,Weber
+305,MSL,Weber
+306,MSL,Weber
+307,MSL,Weber
+308,MSL,Weber
+309,MSL,Weber
+310,MSL,Weber
+311,MSL,Weber
+312,OGD,Weber
+313,OGD,Weber
+314,OGD,Weber
+315,OGD,Weber
+316,OGD,Weber
+317,OGD,Weber
+318,OGD,Weber
+319,OGD,Weber
+320,OGD,Weber
+321,OGD,Weber
+322,OGD,Weber
+323,OGD,Weber
+324,OGD,Weber
+325,OGD,Weber
+326,OGD,Weber
+327,OGD,Weber
+328,OGD,Weber
+329,OGD,Weber
+330,OGD,Weber
+331,OGD,Weber
+332,OGD,Weber
+333,OGD,Weber
+334,OGD,Weber
+335,OGD,Weber
+336,OGD,Weber
+337,OGD,Weber
+338,OGD,Weber
+339,OGD,Weber
+340,OGD,Weber
+341,OGD,Weber
+342,OGD,Weber
+343,OGD,Weber
+344,OGD,Weber
+345,OGD,Weber
+346,OGD,Weber
+347,OGD,Weber
+348,OGD,Weber
+349,OGD,Weber
+350,OGD,Weber
+351,OGD,Weber
+352,OGD,Weber
+353,OGD,Weber
+354,OGD,Weber
+355,OGD,Weber
+356,OGD,Weber
+357,OGD,Weber
+358,OGD,Weber
+359,OGD,Weber
+360,OGD,Weber
+361,OGD,Weber
+362,OGD,Weber
+363,OGD,Weber
+364,OGD,Weber
+365,OGD,Weber
+366,OGD,Weber
+367,OGD,Weber
+368,OGD,Weber
+369,OGD,Weber
+370,OGD,Weber
+371,OGD,Weber
+372,OGD,Weber
+373,OGD,Weber
+374,OGD,Weber
+375,OGD,Weber
+376,OGD,Weber
+377,OGD,Weber
+378,OGD,Weber
+379,OGD,Weber
+380,OGD,Weber
+381,OGD,Weber
+382,OGD,Weber
+383,OGD,Weber
+384,OGD,Weber
+385,OGD,Weber
+386,OGD,Weber
+387,OGD,Weber
+388,OGD,Weber
+389,OGD,Weber
+390,OGD,Weber
+391,OGD,Weber
+392,OGD,Weber
+393,OGD,Weber
+394,OGD,Weber
+395,OGD,Weber
+396,OGD,Weber
+397,OGD,Weber
+398,OGD,Weber
+399,OGD,Weber
+400,OGD,Weber
+401,OGD,Weber
+402,OGD,Weber
+403,OGD,Weber
+404,OGD,Weber
+405,OGD,Weber
+406,OGD,Weber
+407,OGD,Weber
+408,OGD,Weber
+409,OGD,Weber
+410,OGD,Weber
+411,OGD,Weber
+412,OGD,Weber
+413,OGD,Weber
+414,OGD,Weber
+415,OGD,Weber
+416,OGD,Weber
+417,OGD,Weber
+418,OGD,Weber
+419,OGD,Weber
+420,OGD,Weber
+421,OGD,Weber
+422,OGD,Weber
+423,OGD,Weber
+424,OGD,Weber
+425,OGD,Weber
+426,OGD,Weber
+427,OGD,Weber
+428,OGD,Weber
+429,OGD,Weber
+430,OGD,Weber
+431,OGD,Weber
+432,OGD,Weber
+433,OGD,Weber
+434,OGD,Weber
+435,OGD,Weber
+436,OGD,Weber
+437,OGD,Weber
+438,OGD,Weber
+439,OGD,Weber
+440,OGD,Weber
+441,OGD,Weber
+442,OGD,Weber
+443,OGD,Weber
+444,OGD,Weber
+445,OGD,Weber
+446,OGD,Weber
+447,WHV,Weber
+448,WHV,Weber
+449,WHV,Weber
+450,WHV,Weber
+451,WHV,Weber
+452,WHV,Weber
+453,WHV,Weber
+454,WHV,Weber
+455,WHV,Weber
+456,WHV,Weber
+457,WHV,Weber
+458,WHV,Weber
+459,WHV,Weber
+460,WHV,Weber
+461,WHV,Weber
+462,WHV,Weber
+463,WHV,Weber
+464,WHV,Weber
+465,WHV,Weber
+466,WHV,Weber
+467,WHV,Weber
+468,WHV,Weber
+469,WHV,Weber
+470,WHV,Weber
+471,WHV,Weber
+472,WHV,Weber
+473,WHV,Weber
+474,WHV,Weber
+475,HOO,Weber
+476,HOO,Weber
+477,HOO,Weber
+478,HOO,Weber
+479,HOO,Weber
+480,HOO,Weber
+481,HOO,Weber
+482,HOO,Weber
+483,HOO,Weber
+484,HOO,Weber
+485,HOO,Weber
+486,HOO,Weber
+487,HOO,Weber
+488,HOO,Weber
+489,HOO,Weber
+490,HOO,Weber
+491,HOO,Weber
+492,HOO,Weber
+493,HOO,Weber
+494,HOO,Weber
+495,HOO,Weber
+496,HOO,Weber
+497,ROY,Weber
+498,ROY,Weber
+499,ROY,Weber
+500,ROY,Weber
+501,ROY,Weber
+502,ROY,Weber
+503,ROY,Weber
+504,ROY,Weber
+505,ROY,Weber
+506,ROY,Weber
+507,ROY,Weber
+508,ROY,Weber
+509,ROY,Weber
+510,ROY,Weber
+511,ROY,Weber
+512,ROY,Weber
+513,ROY,Weber
+514,ROY,Weber
+515,ROY,Weber
+516,ROY,Weber
+517,ROY,Weber
+518,ROY,Weber
+519,ROY,Weber
+520,ROY,Weber
+521,ROY,Weber
+522,ROY,Weber
+523,ROY,Weber
+524,ROY,Weber
+525,ROY,Weber
+526,ROY,Weber
+527,ROY,Weber
+528,RVD,Weber
+529,RVD,Weber
+530,RVD,Weber
+531,RVD,Weber
+532,RVD,Weber
+533,RVD,Weber
+534,RVD,Weber
+535,RVD,Weber
+536,RVD,Weber
+537,RVD,Weber
+538,RVD,Weber
+539,RVD,Weber
+540,RVD,Weber
+541,RVD,Weber
+542,WTR,Weber
+543,WTR,Weber
+544,WTR,Weber
+545,WTR,Weber
+546,WTR,Weber
+547,WTR,Weber
+548,WTR,Weber
+549,WTR,Weber
+550,WTR,Weber
+551,WTR,Weber
+552,WTR,Weber
+553,SOG,Weber
+554,SOG,Weber
+555,SOG,Weber
+556,SOG,Weber
+557,SOG,Weber
+558,SOG,Weber
+559,SOG,Weber
+560,SOG,Weber
+561,SOG,Weber
+562,SOG,Weber
+563,SOG,Weber
+564,SOG,Weber
+565,SOG,Weber
+566,SOG,Weber
+567,SOG,Weber
+568,SOG,Weber
+569,SOG,Weber
+570,SOG,Weber
+571,SOG,Weber
+572,SOG,Weber
+573,SOG,Weber
+574,UIN,Weber
+575,UIN,Weber
+576,UIN,Weber
+577,,Weber
+578,,Weber
+579,,Weber
+580,,Weber
+581,,Weber
+582,WPT,Davis
+583,WPT,Davis
+584,WPT,Davis
+585,WPT,Davis
+586,WPT,Davis
+587,WPT,Davis
+588,WPT,Davis
+589,WPT,Davis
+590,WPT,Davis
+591,WPT,Davis
+592,WPT,Davis
+593,WPT,Davis
+594,WPT,Davis
+595,WPT,Davis
+596,WPT,Davis
+597,WPT,Davis
+598,WPT,Davis
+599,WPT,Davis
+600,WPT,Davis
+601,WPT,Davis
+602,WPT,Davis
+603,CLI,Davis
+604,CLI,Davis
+605,CLI,Davis
+606,CLI,Davis
+607,CLI,Davis
+608,CLI,Davis
+609,CLI,Davis
+610,CLI,Davis
+611,CLI,Davis
+612,CLI,Davis
+613,CLI,Davis
+614,CLI,Davis
+615,CLI,Davis
+616,CLI,Davis
+617,CLI,Davis
+618,CLI,Davis
+619,CLI,Davis
+620,CLI,Davis
+621,CLI,Davis
+622,SUN,Davis
+623,SUN,Davis
+624,SUN,Davis
+625,SUN,Davis
+626,SUN,Davis
+627,SUN,Davis
+628,SUN,Davis
+629,AFB,Davis
+630,AFB,Davis
+631,AFB,Davis
+632,AFB,Davis
+633,AFB,Davis
+634,AFB,Davis
+635,SWE,Davis
+636,SWE,Davis
+637,SWE,Davis
+638,SWE,Davis
+639,SWE,Davis
+640,SWE,Davis
+641,SWE,Davis
+642,SWE,Davis
+643,CLR,Davis
+644,CLR,Davis
+645,CLR,Davis
+646,CLR,Davis
+647,CLR,Davis
+648,CLR,Davis
+649,CLR,Davis
+650,CLR,Davis
+651,CLR,Davis
+652,CLR,Davis
+653,CLR,Davis
+654,CLR,Davis
+655,CLR,Davis
+656,CLR,Davis
+657,CLR,Davis
+658,CLR,Davis
+659,CLR,Davis
+660,CLR,Davis
+661,CLR,Davis
+662,CLR,Davis
+663,CLR,Davis
+664,CLR,Davis
+665,CLR,Davis
+666,CLR,Davis
+667,SYR,Davis
+668,SYR,Davis
+669,SYR,Davis
+670,SYR,Davis
+671,SYR,Davis
+672,SYR,Davis
+673,SYR,Davis
+674,SYR,Davis
+675,SYR,Davis
+676,SYR,Davis
+677,SYR,Davis
+678,SYR,Davis
+679,SYR,Davis
+680,SYR,Davis
+681,SYR,Davis
+682,SYR,Davis
+683,SYR,Davis
+684,SYR,Davis
+685,SYR,Davis
+686,SYR,Davis
+687,SYR,Davis
+688,SYR,Davis
+689,SYR,Davis
+690,LAY,Davis
+691,LAY,Davis
+692,LAY,Davis
+693,LAY,Davis
+694,LAY,Davis
+695,LAY,Davis
+696,LAY,Davis
+697,LAY,Davis
+698,LAY,Davis
+699,LAY,Davis
+700,LAY,Davis
+701,LAY,Davis
+702,LAY,Davis
+703,LAY,Davis
+704,LAY,Davis
+705,LAY,Davis
+706,LAY,Davis
+707,LAY,Davis
+708,LAY,Davis
+709,LAY,Davis
+710,LAY,Davis
+711,LAY,Davis
+712,LAY,Davis
+713,LAY,Davis
+714,LAY,Davis
+715,LAY,Davis
+716,LAY,Davis
+717,LAY,Davis
+718,LAY,Davis
+719,LAY,Davis
+720,LAY,Davis
+721,LAY,Davis
+722,LAY,Davis
+723,LAY,Davis
+724,LAY,Davis
+725,LAY,Davis
+726,LAY,Davis
+727,LAY,Davis
+728,LAY,Davis
+729,LAY,Davis
+730,LAY,Davis
+731,LAY,Davis
+732,LAY,Davis
+733,LAY,Davis
+734,LAY,Davis
+735,LAY,Davis
+736,LAY,Davis
+737,LAY,Davis
+738,LAY,Davis
+739,LAY,Davis
+740,LAY,Davis
+741,LAY,Davis
+742,LAY,Davis
+743,LAY,Davis
+744,KAY,Davis
+745,KAY,Davis
+746,KAY,Davis
+747,KAY,Davis
+748,KAY,Davis
+749,KAY,Davis
+750,KAY,Davis
+751,KAY,Davis
+752,KAY,Davis
+753,KAY,Davis
+754,KAY,Davis
+755,KAY,Davis
+756,KAY,Davis
+757,KAY,Davis
+758,KAY,Davis
+759,KAY,Davis
+760,KAY,Davis
+761,KAY,Davis
+762,KAY,Davis
+763,KAY,Davis
+764,KAY,Davis
+765,KAY,Davis
+766,KAY,Davis
+767,FRU,Davis
+768,FRU,Davis
+769,FRU,Davis
+770,FRU,Davis
+771,FRM,Davis
+772,FRM,Davis
+773,FRM,Davis
+774,FRM,Davis
+775,FRM,Davis
+776,FRM,Davis
+777,FRM,Davis
+778,FRM,Davis
+779,FRM,Davis
+780,FRM,Davis
+781,FRM,Davis
+782,FRM,Davis
+783,FRM,Davis
+784,FRM,Davis
+785,FRM,Davis
+786,FRM,Davis
+787,FRM,Davis
+788,FRM,Davis
+789,FRM,Davis
+790,FRM,Davis
+791,FRM,Davis
+792,FRM,Davis
+793,FRM,Davis
+794,CEN,Davis
+795,CEN,Davis
+796,CEN,Davis
+797,CEN,Davis
+798,CEN,Davis
+799,CEN,Davis
+800,CEN,Davis
+801,CEN,Davis
+802,CEN,Davis
+803,CEN,Davis
+804,CEN,Davis
+805,CEN,Davis
+806,CEN,Davis
+807,CEN,Davis
+808,CEN,Davis
+809,CEN,Davis
+810,CEN,Davis
+811,CEN,Davis
+812,CEN,Davis
+813,WBO,Davis
+814,WBO,Davis
+815,WBO,Davis
+816,WBO,Davis
+817,WBO,Davis
+818,WBO,Davis
+819,WBO,Davis
+820,WBO,Davis
+821,WBO,Davis
+822,WBO,Davis
+823,WBO,Davis
+824,WBO,Davis
+825,BTF,Davis
+826,BTF,Davis
+827,BTF,Davis
+828,BTF,Davis
+829,BTF,Davis
+830,BTF,Davis
+831,BTF,Davis
+832,BTF,Davis
+833,BTF,Davis
+834,BTF,Davis
+835,BTF,Davis
+836,BTF,Davis
+837,BTF,Davis
+838,BTF,Davis
+839,BTF,Davis
+840,BTF,Davis
+841,BTF,Davis
+842,BTF,Davis
+843,BTF,Davis
+844,BTF,Davis
+845,BTF,Davis
+846,BTF,Davis
+847,BTF,Davis
+848,BTF,Davis
+849,BTF,Davis
+850,BTF,Davis
+851,BTF,Davis
+852,BTF,Davis
+853,BTF,Davis
+854,BTF,Davis
+855,BTF,Davis
+856,BTF,Davis
+857,BTF,Davis
+858,BTF,Davis
+859,WCR,Davis
+860,WCR,Davis
+861,WCR,Davis
+862,WCR,Davis
+863,WCR,Davis
+864,WCR,Davis
+865,WCR,Davis
+866,WCR,Davis
+867,WCR,Davis
+868,WCR,Davis
+869,WCR,Davis
+870,WCR,Davis
+871,WCR,Davis
+872,WCR,Davis
+873,WCR,Davis
+874,NSL,Davis
+875,NSL,Davis
+876,NSL,Davis
+877,NSL,Davis
+878,NSL,Davis
+879,NSL,Davis
+880,NSL,Davis
+881,NSL,Davis
+882,NSL,Davis
+883,NSL,Davis
+884,NSL,Davis
+885,NSL,Davis
+886,NSL,Davis
+887,NSL,Davis
+888,NSL,Davis
+889,NSL,Davis
+890,NSL,Davis
+891,NSL,Davis
+892,NSL,Davis
+893,NSL,Davis
+894,NSL,Davis
+895,NSL,Davis
+896,NSL,Davis
+897,NSL,Davis
+898,,Davis
+899,,Davis
+900,,Davis
+901,,Davis
+902,,Davis
+903,,Davis
+904,,Davis
+905,,Davis
+906,,Salt Lake
+907,,Salt Lake
+908,,Salt Lake
+909,,Salt Lake
+910,,Salt Lake
+911,,Salt Lake
+912,,Salt Lake
+913,,Salt Lake
+914,,Salt Lake
+915,,Salt Lake
+916,,Salt Lake
+917,,Salt Lake
+918,,Salt Lake
+919,,Salt Lake
+920,,Salt Lake
+921,,Salt Lake
+922,,Salt Lake
+923,,Salt Lake
+924,,Salt Lake
+925,,Salt Lake
+926,CMT,Salt Lake
+927,,Salt Lake
+928,,Salt Lake
+929,,Salt Lake
+930,,Salt Lake
+931,,Salt Lake
+932,,Salt Lake
+933,,Salt Lake
+934,,Salt Lake
+935,,Salt Lake
+936,,Salt Lake
+937,,Salt Lake
+938,,Salt Lake
+939,SLC,Salt Lake
+940,SLC,Salt Lake
+941,SLC,Salt Lake
+942,SLC,Salt Lake
+943,SLC,Salt Lake
+944,SLC,Salt Lake
+945,SLC,Salt Lake
+946,SLC,Salt Lake
+947,SLC,Salt Lake
+948,SLC,Salt Lake
+949,SLC,Salt Lake
+950,SLC,Salt Lake
+951,SLC,Salt Lake
+952,SLC,Salt Lake
+953,SLC,Salt Lake
+954,SLC,Salt Lake
+955,SLC,Salt Lake
+956,SLC,Salt Lake
+957,SLC,Salt Lake
+958,SLC,Salt Lake
+959,SLC,Salt Lake
+960,SLC,Salt Lake
+961,SLC,Salt Lake
+962,SLC,Salt Lake
+963,SLC,Salt Lake
+964,SLC,Salt Lake
+965,SLC,Salt Lake
+966,SLC,Salt Lake
+967,SLC,Salt Lake
+968,SLC,Salt Lake
+969,SLC,Salt Lake
+970,SLC,Salt Lake
+971,SLC,Salt Lake
+972,SLC,Salt Lake
+973,SLC,Salt Lake
+974,SLC,Salt Lake
+975,SLC,Salt Lake
+976,SLC,Salt Lake
+977,SLC,Salt Lake
+978,SLC,Salt Lake
+979,SLC,Salt Lake
+980,SLC,Salt Lake
+981,SLC,Salt Lake
+982,SLC,Salt Lake
+983,SLC,Salt Lake
+984,SLC,Salt Lake
+985,SLC,Salt Lake
+986,SLC,Salt Lake
+987,SLC,Salt Lake
+988,SLC,Salt Lake
+989,SLC,Salt Lake
+990,SLC,Salt Lake
+991,SLC,Salt Lake
+992,SLC,Salt Lake
+993,SLC,Salt Lake
+994,SLC,Salt Lake
+995,SLC,Salt Lake
+996,SLC,Salt Lake
+997,SLC,Salt Lake
+998,SLC,Salt Lake
+999,SLC,Salt Lake
+1000,SLC,Salt Lake
+1001,SLC,Salt Lake
+1002,SLC,Salt Lake
+1003,SLC,Salt Lake
+1004,SLC,Salt Lake
+1005,SLC,Salt Lake
+1006,SLC,Salt Lake
+1007,SLC,Salt Lake
+1008,SLC,Salt Lake
+1009,SLC,Salt Lake
+1010,SLC,Salt Lake
+1011,SLC,Salt Lake
+1012,SLC,Salt Lake
+1013,SLC,Salt Lake
+1014,SLC,Salt Lake
+1015,SLC,Salt Lake
+1016,SLC,Salt Lake
+1017,SLC,Salt Lake
+1018,SLC,Salt Lake
+1019,SLC,Salt Lake
+1020,SLC,Salt Lake
+1021,SLC,Salt Lake
+1022,SLC,Salt Lake
+1023,SLC,Salt Lake
+1024,SLC,Salt Lake
+1025,SLC,Salt Lake
+1026,SLC,Salt Lake
+1027,SLC,Salt Lake
+1028,SLC,Salt Lake
+1029,SLC,Salt Lake
+1030,SLC,Salt Lake
+1031,SLC,Salt Lake
+1032,SLC,Salt Lake
+1033,SLC,Salt Lake
+1034,SLC,Salt Lake
+1035,SLC,Salt Lake
+1036,SLC,Salt Lake
+1037,SLC,Salt Lake
+1038,SLC,Salt Lake
+1039,SLC,Salt Lake
+1040,SLC,Salt Lake
+1041,SLC,Salt Lake
+1042,SLC,Salt Lake
+1043,SLC,Salt Lake
+1044,SLC,Salt Lake
+1045,SLC,Salt Lake
+1046,SLC,Salt Lake
+1047,SLC,Salt Lake
+1048,SLC,Salt Lake
+1049,SLC,Salt Lake
+1050,SLC,Salt Lake
+1051,SLC,Salt Lake
+1052,SLC,Salt Lake
+1053,SLC,Salt Lake
+1054,SLC,Salt Lake
+1055,SLC,Salt Lake
+1056,SLC,Salt Lake
+1057,SLC,Salt Lake
+1058,SLC,Salt Lake
+1059,SLC,Salt Lake
+1060,SLC,Salt Lake
+1061,SLC,Salt Lake
+1062,SLC,Salt Lake
+1063,SLC,Salt Lake
+1064,SLC,Salt Lake
+1065,SLC,Salt Lake
+1066,SLC,Salt Lake
+1067,SLC,Salt Lake
+1068,SLC,Salt Lake
+1069,SLC,Salt Lake
+1070,SLC,Salt Lake
+1071,SLC,Salt Lake
+1072,SLC,Salt Lake
+1073,SLC,Salt Lake
+1074,SLC,Salt Lake
+1075,SLC,Salt Lake
+1076,SLC,Salt Lake
+1077,SLC,Salt Lake
+1078,SLC,Salt Lake
+1079,SLC,Salt Lake
+1080,SLC,Salt Lake
+1081,SLC,Salt Lake
+1082,SLC,Salt Lake
+1083,SLC,Salt Lake
+1084,SLC,Salt Lake
+1085,SLC,Salt Lake
+1086,SLC,Salt Lake
+1087,SLC,Salt Lake
+1088,SLC,Salt Lake
+1089,SLC,Salt Lake
+1090,SLC,Salt Lake
+1091,SLC,Salt Lake
+1092,SLC,Salt Lake
+1093,SLC,Salt Lake
+1094,SLC,Salt Lake
+1095,SLC,Salt Lake
+1096,SLC,Salt Lake
+1097,SLC,Salt Lake
+1098,SLC,Salt Lake
+1099,SLC,Salt Lake
+1100,SLC,Salt Lake
+1101,SLC,Salt Lake
+1102,SLC,Salt Lake
+1103,SLC,Salt Lake
+1104,SLC,Salt Lake
+1105,SLC,Salt Lake
+1106,SLC,Salt Lake
+1107,SLC,Salt Lake
+1108,SLC,Salt Lake
+1109,SLC,Salt Lake
+1110,SLC,Salt Lake
+1111,SLC,Salt Lake
+1112,SLC,Salt Lake
+1113,SLC,Salt Lake
+1114,SLC,Salt Lake
+1115,SLC,Salt Lake
+1116,SLC,Salt Lake
+1117,SLC,Salt Lake
+1118,SLC,Salt Lake
+1119,SLC,Salt Lake
+1120,SLC,Salt Lake
+1121,SLC,Salt Lake
+1122,SLC,Salt Lake
+1123,SLC,Salt Lake
+1124,SLC,Salt Lake
+1125,SLC,Salt Lake
+1126,SLC,Salt Lake
+1127,SLC,Salt Lake
+1128,SLC,Salt Lake
+1129,SLC,Salt Lake
+1130,SLC,Salt Lake
+1131,SLC,Salt Lake
+1132,SLC,Salt Lake
+1133,SLC,Salt Lake
+1134,SLC,Salt Lake
+1135,SLC,Salt Lake
+1136,SLC,Salt Lake
+1137,SLC,Salt Lake
+1138,SLC,Salt Lake
+1139,SLC,Salt Lake
+1140,SLC,Salt Lake
+1141,SLC,Salt Lake
+1142,SLC,Salt Lake
+1143,SLC,Salt Lake
+1144,SLC,Salt Lake
+1145,SLC,Salt Lake
+1146,SLC,Salt Lake
+1147,SLC,Salt Lake
+1148,SLC,Salt Lake
+1149,SLC,Salt Lake
+1150,SLC,Salt Lake
+1151,SLC,Salt Lake
+1152,SLC,Salt Lake
+1153,SLC,Salt Lake
+1154,SLC,Salt Lake
+1155,SLC,Salt Lake
+1156,SLC,Salt Lake
+1157,SLC,Salt Lake
+1158,SLC,Salt Lake
+1159,SLC,Salt Lake
+1160,SLC,Salt Lake
+1161,SLC,Salt Lake
+1162,SLC,Salt Lake
+1163,SLC,Salt Lake
+1164,SLC,Salt Lake
+1165,SLC,Salt Lake
+1166,SLC,Salt Lake
+1167,SLC,Salt Lake
+1168,SLC,Salt Lake
+1169,SLC,Salt Lake
+1170,SLC,Salt Lake
+1171,SLC,Salt Lake
+1172,SLC,Salt Lake
+1173,SLC,Salt Lake
+1174,SLC,Salt Lake
+1175,SLC,Salt Lake
+1176,SLC,Salt Lake
+1177,SLC,Salt Lake
+1178,SLC,Salt Lake
+1179,SLC,Salt Lake
+1180,SLC,Salt Lake
+1181,SLC,Salt Lake
+1182,SLC,Salt Lake
+1183,SLC,Salt Lake
+1184,SLC,Salt Lake
+1185,SLC,Salt Lake
+1186,SLC,Salt Lake
+1187,SLC,Salt Lake
+1188,SLC,Salt Lake
+1189,SLC,Salt Lake
+1190,SLC,Salt Lake
+1191,SLC,Salt Lake
+1192,SLC,Salt Lake
+1193,SLC,Salt Lake
+1194,SLC,Salt Lake
+1195,SLC,Salt Lake
+1196,SLC,Salt Lake
+1197,SLC,Salt Lake
+1198,SLC,Salt Lake
+1199,SLC,Salt Lake
+1200,SLC,Salt Lake
+1201,SLC,Salt Lake
+1202,SLC,Salt Lake
+1203,SLC,Salt Lake
+1204,SLC,Salt Lake
+1205,SLC,Salt Lake
+1206,SLC,Salt Lake
+1207,SLC,Salt Lake
+1208,SLC,Salt Lake
+1209,SLC,Salt Lake
+1210,SLC,Salt Lake
+1211,SLC,Salt Lake
+1212,SLC,Salt Lake
+1213,SLC,Salt Lake
+1214,SLC,Salt Lake
+1215,SLC,Salt Lake
+1216,SLC,Salt Lake
+1217,SLC,Salt Lake
+1218,SLC,Salt Lake
+1219,SLC,Salt Lake
+1220,SLC,Salt Lake
+1221,SLC,Salt Lake
+1222,SLC,Salt Lake
+1223,SLC,Salt Lake
+1224,SLC,Salt Lake
+1225,SLC,Salt Lake
+1226,SLC,Salt Lake
+1227,SLC,Salt Lake
+1228,SLC,Salt Lake
+1229,SLC,Salt Lake
+1230,SLC,Salt Lake
+1231,SLC,Salt Lake
+1232,SLC,Salt Lake
+1233,SLC,Salt Lake
+1234,SLC,Salt Lake
+1235,SLC,Salt Lake
+1236,SLC,Salt Lake
+1237,SLC,Salt Lake
+1238,SLC,Salt Lake
+1239,SLC,Salt Lake
+1240,SLC,Salt Lake
+1241,SLC,Salt Lake
+1242,SLC,Salt Lake
+1243,SLC,Salt Lake
+1244,SLC,Salt Lake
+1245,SLC,Salt Lake
+1246,SLC,Salt Lake
+1247,SLC,Salt Lake
+1248,SLC,Salt Lake
+1249,SLC,Salt Lake
+1250,SLC,Salt Lake
+1251,SLC,Salt Lake
+1252,SLC,Salt Lake
+1253,SLC,Salt Lake
+1254,SLC,Salt Lake
+1255,SLC,Salt Lake
+1256,SLC,Salt Lake
+1257,SLC,Salt Lake
+1258,SLC,Salt Lake
+1259,SLC,Salt Lake
+1260,SLC,Salt Lake
+1261,SLC,Salt Lake
+1262,SLC,Salt Lake
+1263,SLC,Salt Lake
+1264,SLC,Salt Lake
+1265,SLC,Salt Lake
+1266,SLC,Salt Lake
+1267,SLC,Salt Lake
+1268,SLC,Salt Lake
+1269,SLC,Salt Lake
+1270,SLC,Salt Lake
+1271,SLC,Salt Lake
+1272,SLC,Salt Lake
+1273,SLC,Salt Lake
+1274,SLC,Salt Lake
+1275,SLC,Salt Lake
+1276,SLC,Salt Lake
+1277,SLC,Salt Lake
+1278,SLC,Salt Lake
+1279,SLC,Salt Lake
+1280,SLC,Salt Lake
+1281,SLC,Salt Lake
+1282,SLC,Salt Lake
+1283,SLC,Salt Lake
+1284,SLC,Salt Lake
+1285,SLC,Salt Lake
+1286,SLC,Salt Lake
+1287,SLC,Salt Lake
+1288,SLC,Salt Lake
+1289,SLC,Salt Lake
+1290,SLC,Salt Lake
+1291,SLC,Salt Lake
+1292,SLC,Salt Lake
+1293,SLC,Salt Lake
+1294,SLC,Salt Lake
+1295,SLC,Salt Lake
+1296,SLC,Salt Lake
+1297,SLC,Salt Lake
+1298,SLC,Salt Lake
+1299,SLC,Salt Lake
+1300,SLC,Salt Lake
+1301,SLC,Salt Lake
+1302,MMT,Salt Lake
+1303,MMT,Salt Lake
+1304,MMT,Salt Lake
+1305,MMT,Salt Lake
+1306,MMT,Salt Lake
+1307,MMT,Salt Lake
+1308,MMT,Salt Lake
+1309,MMT,Salt Lake
+1310,MMT,Salt Lake
+1311,MMT,Salt Lake
+1312,MMT,Salt Lake
+1313,MMT,Salt Lake
+1314,MMT,Salt Lake
+1315,MMT,Salt Lake
+1316,MMT,Salt Lake
+1317,MMT,Salt Lake
+1318,MMT,Salt Lake
+1319,MMT,Salt Lake
+1320,MMT,Salt Lake
+1321,WVC,Salt Lake
+1322,WVC,Salt Lake
+1323,WVC,Salt Lake
+1324,WVC,Salt Lake
+1325,WVC,Salt Lake
+1326,WVC,Salt Lake
+1327,WVC,Salt Lake
+1328,WVC,Salt Lake
+1329,WVC,Salt Lake
+1330,WVC,Salt Lake
+1331,WVC,Salt Lake
+1332,WVC,Salt Lake
+1333,WVC,Salt Lake
+1334,WVC,Salt Lake
+1335,WVC,Salt Lake
+1336,WVC,Salt Lake
+1337,WVC,Salt Lake
+1338,WVC,Salt Lake
+1339,WVC,Salt Lake
+1340,WVC,Salt Lake
+1341,WVC,Salt Lake
+1342,WVC,Salt Lake
+1343,WVC,Salt Lake
+1344,WVC,Salt Lake
+1345,WVC,Salt Lake
+1346,WVC,Salt Lake
+1347,WVC,Salt Lake
+1348,WVC,Salt Lake
+1349,WVC,Salt Lake
+1350,WVC,Salt Lake
+1351,WVC,Salt Lake
+1352,WVC,Salt Lake
+1353,WVC,Salt Lake
+1354,WVC,Salt Lake
+1355,WVC,Salt Lake
+1356,WVC,Salt Lake
+1357,WVC,Salt Lake
+1358,WVC,Salt Lake
+1359,WVC,Salt Lake
+1360,WVC,Salt Lake
+1361,WVC,Salt Lake
+1362,WVC,Salt Lake
+1363,WVC,Salt Lake
+1364,WVC,Salt Lake
+1365,WVC,Salt Lake
+1366,WVC,Salt Lake
+1367,WVC,Salt Lake
+1368,WVC,Salt Lake
+1369,WVC,Salt Lake
+1370,WVC,Salt Lake
+1371,WVC,Salt Lake
+1372,WVC,Salt Lake
+1373,WVC,Salt Lake
+1374,WVC,Salt Lake
+1375,WVC,Salt Lake
+1376,WVC,Salt Lake
+1377,WVC,Salt Lake
+1378,WVC,Salt Lake
+1379,WVC,Salt Lake
+1380,WVC,Salt Lake
+1381,WVC,Salt Lake
+1382,WVC,Salt Lake
+1383,WVC,Salt Lake
+1384,WVC,Salt Lake
+1385,WVC,Salt Lake
+1386,WVC,Salt Lake
+1387,WVC,Salt Lake
+1388,WVC,Salt Lake
+1389,WVC,Salt Lake
+1390,WVC,Salt Lake
+1391,WVC,Salt Lake
+1392,WVC,Salt Lake
+1393,WVC,Salt Lake
+1394,WVC,Salt Lake
+1395,WVC,Salt Lake
+1396,WVC,Salt Lake
+1397,WVC,Salt Lake
+1398,WVC,Salt Lake
+1399,WVC,Salt Lake
+1400,WVC,Salt Lake
+1401,WVC,Salt Lake
+1402,WVC,Salt Lake
+1403,WVC,Salt Lake
+1404,WVC,Salt Lake
+1405,WVC,Salt Lake
+1406,WVC,Salt Lake
+1407,WVC,Salt Lake
+1408,WVC,Salt Lake
+1409,WVC,Salt Lake
+1410,WVC,Salt Lake
+1411,WVC,Salt Lake
+1412,WVC,Salt Lake
+1413,WVC,Salt Lake
+1414,WVC,Salt Lake
+1415,WVC,Salt Lake
+1416,WVC,Salt Lake
+1417,WVC,Salt Lake
+1418,WVC,Salt Lake
+1419,WVC,Salt Lake
+1420,WVC,Salt Lake
+1421,WVC,Salt Lake
+1422,WVC,Salt Lake
+1423,WVC,Salt Lake
+1424,WVC,Salt Lake
+1425,WVC,Salt Lake
+1426,WVC,Salt Lake
+1427,WVC,Salt Lake
+1428,WVC,Salt Lake
+1429,WVC,Salt Lake
+1430,WVC,Salt Lake
+1431,WVC,Salt Lake
+1432,WVC,Salt Lake
+1433,WVC,Salt Lake
+1434,WVC,Salt Lake
+1435,WVC,Salt Lake
+1436,WVC,Salt Lake
+1437,WVC,Salt Lake
+1438,WVC,Salt Lake
+1439,SSL,Salt Lake
+1440,SSL,Salt Lake
+1441,SSL,Salt Lake
+1442,SSL,Salt Lake
+1443,SSL,Salt Lake
+1444,SSL,Salt Lake
+1445,SSL,Salt Lake
+1446,SSL,Salt Lake
+1447,SSL,Salt Lake
+1448,SSL,Salt Lake
+1449,SSL,Salt Lake
+1450,SSL,Salt Lake
+1451,SSL,Salt Lake
+1452,SSL,Salt Lake
+1453,SSL,Salt Lake
+1454,SSL,Salt Lake
+1455,SSL,Salt Lake
+1456,SSL,Salt Lake
+1457,SSL,Salt Lake
+1458,SSL,Salt Lake
+1459,SSL,Salt Lake
+1460,SSL,Salt Lake
+1461,SSL,Salt Lake
+1462,SSL,Salt Lake
+1463,SSL,Salt Lake
+1464,SSL,Salt Lake
+1465,SSL,Salt Lake
+1466,SSL,Salt Lake
+1467,SSL,Salt Lake
+1468,SSL,Salt Lake
+1469,SSL,Salt Lake
+1470,SSL,Salt Lake
+1471,SSL,Salt Lake
+1472,SSL,Salt Lake
+1473,SSL,Salt Lake
+1474,SSL,Salt Lake
+1475,SSL,Salt Lake
+1476,SSL,Salt Lake
+1477,SSL,Salt Lake
+1478,SSL,Salt Lake
+1479,SSL,Salt Lake
+1480,SSL,Salt Lake
+1481,SSL,Salt Lake
+1482,SSL,Salt Lake
+1483,SSL,Salt Lake
+1484,SSL,Salt Lake
+1485,SSL,Salt Lake
+1486,SSL,Salt Lake
+1487,SSL,Salt Lake
+1488,SSL,Salt Lake
+1489,SSL,Salt Lake
+1490,SSL,Salt Lake
+1491,SSL,Salt Lake
+1492,SSL,Salt Lake
+1493,SSL,Salt Lake
+1494,SSL,Salt Lake
+1495,SSL,Salt Lake
+1496,SSL,Salt Lake
+1497,SSL,Salt Lake
+1498,MLC,Salt Lake
+1499,MLC,Salt Lake
+1500,MLC,Salt Lake
+1501,MLC,Salt Lake
+1502,MLC,Salt Lake
+1503,MLC,Salt Lake
+1504,MLC,Salt Lake
+1505,MLC,Salt Lake
+1506,MLC,Salt Lake
+1507,MLC,Salt Lake
+1508,MLC,Salt Lake
+1509,MLC,Salt Lake
+1510,MLC,Salt Lake
+1511,MLC,Salt Lake
+1512,MLC,Salt Lake
+1513,MLC,Salt Lake
+1514,MLC,Salt Lake
+1515,MLC,Salt Lake
+1516,MLC,Salt Lake
+1517,MLC,Salt Lake
+1518,MLC,Salt Lake
+1519,MLC,Salt Lake
+1520,MLC,Salt Lake
+1521,MLC,Salt Lake
+1522,MLC,Salt Lake
+1523,MLC,Salt Lake
+1524,MLC,Salt Lake
+1525,MLC,Salt Lake
+1526,MLC,Salt Lake
+1527,MLC,Salt Lake
+1528,MLC,Salt Lake
+1529,MLC,Salt Lake
+1530,MLC,Salt Lake
+1531,MLC,Salt Lake
+1532,MLC,Salt Lake
+1533,MLC,Salt Lake
+1534,MLC,Salt Lake
+1535,MLC,Salt Lake
+1536,MLC,Salt Lake
+1537,MLC,Salt Lake
+1538,MLC,Salt Lake
+1539,MLC,Salt Lake
+1540,MLC,Salt Lake
+1541,MLC,Salt Lake
+1542,MLC,Salt Lake
+1543,MLC,Salt Lake
+1544,MLC,Salt Lake
+1545,MLC,Salt Lake
+1546,MLC,Salt Lake
+1547,MLC,Salt Lake
+1548,MLC,Salt Lake
+1549,MLC,Salt Lake
+1550,MLC,Salt Lake
+1551,MLC,Salt Lake
+1552,MLC,Salt Lake
+1553,MLC,Salt Lake
+1554,MLC,Salt Lake
+1555,MLC,Salt Lake
+1556,MLC,Salt Lake
+1557,KMT,Salt Lake
+1558,KMT,Salt Lake
+1559,KMT,Salt Lake
+1560,KMT,Salt Lake
+1561,KMT,Salt Lake
+1562,KMT,Salt Lake
+1563,KMT,Salt Lake
+1564,KMT,Salt Lake
+1565,KMT,Salt Lake
+1566,KMT,Salt Lake
+1567,KMT,Salt Lake
+1568,KMT,Salt Lake
+1569,KMT,Salt Lake
+1570,KMT,Salt Lake
+1571,KMT,Salt Lake
+1572,KMT,Salt Lake
+1573,TAY,Salt Lake
+1574,TAY,Salt Lake
+1575,TAY,Salt Lake
+1576,TAY,Salt Lake
+1577,TAY,Salt Lake
+1578,TAY,Salt Lake
+1579,TAY,Salt Lake
+1580,TAY,Salt Lake
+1581,TAY,Salt Lake
+1582,TAY,Salt Lake
+1583,TAY,Salt Lake
+1584,TAY,Salt Lake
+1585,TAY,Salt Lake
+1586,TAY,Salt Lake
+1587,TAY,Salt Lake
+1588,TAY,Salt Lake
+1589,TAY,Salt Lake
+1590,TAY,Salt Lake
+1591,TAY,Salt Lake
+1592,TAY,Salt Lake
+1593,TAY,Salt Lake
+1594,TAY,Salt Lake
+1595,TAY,Salt Lake
+1596,TAY,Salt Lake
+1597,TAY,Salt Lake
+1598,TAY,Salt Lake
+1599,TAY,Salt Lake
+1600,TAY,Salt Lake
+1601,TAY,Salt Lake
+1602,TAY,Salt Lake
+1603,TAY,Salt Lake
+1604,TAY,Salt Lake
+1605,TAY,Salt Lake
+1606,TAY,Salt Lake
+1607,TAY,Salt Lake
+1608,TAY,Salt Lake
+1609,TAY,Salt Lake
+1610,TAY,Salt Lake
+1611,TAY,Salt Lake
+1612,TAY,Salt Lake
+1613,TAY,Salt Lake
+1614,TAY,Salt Lake
+1615,MUR,Salt Lake
+1616,MUR,Salt Lake
+1617,MUR,Salt Lake
+1618,MUR,Salt Lake
+1619,MUR,Salt Lake
+1620,MUR,Salt Lake
+1621,MUR,Salt Lake
+1622,MUR,Salt Lake
+1623,MUR,Salt Lake
+1624,MUR,Salt Lake
+1625,MUR,Salt Lake
+1626,MUR,Salt Lake
+1627,MUR,Salt Lake
+1628,MUR,Salt Lake
+1629,MUR,Salt Lake
+1630,MUR,Salt Lake
+1631,MUR,Salt Lake
+1632,MUR,Salt Lake
+1633,MUR,Salt Lake
+1634,MUR,Salt Lake
+1635,MUR,Salt Lake
+1636,MUR,Salt Lake
+1637,MUR,Salt Lake
+1638,MUR,Salt Lake
+1639,MUR,Salt Lake
+1640,MUR,Salt Lake
+1641,MUR,Salt Lake
+1642,MUR,Salt Lake
+1643,MUR,Salt Lake
+1644,MUR,Salt Lake
+1645,MUR,Salt Lake
+1646,MUR,Salt Lake
+1647,MUR,Salt Lake
+1648,MUR,Salt Lake
+1649,MUR,Salt Lake
+1650,MUR,Salt Lake
+1651,MUR,Salt Lake
+1652,MUR,Salt Lake
+1653,MUR,Salt Lake
+1654,MUR,Salt Lake
+1655,MUR,Salt Lake
+1656,MUR,Salt Lake
+1657,MUR,Salt Lake
+1658,MUR,Salt Lake
+1659,MUR,Salt Lake
+1660,MUR,Salt Lake
+1661,MUR,Salt Lake
+1662,MUR,Salt Lake
+1663,MUR,Salt Lake
+1664,MUR,Salt Lake
+1665,MUR,Salt Lake
+1666,MUR,Salt Lake
+1667,MUR,Salt Lake
+1668,MUR,Salt Lake
+1669,MUR,Salt Lake
+1670,MUR,Salt Lake
+1671,HOL,Salt Lake
+1672,HOL,Salt Lake
+1673,HOL,Salt Lake
+1674,HOL,Salt Lake
+1675,HOL,Salt Lake
+1676,HOL,Salt Lake
+1677,HOL,Salt Lake
+1678,HOL,Salt Lake
+1679,HOL,Salt Lake
+1680,HOL,Salt Lake
+1681,HOL,Salt Lake
+1682,HOL,Salt Lake
+1683,HOL,Salt Lake
+1684,HOL,Salt Lake
+1685,HOL,Salt Lake
+1686,HOL,Salt Lake
+1687,HOL,Salt Lake
+1688,HOL,Salt Lake
+1689,HOL,Salt Lake
+1690,HOL,Salt Lake
+1691,HOL,Salt Lake
+1692,HOL,Salt Lake
+1693,HOL,Salt Lake
+1694,HOL,Salt Lake
+1695,HOL,Salt Lake
+1696,HOL,Salt Lake
+1697,HOL,Salt Lake
+1698,HOL,Salt Lake
+1699,HOL,Salt Lake
+1700,HOL,Salt Lake
+1701,WJC,Salt Lake
+1702,WJC,Salt Lake
+1703,WJC,Salt Lake
+1704,WJC,Salt Lake
+1705,WJC,Salt Lake
+1706,WJC,Salt Lake
+1707,WJC,Salt Lake
+1708,WJC,Salt Lake
+1709,WJC,Salt Lake
+1710,WJC,Salt Lake
+1711,WJC,Salt Lake
+1712,WJC,Salt Lake
+1713,WJC,Salt Lake
+1714,WJC,Salt Lake
+1715,WJC,Salt Lake
+1716,WJC,Salt Lake
+1717,WJC,Salt Lake
+1718,WJC,Salt Lake
+1719,WJC,Salt Lake
+1720,WJC,Salt Lake
+1721,WJC,Salt Lake
+1722,WJC,Salt Lake
+1723,WJC,Salt Lake
+1724,WJC,Salt Lake
+1725,WJC,Salt Lake
+1726,WJC,Salt Lake
+1727,WJC,Salt Lake
+1728,WJC,Salt Lake
+1729,WJC,Salt Lake
+1730,WJC,Salt Lake
+1731,WJC,Salt Lake
+1732,WJC,Salt Lake
+1733,WJC,Salt Lake
+1734,WJC,Salt Lake
+1735,WJC,Salt Lake
+1736,WJC,Salt Lake
+1737,WJC,Salt Lake
+1738,WJC,Salt Lake
+1739,WJC,Salt Lake
+1740,WJC,Salt Lake
+1741,WJC,Salt Lake
+1742,WJC,Salt Lake
+1743,WJC,Salt Lake
+1744,WJC,Salt Lake
+1745,WJC,Salt Lake
+1746,WJC,Salt Lake
+1747,WJC,Salt Lake
+1748,WJC,Salt Lake
+1749,WJC,Salt Lake
+1750,WJC,Salt Lake
+1751,WJC,Salt Lake
+1752,WJC,Salt Lake
+1753,WJC,Salt Lake
+1754,WJC,Salt Lake
+1755,WJC,Salt Lake
+1756,WJC,Salt Lake
+1757,WJC,Salt Lake
+1758,WJC,Salt Lake
+1759,WJC,Salt Lake
+1760,WJC,Salt Lake
+1761,WJC,Salt Lake
+1762,WJC,Salt Lake
+1763,WJC,Salt Lake
+1764,WJC,Salt Lake
+1765,WJC,Salt Lake
+1766,WJC,Salt Lake
+1767,WJC,Salt Lake
+1768,WJC,Salt Lake
+1769,WJC,Salt Lake
+1770,WJC,Salt Lake
+1771,WJC,Salt Lake
+1772,WJC,Salt Lake
+1773,WJC,Salt Lake
+1774,WJC,Salt Lake
+1775,WJC,Salt Lake
+1776,WJC,Salt Lake
+1777,WJC,Salt Lake
+1778,WJC,Salt Lake
+1779,WJC,Salt Lake
+1780,WJC,Salt Lake
+1781,WJC,Salt Lake
+1782,WJC,Salt Lake
+1783,WJC,Salt Lake
+1784,WJC,Salt Lake
+1785,WJC,Salt Lake
+1786,MID,Salt Lake
+1787,MID,Salt Lake
+1788,MID,Salt Lake
+1789,MID,Salt Lake
+1790,MID,Salt Lake
+1791,MID,Salt Lake
+1792,MID,Salt Lake
+1793,MID,Salt Lake
+1794,MID,Salt Lake
+1795,MID,Salt Lake
+1796,MID,Salt Lake
+1797,MID,Salt Lake
+1798,MID,Salt Lake
+1799,MID,Salt Lake
+1800,MID,Salt Lake
+1801,MID,Salt Lake
+1802,MID,Salt Lake
+1803,MID,Salt Lake
+1804,MID,Salt Lake
+1805,MID,Salt Lake
+1806,MID,Salt Lake
+1807,MID,Salt Lake
+1808,MID,Salt Lake
+1809,MID,Salt Lake
+1810,MID,Salt Lake
+1811,MID,Salt Lake
+1812,MID,Salt Lake
+1813,MID,Salt Lake
+1814,MID,Salt Lake
+1815,MID,Salt Lake
+1816,MID,Salt Lake
+1817,MID,Salt Lake
+1818,MID,Salt Lake
+1819,MID,Salt Lake
+1820,MID,Salt Lake
+1821,MID,Salt Lake
+1822,COT,Salt Lake
+1823,COT,Salt Lake
+1824,COT,Salt Lake
+1825,COT,Salt Lake
+1826,COT,Salt Lake
+1827,COT,Salt Lake
+1828,COT,Salt Lake
+1829,COT,Salt Lake
+1830,COT,Salt Lake
+1831,COT,Salt Lake
+1832,COT,Salt Lake
+1833,COT,Salt Lake
+1834,COT,Salt Lake
+1835,COT,Salt Lake
+1836,COT,Salt Lake
+1837,COT,Salt Lake
+1838,COT,Salt Lake
+1839,COT,Salt Lake
+1840,COT,Salt Lake
+1841,COT,Salt Lake
+1842,COT,Salt Lake
+1843,COT,Salt Lake
+1844,COT,Salt Lake
+1845,COT,Salt Lake
+1846,COT,Salt Lake
+1847,COT,Salt Lake
+1848,COT,Salt Lake
+1849,SAN,Salt Lake
+1850,SAN,Salt Lake
+1851,SAN,Salt Lake
+1852,SAN,Salt Lake
+1853,SAN,Salt Lake
+1854,SAN,Salt Lake
+1855,SAN,Salt Lake
+1856,SAN,Salt Lake
+1857,SAN,Salt Lake
+1858,SAN,Salt Lake
+1859,SAN,Salt Lake
+1860,SAN,Salt Lake
+1861,SAN,Salt Lake
+1862,SAN,Salt Lake
+1863,SAN,Salt Lake
+1864,SAN,Salt Lake
+1865,SAN,Salt Lake
+1866,SAN,Salt Lake
+1867,SAN,Salt Lake
+1868,SAN,Salt Lake
+1869,SAN,Salt Lake
+1870,SAN,Salt Lake
+1871,SAN,Salt Lake
+1872,SAN,Salt Lake
+1873,SAN,Salt Lake
+1874,SAN,Salt Lake
+1875,SAN,Salt Lake
+1876,SAN,Salt Lake
+1877,SAN,Salt Lake
+1878,SAN,Salt Lake
+1879,SAN,Salt Lake
+1880,SAN,Salt Lake
+1881,SAN,Salt Lake
+1882,SAN,Salt Lake
+1883,SAN,Salt Lake
+1884,SAN,Salt Lake
+1885,SAN,Salt Lake
+1886,SAN,Salt Lake
+1887,SAN,Salt Lake
+1888,SAN,Salt Lake
+1889,SAN,Salt Lake
+1890,SAN,Salt Lake
+1891,SAN,Salt Lake
+1892,SAN,Salt Lake
+1893,SAN,Salt Lake
+1894,SAN,Salt Lake
+1895,SAN,Salt Lake
+1896,SAN,Salt Lake
+1897,SAN,Salt Lake
+1898,SAN,Salt Lake
+1899,SAN,Salt Lake
+1900,WMT,Salt Lake
+1901,WMT,Salt Lake
+1902,SAN,Salt Lake
+1903,SAN,Salt Lake
+1904,SAN,Salt Lake
+1905,SAN,Salt Lake
+1906,SAN,Salt Lake
+1907,SAN,Salt Lake
+1908,SAN,Salt Lake
+1909,SAN,Salt Lake
+1910,SAN,Salt Lake
+1911,WMT,Salt Lake
+1912,WMT,Salt Lake
+1913,WMT,Salt Lake
+1914,SAN,Salt Lake
+1915,SAN,Salt Lake
+1916,SAN,Salt Lake
+1917,SAN,Salt Lake
+1918,SAN,Salt Lake
+1919,SAN,Salt Lake
+1920,SAN,Salt Lake
+1921,SAN,Salt Lake
+1922,SAN,Salt Lake
+1923,SAN,Salt Lake
+1924,SAN,Salt Lake
+1925,SAN,Salt Lake
+1926,SAN,Salt Lake
+1927,SAN,Salt Lake
+1928,SAN,Salt Lake
+1929,SAN,Salt Lake
+1930,SAN,Salt Lake
+1931,SAN,Salt Lake
+1932,SAN,Salt Lake
+1933,SAN,Salt Lake
+1934,SAN,Salt Lake
+1935,SAN,Salt Lake
+1936,SAN,Salt Lake
+1937,SAN,Salt Lake
+1938,SAN,Salt Lake
+1939,SAN,Salt Lake
+1940,SAN,Salt Lake
+1941,SAN,Salt Lake
+1942,SAN,Salt Lake
+1943,SAN,Salt Lake
+1944,SJC,Salt Lake
+1945,SJC,Salt Lake
+1946,SJC,Salt Lake
+1947,SJC,Salt Lake
+1948,SJC,Salt Lake
+1949,SJC,Salt Lake
+1950,SJC,Salt Lake
+1951,SJC,Salt Lake
+1952,SJC,Salt Lake
+1953,SJC,Salt Lake
+1954,SJC,Salt Lake
+1955,SJC,Salt Lake
+1956,SJC,Salt Lake
+1957,SJC,Salt Lake
+1958,SJC,Salt Lake
+1959,SJC,Salt Lake
+1960,SJC,Salt Lake
+1961,SJC,Salt Lake
+1962,SJC,Salt Lake
+1963,SJC,Salt Lake
+1964,SJC,Salt Lake
+1965,SJC,Salt Lake
+1966,SJC,Salt Lake
+1967,SJC,Salt Lake
+1968,SJC,Salt Lake
+1969,SJC,Salt Lake
+1970,SJC,Salt Lake
+1971,SJC,Salt Lake
+1972,SJC,Salt Lake
+1973,SJC,Salt Lake
+1974,SJC,Salt Lake
+1975,SJC,Salt Lake
+1976,SJC,Salt Lake
+1977,SJC,Salt Lake
+1978,SJC,Salt Lake
+1979,SJC,Salt Lake
+1980,SJC,Salt Lake
+1981,SJC,Salt Lake
+1982,SJC,Salt Lake
+1983,SJC,Salt Lake
+1984,SJC,Salt Lake
+1985,SJC,Salt Lake
+1986,SJC,Salt Lake
+1987,SJC,Salt Lake
+1988,SJC,Salt Lake
+1989,SJC,Salt Lake
+1990,SJC,Salt Lake
+1991,SJC,Salt Lake
+1992,SJC,Salt Lake
+1993,SJC,Salt Lake
+1994,SJC,Salt Lake
+1995,SJC,Salt Lake
+1996,SJC,Salt Lake
+1997,SJC,Salt Lake
+1998,SJC,Salt Lake
+1999,SJC,Salt Lake
+2000,SJC,Salt Lake
+2001,SJC,Salt Lake
+2002,SJC,Salt Lake
+2003,SJC,Salt Lake
+2004,SJC,Salt Lake
+2005,SJC,Salt Lake
+2006,SJC,Salt Lake
+2007,SJC,Salt Lake
+2008,SJC,Salt Lake
+2009,SJC,Salt Lake
+2010,SJC,Salt Lake
+2011,SJC,Salt Lake
+2012,SJC,Salt Lake
+2013,SJC,Salt Lake
+2014,SJC,Salt Lake
+2015,SJC,Salt Lake
+2016,SJC,Salt Lake
+2017,SJC,Salt Lake
+2018,SJC,Salt Lake
+2019,SJC,Salt Lake
+2020,SJC,Salt Lake
+2021,SJC,Salt Lake
+2022,HER,Salt Lake
+2023,HER,Salt Lake
+2024,HER,Salt Lake
+2025,HER,Salt Lake
+2026,HER,Salt Lake
+2027,HER,Salt Lake
+2028,HER,Salt Lake
+2029,HER,Salt Lake
+2030,HER,Salt Lake
+2031,HER,Salt Lake
+2032,HER,Salt Lake
+2033,HER,Salt Lake
+2034,HER,Salt Lake
+2035,HER,Salt Lake
+2036,HER,Salt Lake
+2037,HER,Salt Lake
+2038,HER,Salt Lake
+2039,HER,Salt Lake
+2040,HER,Salt Lake
+2041,HER,Salt Lake
+2042,HER,Salt Lake
+2043,HER,Salt Lake
+2044,HER,Salt Lake
+2045,HER,Salt Lake
+2046,HER,Salt Lake
+2047,HER,Salt Lake
+2048,HER,Salt Lake
+2049,HER,Salt Lake
+2050,HER,Salt Lake
+2051,HER,Salt Lake
+2052,HER,Salt Lake
+2053,HER,Salt Lake
+2054,HER,Salt Lake
+2055,HER,Salt Lake
+2056,HER,Salt Lake
+2057,HER,Salt Lake
+2058,HER,Salt Lake
+2059,HER,Salt Lake
+2060,HER,Salt Lake
+2061,HER,Salt Lake
+2062,RVT,Salt Lake
+2063,RVT,Salt Lake
+2064,RVT,Salt Lake
+2065,RVT,Salt Lake
+2066,RVT,Salt Lake
+2067,RVT,Salt Lake
+2068,RVT,Salt Lake
+2069,RVT,Salt Lake
+2070,RVT,Salt Lake
+2071,RVT,Salt Lake
+2072,RVT,Salt Lake
+2073,RVT,Salt Lake
+2074,RVT,Salt Lake
+2075,RVT,Salt Lake
+2076,RVT,Salt Lake
+2077,RVT,Salt Lake
+2078,RVT,Salt Lake
+2079,RVT,Salt Lake
+2080,RVT,Salt Lake
+2081,RVT,Salt Lake
+2082,RVT,Salt Lake
+2083,RVT,Salt Lake
+2084,RVT,Salt Lake
+2085,RVT,Salt Lake
+2086,RVT,Salt Lake
+2087,RVT,Salt Lake
+2088,RVT,Salt Lake
+2089,RVT,Salt Lake
+2090,RVT,Salt Lake
+2091,RVT,Salt Lake
+2092,RVT,Salt Lake
+2093,RVT,Salt Lake
+2094,RVT,Salt Lake
+2095,RVT,Salt Lake
+2096,RVT,Salt Lake
+2097,RVT,Salt Lake
+2098,RVT,Salt Lake
+2099,RVT,Salt Lake
+2100,RVT,Salt Lake
+2101,DRA,Salt Lake
+2102,DRA,Salt Lake
+2103,DRA,Salt Lake
+2104,DRA,Salt Lake
+2105,DRA,Salt Lake
+2106,DRA,Salt Lake
+2107,DRA,Salt Lake
+2108,DRA,Salt Lake
+2109,DRA,Salt Lake
+2110,DRA,Salt Lake
+2111,DRA,Salt Lake
+2112,DRA,Salt Lake
+2113,DRA,Salt Lake
+2114,DRA,Salt Lake
+2115,DRA,Salt Lake
+2116,DRA,Salt Lake
+2117,DRA,Salt Lake
+2118,DRA,Salt Lake
+2119,DRA,Salt Lake
+2120,DRA,Salt Lake
+2121,DRA,Salt Lake
+2122,DRA,Salt Lake
+2123,DRA,Salt Lake
+2124,DRA,Salt Lake
+2125,DRA,Salt Lake
+2126,DRA,Salt Lake
+2127,DRA,Salt Lake
+2128,DRA,Salt Lake
+2129,DRA,Salt Lake
+2130,DRA,Salt Lake
+2131,DRA,Salt Lake
+2132,DRA,Salt Lake
+2133,DRA,Salt Lake
+2134,DRA,Salt Lake
+2135,DRA,Salt Lake
+2136,DRA,Salt Lake
+2137,DRA,Salt Lake
+2138,DRA,Salt Lake
+2139,DRA,Salt Lake
+2140,DRA,Salt Lake
+2141,DRA,Salt Lake
+2142,DRA,Salt Lake
+2143,DRA,Salt Lake
+2144,DRA,Salt Lake
+2145,DRA,Salt Lake
+2146,DRA,Salt Lake
+2147,DRA,Salt Lake
+2148,DRA,Salt Lake
+2149,DRA,Salt Lake
+2150,DRA,Salt Lake
+2151,DRA,Salt Lake
+2152,DRA,Salt Lake
+2153,DRA,Salt Lake
+2154,DRA,Salt Lake
+2155,DRA,Salt Lake
+2156,DRA,Salt Lake
+2157,DRA,Salt Lake
+2158,DRA,Salt Lake
+2159,DRA,Salt Lake
+2160,DRA,Salt Lake
+2161,DRA,Salt Lake
+2162,BDL,Salt Lake
+2163,BDL,Salt Lake
+2164,BDL,Salt Lake
+2165,BDL,Salt Lake
+2166,BDL,Salt Lake
+2167,BDL,Salt Lake
+2168,BDL,Salt Lake
+2169,BDL,Salt Lake
+2170,BDL,Salt Lake
+2171,BDL,Salt Lake
+2172,BDL,Salt Lake
+2173,BDL,Salt Lake
+2174,BDL,Salt Lake
+2175,BDL,Salt Lake
+2176,BDL,Salt Lake
+2177,BDL,Salt Lake
+2178,BDL,Salt Lake
+2179,BDL,Salt Lake
+2180,BDL,Salt Lake
+2181,BDL,Salt Lake
+2182,BDL,Salt Lake
+2183,BDL,Salt Lake
+2184,BDL,Salt Lake
+2185,BDL,Salt Lake
+2186,BDL,Salt Lake
+2187,EMT,Salt Lake
+2188,EMT,Salt Lake
+2189,EMT,Salt Lake
+2190,,Salt Lake
+2191,,Salt Lake
+2192,BRT,Salt Lake
+2193,,Salt Lake
+2194,BRT,Salt Lake
+2195,BRT,Salt Lake
+2196,ALA,Salt Lake
+2197,,Salt Lake
+2198,,Salt Lake
+2199,,Salt Lake
+2200,,Salt Lake
+2201,,Salt Lake
+2202,,Salt Lake
+2203,,Salt Lake
+2204,,Salt Lake
+2205,,Salt Lake
+2206,,Salt Lake
+2207,,Salt Lake
+2208,,Salt Lake
+2209,,Salt Lake
+2210,,Salt Lake
+2211,,Salt Lake
+2212,,Salt Lake
+2213,,Salt Lake
+2214,BRT,Salt Lake
+2215,ALA,Salt Lake
+2216,,Salt Lake
+2217,,Utah
+2218,,Utah
+2219,FFD,Utah
+2220,EAG,Utah
+2221,FFD,Utah
+2222,FFD,Utah
+2223,FFD,Utah
+2224,EAG,Utah
+2225,EAG,Utah
+2226,EAG,Utah
+2227,EAG,Utah
+2228,FFD,Utah
+2229,FFD,Utah
+2230,FFD,Utah
+2231,FFD,Utah
+2232,FFD,Utah
+2233,EAG,Utah
+2234,EAG,Utah
+2235,EAG,Utah
+2236,EAG,Utah
+2237,EAG,Utah
+2238,FFD,Utah
+2239,FFD,Utah
+2240,FFD,Utah
+2241,FFD,Utah
+2242,EAG,Utah
+2243,EAG,Utah
+2244,EAG,Utah
+2245,EAG,Utah
+2246,EAG,Utah
+2247,EAG,Utah
+2248,FFD,Utah
+2249,EAG,Utah
+2250,EAG,Utah
+2251,EAG,Utah
+2252,EAG,Utah
+2253,EAG,Utah
+2254,EAG,Utah
+2255,EAG,Utah
+2256,EAG,Utah
+2257,EAG,Utah
+2258,EAG,Utah
+2259,EAG,Utah
+2260,EAG,Utah
+2261,EAG,Utah
+2262,EAG,Utah
+2263,EAG,Utah
+2264,EAG,Utah
+2265,EAG,Utah
+2266,EAG,Utah
+2267,EAG,Utah
+2268,EAG,Utah
+2269,EAG,Utah
+2270,EAG,Utah
+2271,EAG,Utah
+2272,EAG,Utah
+2273,EAG,Utah
+2274,EAG,Utah
+2275,EAG,Utah
+2276,EAG,Utah
+2277,EAG,Utah
+2278,EAG,Utah
+2279,EAG,Utah
+2280,EAG,Utah
+2281,CDF,Utah
+2282,CDF,Utah
+2283,CDF,Utah
+2284,CDF,Utah
+2285,CDF,Utah
+2286,EAG,Utah
+2287,EAG,Utah
+2288,CDF,Utah
+2289,CDF,Utah
+2290,CDF,Utah
+2291,CDF,Utah
+2292,EAG,Utah
+2293,EAG,Utah
+2294,EAG,Utah
+2295,EAG,Utah
+2296,EAG,Utah
+2297,EAG,Utah
+2298,EAG,Utah
+2299,EAG,Utah
+2300,EAG,Utah
+2301,EAG,Utah
+2302,EAG,Utah
+2303,EAG,Utah
+2304,EAG,Utah
+2305,EAG,Utah
+2306,EAG,Utah
+2307,EAG,Utah
+2308,EAG,Utah
+2309,EAG,Utah
+2310,EAG,Utah
+2311,EAG,Utah
+2312,EAG,Utah
+2313,EAG,Utah
+2314,EAG,Utah
+2315,EAG,Utah
+2316,EAG,Utah
+2317,EAG,Utah
+2318,EAG,Utah
+2319,EAG,Utah
+2320,EAG,Utah
+2321,CDF,Utah
+2322,CDF,Utah
+2323,CDF,Utah
+2324,CDF,Utah
+2325,EAG,Utah
+2326,EAG,Utah
+2327,CDF,Utah
+2328,CDF,Utah
+2329,CDF,Utah
+2330,CDF,Utah
+2331,EAG,Utah
+2332,EAG,Utah
+2333,CDF,Utah
+2334,CDF,Utah
+2335,EAG,Utah
+2336,EAG,Utah
+2337,EAG,Utah
+2338,EAG,Utah
+2339,EAG,Utah
+2340,EAG,Utah
+2341,EAG,Utah
+2342,EAG,Utah
+2343,EAG,Utah
+2344,EAG,Utah
+2345,EAG,Utah
+2346,EAG,Utah
+2347,EAG,Utah
+2348,EAG,Utah
+2349,EAG,Utah
+2350,EAG,Utah
+2351,EAG,Utah
+2352,EAG,Utah
+2353,EAG,Utah
+2354,EAG,Utah
+2355,EAG,Utah
+2356,EAG,Utah
+2357,EAG,Utah
+2358,EAG,Utah
+2359,EAG,Utah
+2360,EAG,Utah
+2361,EAG,Utah
+2362,EAG,Utah
+2363,EAG,Utah
+2364,EAG,Utah
+2365,EAG,Utah
+2366,EAG,Utah
+2367,EAG,Utah
+2368,EAG,Utah
+2369,EAG,Utah
+2370,EAG,Utah
+2371,EAG,Utah
+2372,EAG,Utah
+2373,EAG,Utah
+2374,EAG,Utah
+2375,EAG,Utah
+2376,EAG,Utah
+2377,EAG,Utah
+2378,EAG,Utah
+2379,EAG,Utah
+2380,EAG,Utah
+2381,EAG,Utah
+2382,EAG,Utah
+2383,EAG,Utah
+2384,EAG,Utah
+2385,EAG,Utah
+2386,CDF,Utah
+2387,CDF,Utah
+2388,CDF,Utah
+2389,CDF,Utah
+2390,CDF,Utah
+2391,EAG,Utah
+2392,EAG,Utah
+2393,EAG,Utah
+2394,EAG,Utah
+2395,EAG,Utah
+2396,EAG,Utah
+2397,EAG,Utah
+2398,EAG,Utah
+2399,EAG,Utah
+2400,EAG,Utah
+2401,EAG,Utah
+2402,EAG,Utah
+2403,EAG,Utah
+2404,EAG,Utah
+2405,EAG,Utah
+2406,EAG,Utah
+2407,EAG,Utah
+2408,EAG,Utah
+2409,EAG,Utah
+2410,EAG,Utah
+2411,EAG,Utah
+2412,EAG,Utah
+2413,EAG,Utah
+2414,EAG,Utah
+2415,EAG,Utah
+2416,EAG,Utah
+2417,EAG,Utah
+2418,EAG,Utah
+2419,EAG,Utah
+2420,EAG,Utah
+2421,EAG,Utah
+2422,,Utah
+2423,,Utah
+2424,,Utah
+2425,,Utah
+2426,,Utah
+2427,SAR,Utah
+2428,SAR,Utah
+2429,SAR,Utah
+2430,SAR,Utah
+2431,SAR,Utah
+2432,SAR,Utah
+2433,SAR,Utah
+2434,SAR,Utah
+2435,SAR,Utah
+2436,SAR,Utah
+2437,SAR,Utah
+2438,SAR,Utah
+2439,SAR,Utah
+2440,SAR,Utah
+2441,SAR,Utah
+2442,SAR,Utah
+2443,SAR,Utah
+2444,SAR,Utah
+2445,SAR,Utah
+2446,SAR,Utah
+2447,SAR,Utah
+2448,SAR,Utah
+2449,SAR,Utah
+2450,SAR,Utah
+2451,SAR,Utah
+2452,SAR,Utah
+2453,SAR,Utah
+2454,SAR,Utah
+2455,SAR,Utah
+2456,SAR,Utah
+2457,SAR,Utah
+2458,SAR,Utah
+2459,SAR,Utah
+2460,SAR,Utah
+2461,SAR,Utah
+2462,SAR,Utah
+2463,SAR,Utah
+2464,SAR,Utah
+2465,SAR,Utah
+2466,EAG,Utah
+2467,EAG,Utah
+2468,SAR,Utah
+2469,SAR,Utah
+2470,SAR,Utah
+2471,EAG,Utah
+2472,EAG,Utah
+2473,EAG,Utah
+2474,SAR,Utah
+2475,SAR,Utah
+2476,SAR,Utah
+2477,SAR,Utah
+2478,SAR,Utah
+2479,EAG,Utah
+2480,EAG,Utah
+2481,SAR,Utah
+2482,SAR,Utah
+2483,SAR,Utah
+2484,SAR,Utah
+2485,SAR,Utah
+2486,SAR,Utah
+2487,EAG,Utah
+2488,SAR,Utah
+2489,SAR,Utah
+2490,SAR,Utah
+2491,SAR,Utah
+2492,SAR,Utah
+2493,SAR,Utah
+2494,SAR,Utah
+2495,SAR,Utah
+2496,SAR,Utah
+2497,SAR,Utah
+2498,SAR,Utah
+2499,SAR,Utah
+2500,EAG,Utah
+2501,EAG,Utah
+2502,SAR,Utah
+2503,SAR,Utah
+2504,SAR,Utah
+2505,SAR,Utah
+2506,SAR,Utah
+2507,SAR,Utah
+2508,SAR,Utah
+2509,SAR,Utah
+2510,SAR,Utah
+2511,SAR,Utah
+2512,SAR,Utah
+2513,SAR,Utah
+2514,SAR,Utah
+2515,SAR,Utah
+2516,LEH,Utah
+2517,LEH,Utah
+2518,SAR,Utah
+2519,SAR,Utah
+2520,LEH,Utah
+2521,SAR,Utah
+2522,SAR,Utah
+2523,LEH,Utah
+2524,LEH,Utah
+2525,LEH,Utah
+2526,LEH,Utah
+2527,LEH,Utah
+2528,LEH,Utah
+2529,LEH,Utah
+2530,LEH,Utah
+2531,BDL,Utah
+2532,LEH,Utah
+2533,LEH,Utah
+2534,LEH,Utah
+2535,LEH,Utah
+2536,BDL,Utah
+2537,LEH,Utah
+2538,LEH,Utah
+2539,LEH,Utah
+2540,LEH,Utah
+2541,LEH,Utah
+2542,LEH,Utah
+2543,LEH,Utah
+2544,LEH,Utah
+2545,LEH,Utah
+2546,LEH,Utah
+2547,LEH,Utah
+2548,LEH,Utah
+2549,LEH,Utah
+2550,LEH,Utah
+2551,LEH,Utah
+2552,LEH,Utah
+2553,LEH,Utah
+2554,LEH,Utah
+2555,LEH,Utah
+2556,LEH,Utah
+2557,LEH,Utah
+2558,LEH,Utah
+2559,SAR,Utah
+2560,SAR,Utah
+2561,LEH,Utah
+2562,LEH,Utah
+2563,AFK,Utah
+2564,AFK,Utah
+2565,AFK,Utah
+2566,AFK,Utah
+2567,AFK,Utah
+2568,AFK,Utah
+2569,AFK,Utah
+2570,AFK,Utah
+2571,AFK,Utah
+2572,SAR,Utah
+2573,SAR,Utah
+2574,LEH,Utah
+2575,LEH,Utah
+2576,LEH,Utah
+2577,LEH,Utah
+2578,LEH,Utah
+2579,AFK,Utah
+2580,AFK,Utah
+2581,AFK,Utah
+2582,AFK,Utah
+2583,AFK,Utah
+2584,AFK,Utah
+2585,AFK,Utah
+2586,AFK,Utah
+2587,AFK,Utah
+2588,AFK,Utah
+2589,LEH,Utah
+2590,LEH,Utah
+2591,LEH,Utah
+2592,LEH,Utah
+2593,LEH,Utah
+2594,LEH,Utah
+2595,LEH,Utah
+2596,LEH,Utah
+2597,LEH,Utah
+2598,LEH,Utah
+2599,LEH,Utah
+2600,LEH,Utah
+2601,LEH,Utah
+2602,LEH,Utah
+2603,LEH,Utah
+2604,AFK,Utah
+2605,LEH,Utah
+2606,LEH,Utah
+2607,LEH,Utah
+2608,LEH,Utah
+2609,LEH,Utah
+2610,LEH,Utah
+2611,LEH,Utah
+2612,LEH,Utah
+2613,LEH,Utah
+2614,LEH,Utah
+2615,LEH,Utah
+2616,LEH,Utah
+2617,LEH,Utah
+2618,LEH,Utah
+2619,LEH,Utah
+2620,LEH,Utah
+2621,LEH,Utah
+2622,LEH,Utah
+2623,LEH,Utah
+2624,LEH,Utah
+2625,LEH,Utah
+2626,LEH,Utah
+2627,LEH,Utah
+2628,LEH,Utah
+2629,LEH,Utah
+2630,LEH,Utah
+2631,LEH,Utah
+2632,LEH,Utah
+2633,LEH,Utah
+2634,LEH,Utah
+2635,LEH,Utah
+2636,LEH,Utah
+2637,LEH,Utah
+2638,LEH,Utah
+2639,LEH,Utah
+2640,LEH,Utah
+2641,LEH,Utah
+2642,LEH,Utah
+2643,LEH,Utah
+2644,LEH,Utah
+2645,LEH,Utah
+2646,LEH,Utah
+2647,LEH,Utah
+2648,LEH,Utah
+2649,LEH,Utah
+2650,LEH,Utah
+2651,LEH,Utah
+2652,LEH,Utah
+2653,LEH,Utah
+2654,LEH,Utah
+2655,LEH,Utah
+2656,LEH,Utah
+2657,AFK,Utah
+2658,AFK,Utah
+2659,AFK,Utah
+2660,AFK,Utah
+2661,LEH,Utah
+2662,AFK,Utah
+2663,AFK,Utah
+2664,AFK,Utah
+2665,AFK,Utah
+2666,AFK,Utah
+2667,AFK,Utah
+2668,AFK,Utah
+2669,AFK,Utah
+2670,AFK,Utah
+2671,AFK,Utah
+2672,LEH,Utah
+2673,LEH,Utah
+2674,AFK,Utah
+2675,AFK,Utah
+2676,AFK,Utah
+2677,AFK,Utah
+2678,LEH,Utah
+2679,LEH,Utah
+2680,LEH,Utah
+2681,AFK,Utah
+2682,AFK,Utah
+2683,LEH,Utah
+2684,LEH,Utah
+2685,LEH,Utah
+2686,LEH,Utah
+2687,HGH,Utah
+2688,HGH,Utah
+2689,HGH,Utah
+2690,HGH,Utah
+2691,HGH,Utah
+2692,HGH,Utah
+2693,CHL,Utah
+2694,CHL,Utah
+2695,CHL,Utah
+2696,CHL,Utah
+2697,CHL,Utah
+2698,CHL,Utah
+2699,HGH,Utah
+2700,HGH,Utah
+2701,HGH,Utah
+2702,HGH,Utah
+2703,HGH,Utah
+2704,HGH,Utah
+2705,CHL,Utah
+2706,HGH,Utah
+2707,HGH,Utah
+2708,HGH,Utah
+2709,HGH,Utah
+2710,HGH,Utah
+2711,HGH,Utah
+2712,ALP,Utah
+2713,ALP,Utah
+2714,ALP,Utah
+2715,ALP,Utah
+2716,ALP,Utah
+2717,ALP,Utah
+2718,ALP,Utah
+2719,DRA,Utah
+2720,HGH,Utah
+2721,ALP,Utah
+2722,ALP,Utah
+2723,ALP,Utah
+2724,ALP,Utah
+2725,ALP,Utah
+2726,AFK,Utah
+2727,LIN,Utah
+2728,LIN,Utah
+2729,AFK,Utah
+2730,AFK,Utah
+2731,LIN,Utah
+2732,LIN,Utah
+2733,LIN,Utah
+2734,LIN,Utah
+2735,LIN,Utah
+2736,LIN,Utah
+2737,LIN,Utah
+2738,LIN,Utah
+2739,LIN,Utah
+2740,LIN,Utah
+2741,PGR,Utah
+2742,LIN,Utah
+2743,LIN,Utah
+2744,LIN,Utah
+2745,LIN,Utah
+2746,LIN,Utah
+2747,LIN,Utah
+2748,PGR,Utah
+2749,PGR,Utah
+2750,PGR,Utah
+2751,PGR,Utah
+2752,PGR,Utah
+2753,PGR,Utah
+2754,PGR,Utah
+2755,AFK,Utah
+2756,AFK,Utah
+2757,PGR,Utah
+2758,PGR,Utah
+2759,PGR,Utah
+2760,PGR,Utah
+2761,PGR,Utah
+2762,PGR,Utah
+2763,AFK,Utah
+2764,AFK,Utah
+2765,PGR,Utah
+2766,PGR,Utah
+2767,PGR,Utah
+2768,PGR,Utah
+2769,PGR,Utah
+2770,AFK,Utah
+2771,PGR,Utah
+2772,PGR,Utah
+2773,PGR,Utah
+2774,PGR,Utah
+2775,PGR,Utah
+2776,PGR,Utah
+2777,PGR,Utah
+2778,PGR,Utah
+2779,AFK,Utah
+2780,PGR,Utah
+2781,PGR,Utah
+2782,PGR,Utah
+2783,AFK,Utah
+2784,AFK,Utah
+2785,PGR,Utah
+2786,PGR,Utah
+2787,AFK,Utah
+2788,AFK,Utah
+2789,PGR,Utah
+2790,VIN,Utah
+2791,VIN,Utah
+2792,VIN,Utah
+2793,VIN,Utah
+2794,VIN,Utah
+2795,ORE,Utah
+2796,VIN,Utah
+2797,VIN,Utah
+2798,VIN,Utah
+2799,VIN,Utah
+2800,ORE,Utah
+2801,VIN,Utah
+2802,VIN,Utah
+2803,VIN,Utah
+2804,VIN,Utah
+2805,VIN,Utah
+2806,VIN,Utah
+2807,ORE,Utah
+2808,VIN,Utah
+2809,VIN,Utah
+2810,VIN,Utah
+2811,VIN,Utah
+2812,ORE,Utah
+2813,VIN,Utah
+2814,VIN,Utah
+2815,VIN,Utah
+2816,VIN,Utah
+2817,ORE,Utah
+2818,ORE,Utah
+2819,VIN,Utah
+2820,ORE,Utah
+2821,ORE,Utah
+2822,ORE,Utah
+2823,ORE,Utah
+2824,LIN,Utah
+2825,ORE,Utah
+2826,ORE,Utah
+2827,ORE,Utah
+2828,ORE,Utah
+2829,ORE,Utah
+2830,ORE,Utah
+2831,ORE,Utah
+2832,ORE,Utah
+2833,ORE,Utah
+2834,ORE,Utah
+2835,ORE,Utah
+2836,ORE,Utah
+2837,ORE,Utah
+2838,ORE,Utah
+2839,ORE,Utah
+2840,ORE,Utah
+2841,ORE,Utah
+2842,ORE,Utah
+2843,ORE,Utah
+2844,ORE,Utah
+2845,ORE,Utah
+2846,ORE,Utah
+2847,ORE,Utah
+2848,ORE,Utah
+2849,ORE,Utah
+2850,ORE,Utah
+2851,PVO,Utah
+2852,PVO,Utah
+2853,ORE,Utah
+2854,ORE,Utah
+2855,ORE,Utah
+2856,ORE,Utah
+2857,ORE,Utah
+2858,ORE,Utah
+2859,ORE,Utah
+2860,PVO,Utah
+2861,PVO,Utah
+2862,PVO,Utah
+2863,ORE,Utah
+2864,ORE,Utah
+2865,ORE,Utah
+2866,ORE,Utah
+2867,ORE,Utah
+2868,ORE,Utah
+2869,ORE,Utah
+2870,PVO,Utah
+2871,ORE,Utah
+2872,ORE,Utah
+2873,ORE,Utah
+2874,ORE,Utah
+2875,ORE,Utah
+2876,ORE,Utah
+2877,ORE,Utah
+2878,PVO,Utah
+2879,PVO,Utah
+2880,PVO,Utah
+2881,PVO,Utah
+2882,PVO,Utah
+2883,ORE,Utah
+2884,ORE,Utah
+2885,ORE,Utah
+2886,ORE,Utah
+2887,ORE,Utah
+2888,ORE,Utah
+2889,PVO,Utah
+2890,PVO,Utah
+2891,PVO,Utah
+2892,PVO,Utah
+2893,PVO,Utah
+2894,PVO,Utah
+2895,PVO,Utah
+2896,ORE,Utah
+2897,ORE,Utah
+2898,ORE,Utah
+2899,ORE,Utah
+2900,ORE,Utah
+2901,ORE,Utah
+2902,ORE,Utah
+2903,ORE,Utah
+2904,ORE,Utah
+2905,ORE,Utah
+2906,ORE,Utah
+2907,ORE,Utah
+2908,ORE,Utah
+2909,ORE,Utah
+2910,PVO,Utah
+2911,PVO,Utah
+2912,ORE,Utah
+2913,PVO,Utah
+2914,PVO,Utah
+2915,PVO,Utah
+2916,PVO,Utah
+2917,PVO,Utah
+2918,PVO,Utah
+2919,PVO,Utah
+2920,PVO,Utah
+2921,PVO,Utah
+2922,PVO,Utah
+2923,PVO,Utah
+2924,PVO,Utah
+2925,PVO,Utah
+2926,PVO,Utah
+2927,PVO,Utah
+2928,PVO,Utah
+2929,PVO,Utah
+2930,ORE,Utah
+2931,ORE,Utah
+2932,ORE,Utah
+2933,ORE,Utah
+2934,ORE,Utah
+2935,ORE,Utah
+2936,ORE,Utah
+2937,PVO,Utah
+2938,PVO,Utah
+2939,PVO,Utah
+2940,PVO,Utah
+2941,PVO,Utah
+2942,PVO,Utah
+2943,PVO,Utah
+2944,PVO,Utah
+2945,PVO,Utah
+2946,PVO,Utah
+2947,PVO,Utah
+2948,PVO,Utah
+2949,PVO,Utah
+2950,PVO,Utah
+2951,PVO,Utah
+2952,PVO,Utah
+2953,PVO,Utah
+2954,PVO,Utah
+2955,PVO,Utah
+2956,PVO,Utah
+2957,PVO,Utah
+2958,PVO,Utah
+2959,PVO,Utah
+2960,PVO,Utah
+2961,PVO,Utah
+2962,PVO,Utah
+2963,PVO,Utah
+2964,PVO,Utah
+2965,PVO,Utah
+2966,PVO,Utah
+2967,PVO,Utah
+2968,PVO,Utah
+2969,PVO,Utah
+2970,PVO,Utah
+2971,PVO,Utah
+2972,PVO,Utah
+2973,PVO,Utah
+2974,PVO,Utah
+2975,PVO,Utah
+2976,PVO,Utah
+2977,PVO,Utah
+2978,PVO,Utah
+2979,PVO,Utah
+2980,PVO,Utah
+2981,PVO,Utah
+2982,PVO,Utah
+2983,PVO,Utah
+2984,PVO,Utah
+2985,PVO,Utah
+2986,PVO,Utah
+2987,PVO,Utah
+2988,PVO,Utah
+2989,PVO,Utah
+2990,PVO,Utah
+2991,PVO,Utah
+2992,PVO,Utah
+2993,PVO,Utah
+2994,PVO,Utah
+2995,PVO,Utah
+2996,PVO,Utah
+2997,PVO,Utah
+2998,PVO,Utah
+2999,PVO,Utah
+3000,PVO,Utah
+3001,PVO,Utah
+3002,PVO,Utah
+3003,PVO,Utah
+3004,PVO,Utah
+3005,PVO,Utah
+3006,PVO,Utah
+3007,PVO,Utah
+3008,PVO,Utah
+3009,PVO,Utah
+3010,PVO,Utah
+3011,PVO,Utah
+3012,PVO,Utah
+3013,PVO,Utah
+3014,PVO,Utah
+3015,PVO,Utah
+3016,PVO,Utah
+3017,PVO,Utah
+3018,PVO,Utah
+3019,PVO,Utah
+3020,PVO,Utah
+3021,PVO,Utah
+3022,PVO,Utah
+3023,PVO,Utah
+3024,PVO,Utah
+3025,PVO,Utah
+3026,PVO,Utah
+3027,PVO,Utah
+3028,PVO,Utah
+3029,PVO,Utah
+3030,PVO,Utah
+3031,PVO,Utah
+3032,PVO,Utah
+3033,PVO,Utah
+3034,PVO,Utah
+3035,PVO,Utah
+3036,PVO,Utah
+3037,PVO,Utah
+3038,PVO,Utah
+3039,SPV,Utah
+3040,SPV,Utah
+3041,PVO,Utah
+3042,SPV,Utah
+3043,SPV,Utah
+3044,SPV,Utah
+3045,SPV,Utah
+3046,SPV,Utah
+3047,SPV,Utah
+3048,SPV,Utah
+3049,SPV,Utah
+3050,SPV,Utah
+3051,SPV,Utah
+3052,SPV,Utah
+3053,SPV,Utah
+3054,SPV,Utah
+3055,SPV,Utah
+3056,SPV,Utah
+3057,SPV,Utah
+3058,SPV,Utah
+3059,SPV,Utah
+3060,SPV,Utah
+3061,SPV,Utah
+3062,SPV,Utah
+3063,SPV,Utah
+3064,SPV,Utah
+3065,SPV,Utah
+3066,SPV,Utah
+3067,SPV,Utah
+3068,SPV,Utah
+3069,SPV,Utah
+3070,SPV,Utah
+3071,SPV,Utah
+3072,SPV,Utah
+3073,SPV,Utah
+3074,SPV,Utah
+3075,SPV,Utah
+3076,SPV,Utah
+3077,SPV,Utah
+3078,SPV,Utah
+3079,SPV,Utah
+3080,SPV,Utah
+3081,SPV,Utah
+3082,SPV,Utah
+3083,SPV,Utah
+3084,SPV,Utah
+3085,SPV,Utah
+3086,SPV,Utah
+3087,SPV,Utah
+3088,SPV,Utah
+3089,SPV,Utah
+3090,MAP,Utah
+3091,MAP,Utah
+3092,MAP,Utah
+3093,SFK,Utah
+3094,SFK,Utah
+3095,SPV,Utah
+3096,SPV,Utah
+3097,SPV,Utah
+3098,SPV,Utah
+3099,SPV,Utah
+3100,MAP,Utah
+3101,MAP,Utah
+3102,MAP,Utah
+3103,SFK,Utah
+3104,SPV,Utah
+3105,SPV,Utah
+3106,SPV,Utah
+3107,SFK,Utah
+3108,MAP,Utah
+3109,MAP,Utah
+3110,MAP,Utah
+3111,MAP,Utah
+3112,MAP,Utah
+3113,MAP,Utah
+3114,MAP,Utah
+3115,MAP,Utah
+3116,MAP,Utah
+3117,MAP,Utah
+3118,MAP,Utah
+3119,MAP,Utah
+3120,MAP,Utah
+3121,MAP,Utah
+3122,MAP,Utah
+3123,MAP,Utah
+3124,MAP,Utah
+3125,MAP,Utah
+3126,MAP,Utah
+3127,MAP,Utah
+3128,MAP,Utah
+3129,MAP,Utah
+3130,,Utah
+3131,SPV,Utah
+3132,SPV,Utah
+3133,SPV,Utah
+3134,SPV,Utah
+3135,SPV,Utah
+3136,SPV,Utah
+3137,SPV,Utah
+3138,SPV,Utah
+3139,SPV,Utah
+3140,SPV,Utah
+3141,SPV,Utah
+3142,,Utah
+3143,,Utah
+3144,SFK,Utah
+3145,SFK,Utah
+3146,SFK,Utah
+3147,SPV,Utah
+3148,SPV,Utah
+3149,,Utah
+3150,,Utah
+3151,SFK,Utah
+3152,SFK,Utah
+3153,SFK,Utah
+3154,SFK,Utah
+3155,,Utah
+3156,,Utah
+3157,,Utah
+3158,SFK,Utah
+3159,,Utah
+3160,,Utah
+3161,,Utah
+3162,SFK,Utah
+3163,SFK,Utah
+3164,SFK,Utah
+3165,SFK,Utah
+3166,,Utah
+3167,,Utah
+3168,SFK,Utah
+3169,SFK,Utah
+3170,,Utah
+3171,SFK,Utah
+3172,SFK,Utah
+3173,SFK,Utah
+3174,SFK,Utah
+3175,SFK,Utah
+3176,SFK,Utah
+3177,SFK,Utah
+3178,SFK,Utah
+3179,SFK,Utah
+3180,SFK,Utah
+3181,SFK,Utah
+3182,SFK,Utah
+3183,SFK,Utah
+3184,SFK,Utah
+3185,SFK,Utah
+3186,SFK,Utah
+3187,SFK,Utah
+3188,SFK,Utah
+3189,SFK,Utah
+3190,SFK,Utah
+3191,SFK,Utah
+3192,SFK,Utah
+3193,SFK,Utah
+3194,SFK,Utah
+3195,SFK,Utah
+3196,SFK,Utah
+3197,SFK,Utah
+3198,SFK,Utah
+3199,SFK,Utah
+3200,SFK,Utah
+3201,SFK,Utah
+3202,SFK,Utah
+3203,SFK,Utah
+3204,SFK,Utah
+3205,SFK,Utah
+3206,SFK,Utah
+3207,SFK,Utah
+3208,SFK,Utah
+3209,SFK,Utah
+3210,SFK,Utah
+3211,SFK,Utah
+3212,SFK,Utah
+3213,SFK,Utah
+3214,SFK,Utah
+3215,SFK,Utah
+3216,SFK,Utah
+3217,SFK,Utah
+3218,SFK,Utah
+3219,SFK,Utah
+3220,SFK,Utah
+3221,SFK,Utah
+3222,SFK,Utah
+3223,SFK,Utah
+3224,SFK,Utah
+3225,SFK,Utah
+3226,SFK,Utah
+3227,SFK,Utah
+3228,SFK,Utah
+3229,SFK,Utah
+3230,SFK,Utah
+3231,SFK,Utah
+3232,SFK,Utah
+3233,SFK,Utah
+3234,SFK,Utah
+3235,SFK,Utah
+3236,SFK,Utah
+3237,SFK,Utah
+3238,SFK,Utah
+3239,SFK,Utah
+3240,SFK,Utah
+3241,SFK,Utah
+3242,SFK,Utah
+3243,SLM,Utah
+3244,SLM,Utah
+3245,SLM,Utah
+3246,SLM,Utah
+3247,SLM,Utah
+3248,SLM,Utah
+3249,SLM,Utah
+3250,SLM,Utah
+3251,SFK,Utah
+3252,SFK,Utah
+3253,SFK,Utah
+3254,SFK,Utah
+3255,PAY,Utah
+3256,SLM,Utah
+3257,SLM,Utah
+3258,SLM,Utah
+3259,SLM,Utah
+3260,SLM,Utah
+3261,SLM,Utah
+3262,SLM,Utah
+3263,SLM,Utah
+3264,SLM,Utah
+3265,SLM,Utah
+3266,SLM,Utah
+3267,SLM,Utah
+3268,SLM,Utah
+3269,SLM,Utah
+3270,PAY,Utah
+3271,PAY,Utah
+3272,PAY,Utah
+3273,PAY,Utah
+3274,PAY,Utah
+3275,SLM,Utah
+3276,SLM,Utah
+3277,SLM,Utah
+3278,SLM,Utah
+3279,SLM,Utah
+3280,SLM,Utah
+3281,SLM,Utah
+3282,PAY,Utah
+3283,PAY,Utah
+3284,PAY,Utah
+3285,PAY,Utah
+3286,PAY,Utah
+3287,PAY,Utah
+3288,PAY,Utah
+3289,SLM,Utah
+3290,SLM,Utah
+3291,SLM,Utah
+3292,PAY,Utah
+3293,PAY,Utah
+3294,SLM,Utah
+3295,SLM,Utah
+3296,SLM,Utah
+3297,SLM,Utah
+3298,SLM,Utah
+3299,SLM,Utah
+3300,SLM,Utah
+3301,PAY,Utah
+3302,SLM,Utah
+3303,PAY,Utah
+3304,PAY,Utah
+3305,SLM,Utah
+3306,SLM,Utah
+3307,SLM,Utah
+3308,SLM,Utah
+3309,PAY,Utah
+3310,ELK,Utah
+3311,ELK,Utah
+3312,SLM,Utah
+3313,SLM,Utah
+3314,SLM,Utah
+3315,SLM,Utah
+3316,PAY,Utah
+3317,ELK,Utah
+3318,WDL,Utah
+3319,WDL,Utah
+3320,ELK,Utah
+3321,,Utah
+3322,,Utah
+3323,,Utah
+3324,,Utah
+3325,,Utah
+3326,,Utah
+3327,,Utah
+3328,,Utah
+3329,,Utah
+3330,,Utah
+3331,,Utah
+3332,,Utah
+3333,,Utah
+3334,,Utah
+3335,,Utah
+3336,,Utah
+3337,,Utah
+3338,,Utah
+3339,,Utah
+3340,,Utah
+3341,,Utah
+3342,,Utah
+3343,,Utah
+3344,,Utah
+3345,,Utah
+3346,,Utah
+3347,,Utah
+3348,,Utah
+3349,,Utah
+3350,,Utah
+3351,,Utah
+3352,,Utah
+3353,,Utah
+3354,,Utah
+3355,,Utah
+3356,,Utah
+3357,,Utah
+3358,,Utah
+3359,,Utah
+3360,,Utah
+3361,,Utah
+3362,,Utah
+3363,SFK,Utah
+3364,,Utah
+3365,,Utah
+3366,,Utah
+3367,,Utah
+3368,,Utah
+3369,,Utah
+3370,,Utah
+3371,,Utah
+3372,,Utah
+3373,,Utah
+3374,,Utah
+3375,SFK,Utah
+3376,SFK,Utah
+3377,SFK,Utah
+3378,PAY,Utah
+3379,PAY,Utah
+3380,PAY,Utah
+3381,PAY,Utah
+3382,PAY,Utah
+3383,PAY,Utah
+3384,PAY,Utah
+3385,PAY,Utah
+3386,PAY,Utah
+3387,PAY,Utah
+3388,PAY,Utah
+3389,PAY,Utah
+3390,PAY,Utah
+3391,PAY,Utah
+3392,PAY,Utah
+3393,PAY,Utah
+3394,PAY,Utah
+3395,PAY,Utah
+3396,PAY,Utah
+3397,PAY,Utah
+3398,PAY,Utah
+3399,PAY,Utah
+3400,PAY,Utah
+3401,PAY,Utah
+3402,PAY,Utah
+3403,PAY,Utah
+3404,PAY,Utah
+3405,PAY,Utah
+3406,PAY,Utah
+3407,PAY,Utah
+3408,PAY,Utah
+3409,PAY,Utah
+3410,PAY,Utah
+3411,PAY,Utah
+3412,PAY,Utah
+3413,PAY,Utah
+3414,PAY,Utah
+3415,PAY,Utah
+3416,PAY,Utah
+3417,PAY,Utah
+3418,PAY,Utah
+3419,PAY,Utah
+3420,PAY,Utah
+3421,PAY,Utah
+3422,PAY,Utah
+3423,PAY,Utah
+3424,PAY,Utah
+3425,PAY,Utah
+3426,PAY,Utah
+3427,PAY,Utah
+3428,PAY,Utah
+3429,PAY,Utah
+3430,PAY,Utah
+3431,PAY,Utah
+3432,PAY,Utah
+3433,PAY,Utah
+3434,PAY,Utah
+3435,PAY,Utah
+3436,PAY,Utah
+3437,PAY,Utah
+3438,PAY,Utah
+3439,SAQ,Utah
+3440,PAY,Utah
+3441,PAY,Utah
+3442,PAY,Utah
+3443,PAY,Utah
+3444,SAQ,Utah
+3445,ELK,Utah
+3446,SAQ,Utah
+3447,SAQ,Utah
+3448,PAY,Utah
+3449,PAY,Utah
+3450,PAY,Utah
+3451,SAQ,Utah
+3452,SAQ,Utah
+3453,SAQ,Utah
+3454,SAQ,Utah
+3455,SAQ,Utah
+3456,SAQ,Utah
+3457,SAQ,Utah
+3458,GEN,Utah
+3459,GEN,Utah
+3460,GEN,Utah
+3461,GEN,Utah
+3462,GEN,Utah
+3463,GEN,Utah
+3464,GEN,Utah
+3465,SAQ,Utah
+3466,SAQ,Utah
+3467,SAQ,Utah
+3468,SAQ,Utah
+3469,SAQ,Utah
+3470,SAQ,Utah
+3471,SAQ,Utah
+3472,SAQ,Utah
+3473,SAQ,Utah
+3474,SAQ,Utah
+3475,SAQ,Utah
+3476,SAQ,Utah
+3477,SAQ,Utah
+3478,SAQ,Utah
+3479,SAQ,Utah
+3480,SAQ,Utah
+3481,SAQ,Utah
+3482,SAQ,Utah
+3483,SAQ,Utah
+3484,SAQ,Utah
+3485,SAQ,Utah
+3486,SAQ,Utah
+3487,SAQ,Utah
+3488,SAQ,Utah
+3489,SAQ,Utah
+3490,SAQ,Utah
+3491,SAQ,Utah
+3492,SAQ,Utah
+3493,SAQ,Utah
+3494,SAQ,Utah
+3495,SAQ,Utah
+3496,SAQ,Utah
+3497,SAQ,Utah
+3498,SAQ,Utah
+3499,SAQ,Utah
+3500,SAQ,Utah
+3501,SAQ,Utah
+3502,SAQ,Utah
+3503,,Utah
+3504,,Utah
+3505,,Utah
+3506,,Utah
+3507,,Utah
+3508,GOS,Utah
+3509,,Utah
+3510,GOS,Utah
+3511,GOS,Utah
+3512,GOS,Utah
+3513,GOS,Utah
+3514,,Utah
+3515,,Utah
+3516,,Utah
+3517,,Utah
+3518,,Utah
+3519,,Utah
+3520,,Utah
+3521,,Utah
+3522,,Utah
+3523,,Utah
+3524,,Utah
+3525,,Utah
+3526,,Utah
+3527,,Utah
+3528,,Utah
+3529,,Utah
+3530,,Utah
+3531,,Utah
+3532,,Utah
+3533,,Utah
+3534,,Utah
+3535,,Utah
+3536,,Utah
+3537,,Utah
+3538,,Utah
+3539,,Utah
+3540,,Utah
+3541,,Utah
+3542,,Utah
+3543,,Utah
+3544,,Utah
+3545,,Utah
+3546,,Utah
+3547,,Utah
+3548,,Utah
+3549,,Utah
+3550,,Utah
+3551,,Utah
+3552,,Utah
+3553,,Utah
+3554,,Utah
+3555,,Utah
+3556,,Utah
+3557,,Utah
+3558,,Utah
+3559,,Utah
+3560,,Utah
+3561,,Utah
+3562,,Utah

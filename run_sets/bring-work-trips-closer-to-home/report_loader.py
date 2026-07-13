@@ -133,7 +133,7 @@ TARGET_CITIES = {
     "Roy": "ROY", "North Salt Lake": "NSL", "Mill Creek": "MLC",
     "Provo": "PVO", "Payson": "PAY",
 }
-TAZ_DBF = os.path.join(REPO_ROOT, "tdm", "1_Inputs", "1_TAZ", "WFv1000_TAZ.dbf")
+TAZ_CITY_LOOKUP_CSV = os.path.join(_HERE, "inputs", "taz_city_lookup.csv")
 
 # Peak = the two commute peaks (AM+PM); Off-Peak = midday + evening/night
 # (MD+EV); Daily = all four sub-periods. Used to give VMT/VHD/VHT/Volume
@@ -276,17 +276,15 @@ def load_corridor_crosswalk() -> pd.DataFrame:
 
 
 def load_city_taz_lookup() -> pd.DataFrame:
-    """TAZID -> city_label + CO_NAME for TARGET_CITIES only, via
-    WFv1000_TAZ.dbf's CITY_UGRC code (CO_NAME straight from the same file
-    -- every TARGET_CITIES city sits entirely within one county, confirmed
-    empirically) -- always read live from tdm/ (static model geometry
-    input, not a per-run output), matching non-motorized-2023's TAZ/district
-    shapefile precedent and this run set's own corridor-geometry lookup."""
-    import geopandas as gpd
-    gdf = gpd.read_file(TAZ_DBF)
-    out = pd.DataFrame(gdf[["TAZID", "CITY_UGRC", "CO_NAME"]])
-    out["TAZID"] = out["TAZID"].astype(int)
-    out["CO_NAME"] = out["CO_NAME"].str.title()
+    """TAZID -> city_label + CO_NAME for TARGET_CITIES only, from
+    inputs/taz_city_lookup.csv -- a one-time extract of WFv1000_TAZ.dbf's
+    TAZID/CITY_UGRC/CO_NAME columns (CO_NAME straight from the same file --
+    every TARGET_CITIES city sits entirely within one county, confirmed
+    empirically), committed rather than read live from the gitignored tdm/
+    working tree since this is static model geometry that GitHub Actions'
+    publish-report.yml has no submodule checkout to read (see
+    load_full_city_area_lookup for the matching full-region extract)."""
+    out = pd.read_csv(TAZ_CITY_LOOKUP_CSV)
     code_to_label = {code: label for label, code in TARGET_CITIES.items()}
     out["city_label"] = out["CITY_UGRC"].map(code_to_label)
     return out[out["city_label"].notna()][["TAZID", "city_label", "CO_NAME"]]
@@ -364,13 +362,10 @@ def load_full_city_area_lookup() -> pd.DataFrame:
     TARGET_CITIES) -- the full ~80 City Area groupings the City Area
     scenario actually redistributes among, region-wide. Null CITY_UGRC
     means that TAZ isn't inside any City Area (276 of 3562 TAZs, mostly
-    unincorporated land). Always read live from tdm/, same as
-    load_city_taz_lookup."""
-    import geopandas as gpd
-    gdf = gpd.read_file(TAZ_DBF)
-    out = pd.DataFrame(gdf[["TAZID", "CITY_UGRC"]])
-    out["TAZID"] = out["TAZID"].astype(int)
-    return out.sort_values("TAZID").reset_index(drop=True)
+    unincorporated land). Same committed extract as load_city_taz_lookup,
+    unfiltered."""
+    out = pd.read_csv(TAZ_CITY_LOOKUP_CSV)
+    return out.sort_values("TAZID").reset_index(drop=True)[["TAZID", "CITY_UGRC"]]
 
 
 def compute_city_area_shift_trips(shift_pct: float = 10) -> dict:
