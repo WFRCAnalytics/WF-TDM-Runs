@@ -163,7 +163,7 @@ display(Markdown(
     f"Peak-period VMT by roughly **{abs(city_vmt):,.0f} miles/day ({abs(pct_city_vmt):.1f}%)** — a small fraction "
     "of regional totals, but directionally consistent with what the mechanism should produce "
     "(see [Congestion](#congestion-vehicle-hours-of-delay) and [Why VHD Moved](#why-vhd-moved-vehicle-miles-traveled)).\n"
-    f"- At a **{PRIMARY_SHIFT_PCT}% shift**, roughly **{trip_shift['shifted_trips']:,.0f} HBW trips/day** are "
+    f"- Roughly **{trip_shift['shifted_trips']:,.0f} HBW trips/day** are "
     f"redistributed region-wide — about **{trip_shift['pct_of_total']:.1f}% of all {trip_shift['total_trips']:,.0f} "
     "daily HBW trips** in the region — out of the roughly "
     f"{trip_shift['eligible_trips'] / trip_shift['total_trips'] * 100:.0f}% of HBW trips that start inside a City "
