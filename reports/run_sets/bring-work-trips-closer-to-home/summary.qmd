@@ -131,6 +131,20 @@ cong_primary = congested_miles[
 cong_base = cong_primary['base_congested_miles'].sum()
 cong_delta = cong_primary['delta_congested_miles'].sum()
 
+# Facility-type concentration: what share of the region-wide Peak VHD
+# reduction and severely-congested-miles reduction above is carried by
+# freeways/expressways specifically -- the facility types capacity dollars
+# are usually spent on -- vs. spread proportionally across the network.
+ft_primary = vmt_vhd[
+    (vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['geography_label'] == 'City Area')
+    & (vmt_vhd['shift_pct'] == PRIMARY_SHIFT_PCT) & (vmt_vhd['period'] == 'Peak')
+]
+fwy_vhd_share = abs(ft_primary[ft_primary['FTCLASS'].isin(['Freeway', 'Expressway'])]['delta_DY_VHD'].sum()) \
+    / abs(ft_primary['delta_DY_VHD'].sum()) * 100
+
+fwy_cong_share = abs(cong_primary[cong_primary['FTCLASS'].isin(['Freeway', 'Expressway'])]['delta_congested_miles'].sum()) \
+    / abs(cong_primary['delta_congested_miles'].sum()) * 100
+
 transit_primary = transit[(transit['geography_label'] == 'City Area') & (transit['shift_pct'] == PRIMARY_SHIFT_PCT)]
 transit_delta = transit_primary['delta_Boardings'].sum()
 transit_base = transit_primary['base_Boardings'].sum()
@@ -174,13 +188,11 @@ display(Markdown(
     "City Area scenario — a length-based read on how much less roadway crosses into failing conditions during the "
     "commute peaks, distinct from delay/VMT and more directly comparable to how capacity-expansion needs are "
     "typically scoped — see [Severe Congestion](#severe-congestion).\n"
-    "- Because the mechanism only touches HBW destinations (not capacity or land use), it doesn't substitute for "
-    "planned roadway investment — it's a directional read on how much *demand-side* pressure a "
-    "closer jobs-housing balance could take off the same corridors that funding decisions already target "
-    "(see [Caveats](#caveats-and-interpretation)).\n"
-    "- Most charts below let you **toggle between shift levels**, and the VMT/VHD/VHT charts also toggle "
-    "between **Peak, Off-Peak, and Daily** periods — "
-    "see [Caveats](#caveats-and-interpretation) before drawing conclusions regardless of level."
+    f"- That concentration shows up by facility type too: freeways and expressways alone account for "
+    f"**{fwy_vhd_share:.1f}%** of the region-wide Peak-period VHD reduction and **{fwy_cong_share:.1f}%** of the "
+    "reduction in severely congested miles — disproportionate to their share of the network, and the facility "
+    "types capacity-expansion dollars are typically spent on — see [By Facility Type](#by-facility-type) and "
+    "[Severe Congestion](#severe-congestion).\n"
 ))
 ```
 
