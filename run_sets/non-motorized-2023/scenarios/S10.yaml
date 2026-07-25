@@ -1,13 +1,11 @@
 ﻿scenario_id: S10
-description: "Future Today â€” full SE_2050 substitution, small district scope"
+description: "Future Today — full SE_2050 substitution, small district scope"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
-
-input_files:
-  WFRC_SEFile: "inputs/SE_S10.csv"
-  MAG_SEFile: "inputs/SE_S10.csv"
 
 overrides:
   RunDescription: "S10 - Future Today SE_2050 (smldst)"
+  WFRC_SEFile: '..\..\..\run_sets\non-motorized-2023\inputs\SE_S10.csv'
+  MAG_SEFile: '..\..\..\run_sets\non-motorized-2023\inputs\SE_S10.csv'
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 # Scenario outputs fully replace the run set's outputs.include -- this

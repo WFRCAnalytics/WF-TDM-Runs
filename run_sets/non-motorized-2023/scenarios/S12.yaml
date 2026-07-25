@@ -1,13 +1,11 @@
 ﻿scenario_id: S12
-description: "Region Future Today â€” full SE_2050 substitution, region-wide"
+description: "Region Future Today — full SE_2050 substitution, region-wide"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
-
-input_files:
-  WFRC_SEFile: "inputs/SE_S12.csv"
-  MAG_SEFile: "inputs/SE_S12.csv"
 
 overrides:
   RunDescription: "S12 - Region Future Today SE_2050 (region)"
+  WFRC_SEFile: '..\..\..\run_sets\non-motorized-2023\inputs\SE_S12.csv'
+  MAG_SEFile: '..\..\..\run_sets\non-motorized-2023\inputs\SE_S12.csv'
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 # Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by

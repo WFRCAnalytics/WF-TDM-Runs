@@ -56,7 +56,24 @@
       "properties": {
         "command": { "type": "array", "items": { "type": "string" } },
         "exit_code": { "type": ["integer", "null"] },
-        "log_path": { "type": ["string", "null"] }
+        "log_path": { "type": ["string", "null"] },
+        "status_source": {
+          "type": "string",
+          "enum": ["model_log", "exit_code"],
+          "description": "How run status was decided. \"model_log\" means the TDM's own _Log\\_RunTime.txt completion report was found and used (preferred -- Voyager's process exit code alone has been observed to disagree with what the model itself reports). \"exit_code\" means no recognizable log entry was found yet, so the batch entry point's exit code was used instead, as before. Absent for execution_mode \"manual\", where no execution happened here at all."
+        },
+        "model_log": {
+          "type": "object",
+          "description": "Parsed from the TDM's own _Log\\_RunTime.txt (see status_source). Absent when that file/entry wasn't found.",
+          "properties": {
+            "outcome": { "type": "string", "enum": ["success", "crashed"] },
+            "crashed_step": { "type": ["string", "null"], "description": "The @ModelStep@ value Cube was on when ONRUNERRORGOTO fired, if outcome is \"crashed\"." },
+            "started_at": { "type": ["string", "null"], "description": "Raw Cube-formatted timestamp ('yyyy-mm-dd,  hh:nn:ss'), not reformatted." },
+            "finished_at": { "type": ["string", "null"] },
+            "run_time": { "type": ["string", "null"], "description": "Raw Cube-formatted duration ('hhh:nn:ss')." },
+            "exit_code_mismatch": { "type": "boolean", "description": "True if the model log's outcome and Voyager's exit code disagreed (e.g. a clean completion with a non-zero exit code) -- status_source \"model_log\" won the disagreement." }
+          }
+        }
       }
     },
     "scenario_folder": { "type": "string" },

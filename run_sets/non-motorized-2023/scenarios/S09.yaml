@@ -1,13 +1,11 @@
 ﻿scenario_id: S09
-description: "HH x12 and EMP x12 â€” small district + specific TAZ scope"
+description: "HH x12 and EMP x12 — small district + specific TAZ scope"
 # prep_script:   # optional: path to a Python script relative to the run_set dir
-
-input_files:
-  WFRC_SEFile: "inputs/SE_S09.csv"
-  MAG_SEFile: "inputs/SE_S09.csv"
 
 overrides:
   RunDescription: "S09 - localized HH x12 + EMP x12 (smldst+taz)"
+  WFRC_SEFile: '..\..\..\run_sets\non-motorized-2023\inputs\SE_S09.csv'
+  MAG_SEFile: '..\..\..\run_sets\non-motorized-2023\inputs\SE_S09.csv'
 # prep_script:   # optional: path to a Python script relative to the run_set dir
 
 # Run manually outside the CLI (see CLAUDE.md block-format blocker). Used by

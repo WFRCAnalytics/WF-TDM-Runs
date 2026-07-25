@@ -37,6 +37,8 @@ def build(
     command: list = None,
     exit_code: int = None,
     log_path: str = None,
+    status_source: str = None,
+    model_log: dict = None,
     inventory_count: int = None,
     inventory_total_bytes: int = None,
     curated: list = None,
@@ -66,6 +68,10 @@ def build(
         execution["exit_code"] = exit_code
     if log_path is not None:
         execution["log_path"] = log_path
+    if status_source is not None:
+        execution["status_source"] = status_source
+    if model_log is not None:
+        execution["model_log"] = model_log
 
     result = {
         "schema_version": schema_version,

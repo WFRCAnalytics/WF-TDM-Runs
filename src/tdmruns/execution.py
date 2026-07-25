@@ -17,6 +17,7 @@ from tdmruns import config as cfg
 from tdmruns import controlcenter as cc
 from tdmruns import driver_script as ds
 from tdmruns import metadata as md
+from tdmruns import model_log as mlog
 from tdmruns import outputs as out
 from tdmruns import prep
 from tdmruns import scenario_seed as seed
@@ -95,6 +96,43 @@ def invoke(command: list, cwd: Path, log_path: Path, timeout_seconds: int, env: 
         except subprocess.TimeoutExpired:
             log.write(f"\n\nTIMED OUT after {timeout_seconds}s\n")
             return -1
+
+
+def decide_status(
+    exit_code: int, model_log_result: dict | None, log_path: Path, scenario_folder: Path
+) -> tuple:
+    r"""Decides run status/error from Voyager's exit code and, when available,
+    the model's own _Log\_RunTime.txt completion report -- preferring the
+    latter, since real recorded runs have shown it can disagree with the exit
+    code (a clean "TOTAL MODEL RUN TIME" entry with a non-zero exit code, and
+    vice versa -- the driver script never calls Exit after :ONERROR). Falls
+    back to the exit code alone when no recognizable log entry exists yet
+    (e.g. Cube never started, or was killed before writing anything).
+
+    Returns (status, error, status_source, model_log_result) -- the last one
+    is the input dict with exit_code_mismatch filled in (or None, unchanged).
+    """
+    if model_log_result is None:
+        status = "success" if exit_code == 0 else "failed"
+        error = (
+            None
+            if exit_code == 0
+            else f"TDM batch entry point exited with code {exit_code}. See {log_path}."
+        )
+        return status, error, "exit_code", None
+
+    if model_log_result["outcome"] == "crashed":
+        status = "failed"
+        step = model_log_result["crashed_step"] or "an unrecognized step"
+        error = (
+            f"Model crashed during {step} (see "
+            f"{scenario_folder / '_Log' / '_RunTime.txt'}). Voyager exit code: {exit_code}."
+        )
+    else:
+        status = "success"
+        error = None
+    model_log_result["exit_code_mismatch"] = (status == "success") != (exit_code == 0)
+    return status, error, "model_log", model_log_result
 
 
 def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool = False) -> dict:
@@ -190,11 +228,9 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
         timeout_seconds=framework["execution"]["timeout_seconds"],
         env={"VOYAGER_EXE": local_layer.get("Voyager_EXE", "")},
     )
-    status = "success" if exit_code == 0 else "failed"
-    error = (
-        None
-        if exit_code == 0
-        else f"TDM batch entry point exited with code {exit_code}. See {log_path}."
+    model_log_result = mlog.read_model_log(folder)
+    status, error, status_source, model_log_result = decide_status(
+        exit_code, model_log_result, log_path, folder
     )
 
     # --- inventory + curate outputs (best effort even on failure) ---
@@ -224,6 +260,8 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
         command=command,
         exit_code=exit_code,
         log_path=str(log_path),
+        status_source=status_source,
+        model_log=model_log_result,
         inventory_count=len(full_inventory),
         inventory_total_bytes=sum(e["size_bytes"] for e in full_inventory),
         curated=curated,

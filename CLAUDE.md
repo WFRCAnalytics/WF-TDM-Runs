@@ -422,6 +422,31 @@ model is touched.
   count/byte-total in metadata) is stat()-only, since scenario folders
   routinely hold thousands of files and tens of GB and nothing ever read the
   per-file checksum for anything not selected (see `docs/architecture/0003-output-management.md`'s update note).
+- **Success/failure is decided from the model's own completion log, not
+  Voyager's process exit code, when that log is available** — reverses an
+  earlier deliberate choice. `src/tdmruns/model_log.py` parses
+  `<scenario_folder>\_Log\_RunTime.txt`, written by the model scripts
+  themselves via `_TimeStamp_ModelSuccess.block` / `_TimeStamp_ModelCrashed.block`
+  at `:ENDMODEL` / `:ONERROR` in the Hail Mary driver script. Real recorded
+  runs of `bring-work-trips-closer-to-home` showed this was necessary, not
+  theoretical: Closer01's log shows two full, clean "TOTAL MODEL RUN TIME"
+  completions with no crash marker, yet one of those attempts was recorded
+  as `status: "failed", exit_code: 1` — Voyager's exit code disagreed with
+  what the model itself reported it did. (The driver script also never calls
+  `Exit` after `:ONERROR`, so the reverse — a crash that still exits 0 — is
+  equally possible, not just the direction seen so far.) `execution.py`'s
+  `decide_status()` now prefers the log when a recognizable
+  "TOTAL MODEL RUN TIME" entry is found for the current attempt (the file is
+  `APPEND=T` and reused across every CLI-driven retry of a given
+  `scenario_id`, so only the text since the *previous* such entry — or file
+  start — is read as this attempt's), and falls back to the exit code alone
+  when no entry exists yet (e.g. Cube never started). `run_metadata.json`'s
+  `execution.status_source` records which signal won
+  (`"model_log"`/`"exit_code"`), and `execution.model_log` carries the parsed
+  outcome, crashed step (if any), and the model's own Beg/End/Run-Time
+  strings — also the source for run-duration/crash-point detail in reports.
+  `execution.model_log.exit_code_mismatch` is `true` whenever the two
+  signals disagreed, so a run can still be audited even though the log won.
 - **Manual execution is a first-class path, not just a workaround** —
   `import-manual-run(-set)` curates outputs for a scenario run outside the
   CLI the same way `run-scenario` does after a real execution (same
@@ -522,7 +547,22 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
   full SE_2050 and SE_2050_transit_corridors substitutions)
 - **SE prep:** done — `run_sets/non-motorized-2023/inputs/SE_S01.csv`
   through `SE_S13.csv` are already generated and committed (produced by
-  `input_prep.ipynb` at the run_set root).
+  `input_prep.ipynb` at the run_set root). Each scenario's `overrides:` points
+  `WFRC_SEFile`/`MAG_SEFile` straight at its file with a plain relative path —
+  e.g. `WFRC_SEFile: '..\..\..\run_sets\non-motorized-2023\inputs\SE_S01.csv'`
+  — rather than the `input_files:` block (framework-resolved to an absolute
+  path) these scenarios used until this session. The relative path works
+  because the TDM's own model scripts read `WFRC_SEFile`/`MAG_SEFile` as a
+  suffix appended to a fixed prefix (`@ModelDir@\1_Inputs\2_SEData\`, see
+  `tdm/2_ModelScripts/0_InputProcessing/b_SEProcessing/1_DemographicsAnalysis.s`),
+  so three `..\` climb back out of `1_Inputs\2_SEData\` to the repo root, the
+  same relative-navigation trick `_HailMary_1Subfolder.s` already uses to
+  reach `2_ModelScripts\` from the scenario folder. Note this is a plain
+  single-quoted YAML scalar, not double-quoted — double quotes would treat
+  `\r` (from `..\run_sets\...`) as a carriage-return escape and corrupt the
+  path. `input_files:` itself is untouched as a mechanism (schema + `config.py`
+  still support it) for any run set that wants the absolute-path version; only
+  non-motorized-2023 has stopped using it, for now.
 - **Not run through `run-scenario`/`run-set`.** The block-file-parsing
   blocker above means these scenarios were run manually (Cube Voyager
   invoked directly, outside the framework). Each scenario YAML declares a
@@ -559,8 +599,10 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
   single scenario/run and isn't part of what retirement freezes (see the
   known limitation noted under "Retiring a run set").
 
-SE files are referenced in scenario YAMLs via `input_files` (relative paths
-like `inputs/SE_S01.csv`), resolved to absolute at runtime.
+SE files are referenced in scenario YAMLs directly under `overrides:`
+(`WFRC_SEFile`/`MAG_SEFile`, relative paths like
+`'..\..\..\run_sets\non-motorized-2023\inputs\SE_S01.csv'`) — see the SE prep
+bullet above for why, not via `input_files`.
 
 ### `toll-sensitivity-2026`
 
@@ -631,10 +673,12 @@ lands, since the driver script's `READ FILE = '1ControlCenter.block'` /
 `'0GeneralParameters.block'` won't find anything until then. Once #1 is
 fixed, verify: the bat file actually locates and runs the staged driver
 script, and `VOYAGER_EXE` resolves correctly on a real workstation.
-Success/failure is decided from Voyager's process exit code (`%ERRORLEVEL%`
-right after `start /w`, propagated by `RunModel.bat` and read by
-`execution.invoke()`) — a deliberate choice, not the model scripts'
-`_TimeStamp_ModelSuccess.block` / `_TimeStamp_ModelCrashed.block` convention.
+Success/failure now prefers the model's own `_Log\_RunTime.txt` completion
+report over Voyager's process exit code (`%ERRORLEVEL%` right after
+`start /w`, propagated by `RunModel.bat` and read by `execution.invoke()`) —
+see the "Success/failure is decided from the model's own completion log"
+architecture decision above. Falls back to the exit code alone when no
+recognizable log entry exists yet.
 
 **7. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
 `Closer00` (`Closer01`/`Closer02`/`Closer03` all declare `start_from_copy:

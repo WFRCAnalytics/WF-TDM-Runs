@@ -8,7 +8,6 @@ subtitle: "Wasatch Front Regional Travel Demand Model — Run Set Reporting"
 import sys
 sys.path.insert(0, ".")
 import report_data as rd
-import pandas as pd
 from IPython.display import Markdown, display
 
 # Newest run set first, by each run set's own most recent run -- not
@@ -42,7 +41,8 @@ for rs_id in run_set_ids:
             "pre-existing scenario outputs (not run through the `tdmruns` CLI), so it's "
             "linked directly here rather than through the generic run-metadata table below.\n\n"
             "- [Slides view](run_sets/non-motorized-2023/slides.html)\n"
-            "- [Summary view](run_sets/non-motorized-2023/summary.html)\n"
+            "- [Summary view](run_sets/non-motorized-2023/summary.html)\n\n"
+            + rd.run_history_html(rs_id)
         ))
         continue
 
@@ -51,7 +51,8 @@ for rs_id in run_set_ids:
         display(Markdown(
             f"## bring-work-trips-closer-to-home\n\n{byline_md}{description}\n\n"
             "- [Slides view](run_sets/bring-work-trips-closer-to-home/slides.html)\n"
-            "- [Summary view](run_sets/bring-work-trips-closer-to-home/summary.html)\n"
+            "- [Summary view](run_sets/bring-work-trips-closer-to-home/summary.html)\n\n"
+            + rd.run_history_html(rs_id)
         ))
         continue
 
@@ -69,20 +70,15 @@ for rs_id in run_set_ids:
         continue
 
     description = rd.run_set_description(rs_id)
-    display(Markdown(f"## [{rs_id}](run_sets/{rs_id}.qmd)\n\n{byline_md}{description}\n"))
-
-    runs = rd.latest_run_per_scenario(rs_id)
-    if not runs:
-        display(Markdown("_No runs recorded yet._\n"))
+    history_html = rd.run_history_html(rs_id)
+    if not history_html:
+        display(Markdown(
+            f"## [{rs_id}](run_sets/{rs_id}.qmd)\n\n{byline_md}{description}\n\n"
+            "_No runs recorded yet._\n"
+        ))
         continue
 
-    rows = []
-    for run in runs:
-        rows.append({
-            "Scenario": run["scenario_id"],
-            "Status": run["status"],
-            "Run": run["run_id"],
-            "TDM version": run["tdm"].get("resolved_tag") or run["tdm"]["resolved_commit"][:8],
-        })
-    display(pd.DataFrame(rows))
+    display(Markdown(
+        f"## [{rs_id}](run_sets/{rs_id}.qmd)\n\n{byline_md}{description}\n\n{history_html}"
+    ))
 ```
