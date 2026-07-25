@@ -257,7 +257,8 @@ def _table_html(rows_html: str, include_header: bool = True) -> str:
     attempts would just be visual noise."""
     thead = f"<thead><tr>{''.join(f'<th>{h}</th>' for h in _HEADERS)}</tr></thead>\n" if include_header else ""
     return (
-        '<table class="table table-sm table-striped" style="table-layout:fixed;width:100%">\n'
+        '<table class="table table-sm table-striped" '
+        'style="table-layout:fixed;width:100%;word-break:break-word;overflow-wrap:anywhere">\n'
         f"{_COLGROUP}{thead}<tbody>\n{rows_html}</tbody>\n</table>\n"
     )
 
