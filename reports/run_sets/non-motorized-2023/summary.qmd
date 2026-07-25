@@ -36,6 +36,7 @@ raw_df = frames['raw_df']
 filt_df = raw_df
 full_delta = frames['full_delta']
 geo = frames['geo_centerization']
+future_density = frames['future_density']
 
 purposes = loader.PURPOSES
 label_order = loader.LABEL_ORDER
@@ -209,11 +210,21 @@ fig1.show()
 **Key observations:**
 
 - **The model responds in the expected direction** — non-motorized mode share increases at every level of density increase, for both households and employment.
-- **Employment density is a substantially stronger driver than household density.** At a 4× multiplier, employment-only scenarios produce a non-motorized mode share of **29.8%**, compared to **18.1%** for household-only — a gap of nearly 12 percentage points.
+- **Employment density is a substantially stronger driver than household density.** At a 4× multiplier, employment-only scenarios produce a non-motorized mode share of **31.1%**, compared to **18.7%** for household-only — a gap of over 12 percentage points.
 - **The response is non-linear and accelerates at higher densities.** This reflects how mode choice models work: as destinations become highly accessible on foot, walking becomes competitive for a rapidly growing share of trips.
-- **Combined HH+EMP gains are not simply additive.** At ×12, the HH+EMP scenario (47.4%) is slightly below the EMP-only scenario (49.3%), because adding households also increases total trip volume, partially diluting the mode share gain.
+- **Combined HH+EMP gains are not simply additive.** At ×12, the HH+EMP scenario (49.5%) is slightly below the EMP-only scenario (51.3%), because adding households also increases total trip volume, partially diluting the mode share gain — see the callout below for why this is not a sign of anything wrong with the model.
 
-The base 2019 non-motorized mode share in the test districts is **15.2%**. At 12× employment density, the model projects nearly **49%** of daily trips would be non-motorized — plausible for a highly concentrated employment node surrounded by destinations reachable on foot.
+The base 2019 non-motorized mode share in the test districts is **16.1%**. At 12× employment density, the model projects just over **51%** of daily trips would be non-motorized — plausible for a highly concentrated employment node surrounded by destinations reachable on foot.
+
+::: {.callout-note}
+## Why is the combined HH+EMP share lower than employment alone?
+
+Non-motorized mode share is a percentage, not a raw count, and household growth and employment growth affect that percentage differently.
+
+Employment growth mostly draws in trips that were already happening nearby — it just makes them newly walkable, so nearly all the new trips it adds shift toward walking and biking. Household growth adds brand-new trips of every kind, including car trips that leave the area entirely, which grows the "total trips" side of the percentage faster than it grows the "walking and biking trips" side.
+
+At ×12, the HH+EMP scenario actually has **about 4× more non-motorized trips** than the employment-only scenario (3.2 million vs. 824 thousand) — walking and biking activity is far higher, not lower. But total trip volume in the combined scenario grew even faster (6.5 million vs. 1.6 million trips), so the *percentage* comes out slightly lower: 49.5% vs. 51.3%. Adding households doesn't make the area less walkable; it adds more non-local, non-walkable trip-making on top of the walkable gains, which dilutes the percentage even as the underlying non-motorized activity increases.
+:::
 
 ---
 
@@ -350,10 +361,38 @@ This has a practical implication: **if a planning scenario involves predominantl
 
 The final chart places the multiplier sensitivity range in context by comparing it against the 2050 forecasted land use scenarios — both at the local (test district) and region-wide scale.
 
+Before looking at the mode-share result, it helps to see how much the underlying land use actually changed between 2019 and the 2050 Future Today forecast, at each scale:
+
+```{python}
+#| label: tbl-future-density
+
+density_table = future_density[['description', 'pct_local_HH', 'pct_local_EMP', 'pct_region_HH', 'pct_region_EMP']].rename(columns={
+    'description':    'Scenario',
+    'pct_local_HH':    'Local HH Growth',
+    'pct_local_EMP':   'Local EMP Growth',
+    'pct_region_HH':   'Region HH Growth',
+    'pct_region_EMP':  'Region EMP Growth',
+})
+
+display(density_table.style
+    .format({c: '{:+.0f}%'.format for c in density_table.columns if c != 'Scenario'})
+    .set_caption('Household/employment growth, 2019 base to 2050 forecast')
+    .set_table_styles([
+        {'selector': 'caption', 'props': [('font-size', '0.9em'), ('font-style', 'italic')]},
+        {'selector': 'th', 'props': [('background-color', '#3d85c8'), ('color', 'white'), ('font-weight', 'bold')]},
+        {'selector': 'tr:nth-child(even)', 'props': [('background-color', '#f0f5fb')]},
+    ])
+    .hide(axis='index'))
+```
+
+**The test districts see much more growth than the region as a whole:** households roughly double locally (+108%) versus +76% region-wide, and employment grows +61% locally versus +46% region-wide — expected, since these districts were chosen because they see concentrated future growth. Centerization adds a further +10 percentage points of local household growth (+118% vs. +108%) by redistributing where regional growth lands, without changing the region-wide totals at all — which is why the two Future Today variants come out identical at the region-wide scale but differ slightly at the local scale.
+
+For context against the multiplier sensitivity tests above: local household growth here (~2.1×) lands close to the ×2 multiplier tested, while local employment growth (~1.6×) falls between the ×1 and ×2 tests. Readers can use this to judge whether the non-motorized share gains below (+3.3 points locally, +0.8 points region-wide) look proportional to what the sensitivity range would predict for land-use change of this magnitude.
+
 ```{python}
 #| label: fig-future
 
-future_ids = [0, 10, 11, 12, 13]
+future_ids = [0, 10, 12]
 future = full_delta[
     full_delta['test_id'].isin(future_ids) &
     (full_delta['Purpose'] == 'All')
@@ -367,7 +406,6 @@ future['geo_label'] = future['geo_scope'].map({
 desc_order = [
     'Base 2019',
     'Future Today',
-    'Future Today - Centerized',
 ]
 
 fig4 = px.bar(
@@ -401,11 +439,11 @@ fig4.update_layout(
 fig4.show()
 ```
 
-**At the test district scale (local):** the 2050 land use scenarios produce a non-motorized mode share of approximately **19%** in the test districts, up from 15.2% in the 2019 base — a gain of roughly **3.8 percentage points**. The "Future Today" and "Future Today - Centerized" variants appear nearly identical at this level: the focal TAZs used for tests 0–11 happen to sit in areas little affected by the regional redistribution of growth.
+**At the test district scale (local):** the 2050 future land use scenario produces a non-motorized mode share of approximately **19.4%** in the test districts, up from **16.1%** in the 2019 base — a gain of roughly **3.3 percentage points**.
 
-Comparing this to the multiplier sensitivity range, the 2050 local forecasts fall in a range **roughly comparable to a 2× household or employment increase** — a moderate, realistic result.
+Comparing this to the multiplier sensitivity range, the 2050 local forecast falls in a range **roughly comparable to a 2× household or employment increase** — a moderate, realistic result.
 
-**At the region-wide scale:** the 2050 scenarios show a more modest increase — from **11.0% to 11.8–11.9%**. Centerization adds roughly **7,000 more non-motorized trips** region-wide (+0.07 percentage points) — a small but directionally correct signal consistent with concentrating growth in more walkable urban areas.
+**At the region-wide scale:** the 2050 scenario shows a more modest increase — from **11.0% to 11.8%**, a gain of roughly **0.8 percentage points**.
 
 #### Geographic Effect of Centerization
 

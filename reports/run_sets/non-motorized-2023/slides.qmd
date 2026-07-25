@@ -47,6 +47,7 @@ raw_df = frames['raw_df']
 filt_df = raw_df
 full_delta = frames['full_delta']
 geo = frames['geo_centerization']
+future_density = frames['future_density']
 
 purposes = loader.PURPOSES
 label_order = loader.LABEL_ORDER
@@ -144,7 +145,7 @@ fig.show(config=CHART_CONFIG)
 *All trip purposes combined | Modified small districts | Daily productions*
 
 ::: {.notes}
-Base Non-Motorized mode share in the test districts is 15.2%. At 12× employment, the model reaches 49.3%. At 12× households, it reaches 28.0%. The response is non-linear with diminishing returns — the slope is steep at low multipliers and flattens at higher ones.
+Base Non-Motorized mode share in the test districts is 16.1%. At 12× employment, the model reaches 51.3%. At 12× households, it reaches 28.5%. The response is non-linear with diminishing returns — the slope is steep at low multipliers and flattens at higher ones.
 :::
 
 ## Employment Density is the Stronger Driver {.smaller background-color="#f0f5fb"}
@@ -155,25 +156,30 @@ Base Non-Motorized mode share in the test districts is 15.2%. At 12× employment
 
 | Scenario | NM Share | vs. Base |
 |---|---|---|
-| Base 2019 | 15.2% | — |
-| HH only ×4 | 18.1% | +2.9 pct pts |
-| **EMP only ×4** | **29.8%** | **+14.6 pct pts** |
-| HH + EMP ×4 | 27.9% | +12.7 pct pts |
+| Base 2019 | 16.1% | — |
+| HH only ×4 | 18.7% | +2.6 pct pts |
+| **EMP only ×4** | **31.1%** | **+15.0 pct pts** |
+| HH + EMP ×4 | 29.5% | +13.5 pct pts |
 :::
 ::: {.column width="50%"}
 ### At 12× density
 
 | Scenario | NM Share | vs. Base |
 |---|---|---|
-| Base 2019 | 15.2% | — |
-| HH only ×12 | 28.0% | +12.8 pct pts |
-| **EMP only ×12** | **49.3%** | **+34.1 pct pts** |
-| HH + EMP ×12 | 47.4% | +32.3 pct pts |
+| Base 2019 | 16.1% | — |
+| HH only ×12 | 28.5% | +12.4 pct pts |
+| **EMP only ×12** | **51.3%** | **+35.2 pct pts** |
+| HH + EMP ×12 | 49.5% | +33.4 pct pts |
 :::
 ::::
 
 ::: {.callout-important}
-At equal multipliers, employment density produces roughly **2–2.5× more non-motorized mode share gain** than household density alone.
+At equal multipliers, employment density produces a bigger non-motorized mode share gain than household density alone — roughly 5–6× bigger at ×4, narrowing to roughly 2.5–3× at ×12 as the response saturates.
+:::
+
+::: {.callout-note}
+## Why is HH + EMP lower than EMP alone?
+Mode share is a percentage, and household growth adds trips of every kind — including car trips leaving the area — which grows total trip volume faster than it grows walking/biking trips. At ×12, HH + EMP actually has **~4× more non-motorized trips** than EMP alone (3.2M vs. 824K), just spread across a much bigger pool of total trips (6.5M vs. 1.6M) — so the percentage comes out slightly lower even though non-motorized activity is far higher.
 :::
 
 ::: {.notes}
@@ -284,12 +290,42 @@ EMP scenarios: walk gains are 10–100× larger than bike gains. &nbsp; HH scena
 For EMP x12: walk share rises ~36 percentage points, bike share rises ~0.3 percentage points. Employment density creates short-distance walkable trips, not cycling trips. Household density scenarios show more balanced gains — residential density boosts both walking and biking.
 :::
 
+## How Much Did Land Use Actually Change? {.smaller}
+
+```{python}
+#| fig-align: center
+
+density_table = future_density[['description', 'pct_local_HH', 'pct_local_EMP', 'pct_region_HH', 'pct_region_EMP']].rename(columns={
+    'description':    'Scenario',
+    'pct_local_HH':    'Local HH',
+    'pct_local_EMP':   'Local EMP',
+    'pct_region_HH':   'Region HH',
+    'pct_region_EMP':  'Region EMP',
+})
+
+display(density_table.style
+    .format({c: '{:+.0f}%'.format for c in density_table.columns if c != 'Scenario'})
+    .set_caption('Growth from 2019 base to 2050 forecast')
+    .set_table_styles([
+        {'selector': 'caption', 'props': [('font-size', '0.9em'), ('font-style', 'italic')]},
+        {'selector': 'th', 'props': [('background-color', '#3d85c8'), ('color', 'white'), ('font-weight', 'bold')]},
+        {'selector': 'tr:nth-child(even)', 'props': [('background-color', '#f0f5fb')]},
+    ])
+    .hide(axis='index'))
+```
+
+Locally, households roughly double (+108%) and employment grows +61% — much more concentrated than the region-wide totals (+76% HH, +46% EMP), since these test districts were picked for their concentrated growth. Centerization redistributes some additional household growth into the districts (+118%) without changing region-wide totals at all.
+
+::: {.notes}
+This gives context for the mode-share results on the next slide: local household growth here (~2.1×) is close to the ×2 multiplier tested earlier, and local employment growth (~1.6×) falls between the ×1 and ×2 tests. Use this to judge whether the +3.3 / +0.8 point non-motorized share gains look proportional to what the sensitivity range would predict.
+:::
+
 ## 2050 Forecasts in Context {.smaller}
 
 ```{python}
 #| fig-align: center
 
-future_ids = [0, 10, 11, 12, 13]
+future_ids = [0, 10, 12]
 future = full_delta[
     full_delta['test_id'].isin(future_ids) &
     (full_delta['Purpose'] == 'All')
@@ -300,7 +336,7 @@ future['geo_label'] = future['geo_scope'].map({
     'region': 'Region-Wide'
 })
 
-desc_order = ['Base 2019', 'Future Today', 'Future Today - Centerized']
+desc_order = ['Base 2019', 'Future Today']
 
 fig = px.bar(
     future, x='description', y='nonm_share', color='geo_label', barmode='group',
@@ -321,10 +357,10 @@ fig.update_layout(
 fig.show(config=CHART_CONFIG)
 ```
 
-2050 local forecasts land at **~19%** — comparable to a **2× multiplier** — a moderate, credible response. Centerized appears identical at this local scale because the focal TAZs sit in areas little affected by the redistribution. Region-wide, centerization adds ~7,000 more non-motorized trips (+0.07 percentage points).
+2050 local forecasts land at **~19.4%** — comparable to a **2× multiplier** — a moderate, credible response. Region-wide, the gain is smaller: from **11.0% to 11.8%** (+0.8 percentage points).
 
 ::: {.notes}
-The focal test-district TAZs (tests 0–11) happen to sit in areas not significantly affected by the centerization redistribution — that's why Centerized appears nearly identical here. The real signal is at the district level, shown on the next slide.
+This chart shows the future land use scenario only. The centerized variant is examined separately on the next slide — its effect shows up at the district level, not in these local/region-wide totals.
 :::
 
 ## Where Centerization Has an Effect {.smaller}

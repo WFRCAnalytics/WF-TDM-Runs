@@ -296,12 +296,71 @@ def build_geo_centerization(raw_df: pd.DataFrame) -> pd.DataFrame:
     return geo
 
 
+FUTURE_DENSITY_SCENARIOS = [("S10", "Future Today"), ("S11", "Future Today - Centerized")]
+
+
+def _read_se_input(scenario_id: str) -> pd.DataFrame:
+    """Reads a run_set's own committed inputs/SE_<id>.csv -- the actual model
+    input, not a curated runs/ output, so it's always present regardless of
+    whether this run set has been retired/purged."""
+    df = pd.read_csv(os.path.join(_HERE, "inputs", f"SE_{scenario_id}.csv"))
+    df.columns = [c.lstrip(";") for c in df.columns]
+    df["TAZID"] = df["TAZID"].astype(int)
+    return df
+
+
+def _summarize_density(df: pd.DataFrame, smldst_taz_set: set) -> dict:
+    region = df[["TOTHH", "TOTEMP"]].sum()
+    local = df[df["TAZID"].isin(smldst_taz_set)][["TOTHH", "TOTEMP"]].sum()
+    return {
+        "region_HH": region["TOTHH"], "region_EMP": region["TOTEMP"],
+        "local_HH": local["TOTHH"], "local_EMP": local["TOTEMP"],
+    }
+
+
+def future_density_from_tdm() -> pd.DataFrame:
+    """Household/employment growth behind the Future Today / Centerized
+    non-motorized results in build_full_delta -- lets readers judge whether
+    those mode-share gains are proportional to the underlying land-use
+    change. The 2019 baseline SE file is read live from tdm/, same
+    established pattern as taz_dist_from_tdm/dist_areas_from_tdm (static
+    reference data, not scoped to a run). S10/S11 come from the run_set's
+    own committed inputs/ SE files via _read_se_input(), not runs/."""
+    base = gpd.read_file(os.path.join(
+        TDM_BASELINE_DIR, "BY_2019", "0_InputProcessing", "SE_File_WFv920-E3_BY_2019.dbf"
+    ))[["Z", "TOTHH", "TOTEMP", "DISTSML"]].rename(columns={"Z": "TAZID"})
+    base["TAZID"] = base["TAZID"].astype(int)
+    smldst_set = set(base[base["DISTSML"].isin(SMLDST_LST)]["TAZID"].tolist())
+
+    rows = [{"description": "Base 2019", **_summarize_density(base, smldst_set)}]
+    for scenario_id, label in FUTURE_DENSITY_SCENARIOS:
+        df = _read_se_input(scenario_id)
+        rows.append({"description": label, **_summarize_density(df, smldst_set)})
+
+    out = pd.DataFrame(rows)
+    base_row = out.iloc[0]
+    for col in ["region_HH", "region_EMP", "local_HH", "local_EMP"]:
+        out[f"pct_{col}"] = (out[col] / base_row[col] - 1) * 100
+    return out
+
+
+def future_density_context() -> pd.DataFrame:
+    if rd.is_retired(RUN_SET_ID):
+        return pd.read_csv(_snapshot_path("future_density.csv"))
+    return future_density_from_tdm()
+
+
 def load() -> dict:
     """Everything both summary.qmd and slides.qmd need. Every leaf read here
-    (base year, S01-S13, smldst_tazs, taz_dist, dist_areas) prefers the
-    frozen snapshot once this run set is retired -- see module docstring."""
+    (base year, S01-S13, smldst_tazs, taz_dist, dist_areas, future_density)
+    prefers the frozen snapshot once this run set is retired -- see module
+    docstring."""
     raw_df = build_raw_df()
     tazs = smldst_tazs()
     full_delta = build_full_delta(raw_df, tazs)
     geo = build_geo_centerization(raw_df)
-    return {"raw_df": raw_df, "full_delta": full_delta, "geo_centerization": geo}
+    density = future_density_context()
+    return {
+        "raw_df": raw_df, "full_delta": full_delta, "geo_centerization": geo,
+        "future_density": density,
+    }

@@ -7,17 +7,21 @@ Freezes everything report_loader.py otherwise reads live -- from runs/: the
 filtered ZoneSummary rows for scenarios S01-S13, and the DISTMED/TOTHH
 columns from S10/S11's SE_File dbf; from the tdm/ working tree: the base
 year (test_id 0) ZoneSummary rows, the small-district TAZ set, the
-TAZ->district name mapping, and each district's area_acres -- into small
-CSVs under --snapshot-dir. Once those files exist, report_loader's leaf
-functions (load_scenario/load_se/smldst_tazs/taz_dist_table/
-dist_areas_table) read them instead of runs/ or tdm/, so
-`tdmruns purge-run-set-outputs` can delete curated outputs, and reports
-render correctly even where tdm/ isn't checked out with real data (e.g.
-CI) -- both were confirmed to actually matter, not just theoretical: the
-first is what retirement is for, the second is what broke GitHub Actions'
-publish-report.yml before this was added. Must be run while runs/
+TAZ->district name mapping, each district's area_acres, and the base-year
+household/employment totals behind the Future Today density comparison --
+into small CSVs under --snapshot-dir. Once those files exist, report_loader's
+leaf functions (load_scenario/load_se/smldst_tazs/taz_dist_table/
+dist_areas_table/future_density_context) read them instead of runs/ or
+tdm/, so `tdmruns purge-run-set-outputs` can delete curated outputs, and
+reports render correctly even where tdm/ isn't checked out with real data
+(e.g. CI) -- both were confirmed to actually matter, not just theoretical:
+the first is what retirement is for, the second is what broke GitHub
+Actions' publish-report.yml before this was added. Must be run while runs/
 non-motorized-2023 still has curated outputs and tdm/ is checked out with
-real data -- there's nothing left to freeze from otherwise.
+real data -- there's nothing left to freeze from otherwise. (The
+future_density piece only needs tdm/, not runs/, since S10/S11's SE inputs
+come from this run_set's own committed inputs/ folder -- but it's frozen
+here too, for the same CI-without-tdm/ reason as the rest.)
 """
 import argparse
 import os
@@ -63,6 +67,10 @@ def main():
     dist_areas = loader.dist_areas_from_tdm()
     dist_areas.to_csv(snapshot_dir / "dist_areas.csv", index=False)
     print(f"wrote dist_areas.csv ({len(dist_areas)} rows)")
+
+    density = loader.future_density_from_tdm()
+    density.to_csv(snapshot_dir / "future_density.csv", index=False)
+    print(f"wrote future_density.csv ({len(density)} rows)")
 
 
 if __name__ == "__main__":
