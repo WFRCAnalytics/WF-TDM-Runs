@@ -215,32 +215,61 @@ def _attempt_cells(run: dict) -> dict:
 
 _HEADERS = ("Scenario", "Status", "Run", "Finished (MT)", "Run time", "Results")
 
-# Explicit, identical widths for the outer table and every nested table --
-# table-layout: fixed makes a <table> honor these instead of auto-sizing
-# each table's columns from its own content, which is what made the outer
-# and nested tables drift out of alignment even though they share headers.
-# The last column (Results) is left flexible to absorb whatever space remains.
+# Explicit column widths -- table-layout: fixed makes the table honor these
+# instead of auto-sizing from content. The last column (Results) is left
+# flexible to absorb whatever space remains.
 _COLGROUP = (
     "<colgroup>"
     '<col style="width:10em">'
     '<col style="width:5.5em">'
     '<col style="width:12em">'
     '<col style="width:9em">'
-    '<col style="width:6.5em">'
+    '<col style="width:4.5em">'
     "<col>"
     "</colgroup>\n"
 )
 
+# Toggles a scenario's earlier-attempt rows (class "attempts-<run_set_id>-
+# <scenario_id>", start hidden via inline style) between shown/hidden, and
+# flips the clicked triangle to match. A first version nested a whole
+# second <table> inside the Scenario cell instead of this -- abandoned
+# because table-layout: fixed renders a table at *least* as wide as its own
+# colgroup regardless of how narrow the cell it's nested in is, so it just
+# overflowed the ~10em Scenario column instead of lining up with anything.
+# Real sibling <tr>s in the same table can't have that problem: same table,
+# same columns, always aligned. Uses the *small* triangle characters
+# (U+25B8 ▸ / U+25BE ▾), not the large ▶/▼ (U+25B6/U+25BC) tried first --
+# the large ones are in Unicode's emoji-eligible set, so some fonts/
+# browsers render them as colorful pictographic glyphs instead of plain
+# text; the small triangle variants aren't emoji-eligible and always
+# render as plain text. Literal characters are used directly (not JS
+# \uXXXX escapes) because this whole block is later parsed as markdown by
+# Quarto's Pandoc pass, which has been observed to eat backslashes even
+# inside raw HTML/script content. _scenario_rows_html()'s initial
+# (collapsed) toggle span must use this exact same ▸ character -- a
+# different code point (even another triangle) would make the icon appear
+# to change shape the first time it's clicked, instead of just rotating.
+_TOGGLE_SCRIPT = """
+<script>
+function tdmToggleAttempts(el, cls) {
+    var show = el.dataset.expanded !== 'true';
+    document.querySelectorAll('.' + cls).forEach(function (tr) {
+        tr.style.display = show ? 'table-row' : 'none';
+    });
+    el.textContent = show ? '▾' : '▸';
+    el.dataset.expanded = show ? 'true' : 'false';
+}
+</script>
+"""
 
-def _row_html(scenario_cell: str, cells: dict) -> str:
-    """One <tr> in the shared column layout (_HEADERS) -- used for both the
-    outer, always-visible per-scenario row (scenario_cell holds the
-    scenario's expand toggle) and every row inside that nested table
-    (scenario_cell is just the plain scenario id), so the expanded detail
-    lines up in exactly the same columns as the collapsed row instead of
-    having its own, different column set."""
+
+def _row_html(scenario_cell: str, cells: dict, row_class: str = None) -> str:
+    """One <tr> in the shared column layout (_HEADERS). row_class, when
+    given, marks this as one of a scenario's earlier-attempt rows: starts
+    hidden and is toggled by _TOGGLE_SCRIPT's tdmToggleAttempts()."""
+    attrs = f' class="{row_class}" style="display:none"' if row_class else ""
     return (
-        "<tr>"
+        f"<tr{attrs}>"
         f"<td>{scenario_cell}</td>"
         f"<td>{cells['status']}</td><td>{cells['run']}</td>"
         f"<td>{cells['finished']}</td>"
@@ -250,12 +279,8 @@ def _row_html(scenario_cell: str, cells: dict) -> str:
     )
 
 
-def _table_html(rows_html: str, include_header: bool = True) -> str:
-    """include_header=False for the nested per-scenario table -- its
-    columns already line up with the outer table's own header row (shared
-    _HEADERS/_COLGROUP), so repeating it directly above each scenario's
-    attempts would just be visual noise."""
-    thead = f"<thead><tr>{''.join(f'<th>{h}</th>' for h in _HEADERS)}</tr></thead>\n" if include_header else ""
+def _table_html(rows_html: str) -> str:
+    thead = f"<thead><tr>{''.join(f'<th>{h}</th>' for h in _HEADERS)}</tr></thead>\n"
     return (
         '<table class="table table-sm table-striped" '
         'style="table-layout:fixed;width:100%;word-break:break-word;overflow-wrap:anywhere">\n'
@@ -263,39 +288,48 @@ def _table_html(rows_html: str, include_header: bool = True) -> str:
     )
 
 
-def _scenario_row_html(scenario_id: str, attempts: list) -> str:
-    """One scenario's row in the outer table: the Scenario cell itself is a
-    plain, unstyled <details> (so its native disclosure triangle matches
-    the outer "Run history" toggle exactly) with the scenario id followed
-    by its attempt count in parens (e.g. "Closer01 (4)") as its summary --
-    no separate toggle or attempt-count column. The rest of the row already
-    shows the latest attempt's own columns directly (no extra click needed
-    to see them). Expanding it reveals a nested table -- built with the
-    exact same _HEADERS/_row_html/_COLGROUP as the outer one, so it lines
-    up in the same columns -- listing every attempt, successful or not."""
+def _scenario_rows_html(run_set_id: str, scenario_id: str, attempts: list) -> str:
+    """This scenario's rows in the outer table: one always-visible summary
+    row -- Scenario cell shows "<id> (<N>)" (N being that row's own attempt
+    number, latest = N counting down to 1 for the first-ever attempt) plus
+    a toggle (only when there's more than one attempt), the rest of the row
+    already shows the latest attempt's own columns directly, no click
+    needed -- followed by N-1 ordinary <tr>s, one per earlier attempt
+    (newest of those first, each labeled with its own attempt number too),
+    that start hidden and are revealed by the toggle. The latest attempt is
+    never repeated in those hidden rows -- it's already on the summary row."""
     safe_scenario = _safe(scenario_id)
+    n = len(attempts)
     latest_cells = _attempt_cells(attempts[0])
-    nested_rows = "".join(_row_html(safe_scenario, _attempt_cells(a)) for a in attempts)
-    nested_table = _table_html(nested_rows, include_header=False)
-    scenario_cell = f"<details><summary>{safe_scenario} ({len(attempts)})</summary>{nested_table}</details>"
-    return _row_html(scenario_cell, latest_cells)
+    earlier = attempts[1:]
+
+    if earlier:
+        row_class = f"attempts-{run_set_id}-{scenario_id}"
+        toggle = (
+            f'<span class="row-toggle" style="cursor:pointer" '
+            f"onclick=\"tdmToggleAttempts(this, '{row_class}')\">▸</span> "
+        )
+        scenario_cell = f"{toggle}{safe_scenario} ({n})"
+        hidden_rows = "".join(
+            _row_html(f"{safe_scenario} ({n - 1 - i})", _attempt_cells(a), row_class)
+            for i, a in enumerate(earlier)
+        )
+    else:
+        scenario_cell = f"{safe_scenario} ({n})"
+        hidden_rows = ""
+
+    return _row_html(scenario_cell, latest_cells) + hidden_rows
 
 
 def run_history_html(run_set_id: str) -> str:
     """A "TDM Version: ..." line (the whole run set's own most recently
-    recorded attempt's version -- not a per-row column anymore, since it's
-    effectively constant across a run set's scenarios) followed by a
-    <details> block listing every scenario with at least one recorded run,
-    collapsed by default. The body is a real <table>, one row per scenario:
-    the first cell holds a plain, unstyled <details> (so its native
-    disclosure triangle matches the outer "Run history" toggle exactly)
-    while the rest of that row already shows the latest attempt's own
-    columns -- no click needed to see them when collapsed. Expanding a
-    scenario's triangle reveals a nested table, in the exact same columns,
-    listing every attempt for it, successful or not (finished in Mountain
-    Time, run time, curated results) -- see _scenario_row_html(). No
-    further per-run expand/collapse; every
-    attempt's detail is directly visible as soon as its scenario is open.
+    recorded attempt's version) followed by a <details> block listing every
+    scenario with at least one recorded run, collapsed by default. The
+    body is a single real <table> -- see _scenario_rows_html() -- one
+    always-visible row per scenario (showing its latest attempt directly,
+    no click needed) plus, only for scenarios with more than one attempt, a
+    toggle that reveals the rest of that scenario's history as ordinary
+    sibling rows in the same table, so columns always stay aligned.
 
     Used to be an always-visible table on the main reports page; with 13+
     scenarios per run set (and every scenario often needing several
@@ -306,7 +340,7 @@ def run_history_html(run_set_id: str) -> str:
     if not run_set_runs_dir.is_dir():
         return ""
     scenario_ids = sorted(p.name for p in run_set_runs_dir.iterdir() if p.is_dir())
-    scenario_rows = []
+    all_rows = []
     total_attempts = 0
     latest_overall = None
     for scenario_id in scenario_ids:
@@ -314,18 +348,20 @@ def run_history_html(run_set_id: str) -> str:
         if not attempts:
             continue
         total_attempts += len(attempts)
-        scenario_rows.append(_scenario_row_html(scenario_id, attempts))
+        all_rows.append(_scenario_rows_html(run_set_id, scenario_id, attempts))
         if latest_overall is None or attempts[0]["run_id"] > latest_overall["run_id"]:
             latest_overall = attempts[0]
-    if not scenario_rows:
+    if not all_rows:
         return ""
+    scenario_count = len(all_rows)
     version_line = f"**TDM Version:** {_safe(_tdm_version(latest_overall))}\n\n"
     return (
         f"{version_line}"
-        f"<details>\n<summary>Run history ({len(scenario_rows)} scenario"
-        f"{'s' if len(scenario_rows) != 1 else ''}, {total_attempts} attempt"
+        f"<details>\n<summary>Run history ({scenario_count} scenario"
+        f"{'s' if scenario_count != 1 else ''}, {total_attempts} attempt"
         f"{'s' if total_attempts != 1 else ''})</summary>\n\n"
-        f"{_table_html(''.join(scenario_rows))}\n</details>\n"
+        f"{_TOGGLE_SCRIPT}\n"
+        f"{_table_html(''.join(all_rows))}\n</details>\n"
     )
 
 
