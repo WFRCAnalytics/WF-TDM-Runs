@@ -150,6 +150,50 @@ keep working against the original, unedited one:
    separately or it will crash in model stream and fix and rerun will need to be
    done.
 
+### Add or change which outputs get curated
+
+`run_set.yaml`'s `outputs:` block decides what gets copied out of a raw
+model run into `runs/land-use-as-secret-weapon/<scenario_id>/<run_id>/outputs/`
+after each run — everything else in the scenario folder stays on disk,
+gitignored, and is never pushed. A scenario can also declare its own
+`outputs:` block to override the run set's for just that scenario.
+
+`outputs.include` is a list of entries, each one of three types:
+
+- **`datafile`** — a glob matched against the scenario folder (e.g.
+  `"4_ModeChoice/4_Shares/*Shares_Summary_long.csv"`). Add an optional
+  `columns: [...]` list to keep only those columns (matched against the
+  CSV's header row); the matched file is then written as
+  `<stem>_filtered.csv` instead of copied byte-for-byte — this run set uses
+  it on `*ZoneSummary_TripsByMode.csv` and `*Summary_SEGID.csv`, both of
+  which are far wider than what the reports actually read. Omit `columns`
+  to copy the file as-is.
+- **`matrix`** — a glob matched against a Cube `.mtx` file, plus a required
+  `tabs: [...]` list of table/core names to extract (only those tables are
+  kept, not the whole matrix). Optional `format:` is `omx` (default —
+  readable directly in Python via the `openmatrix` package) or `mtx`
+  (converted back to Cube's native TPP format via `CONVERTMAT`, for when
+  the curated output needs to be read by Voyager itself). Requires Voyager
+  to be available at curation time (`config/local.yaml`'s `Voyager_EXE`).
+  Not currently used in this run set, but available if a scenario needs
+  skim output curated.
+- **`network`** — a glob matched against a Cube `.net` file, plus a
+  required `fields: [...]` list of link attributes to keep (plus geometry).
+  Optional `format:` is `geojson` (default — reprojected to EPSG:4326,
+  readable via `geopandas`), `shp` (zipped Esri shapefile, native CRS), or
+  `net` (Cube's own native format, field-filtered). Also requires Voyager
+  at curation time. Not currently used in this run set.
+
+`max_file_size_mb` (currently `95` here) is a hard per-file ceiling —
+curation refuses a matched file over that size. Set below GitHub's 100 MB
+hard limit to leave a little headroom.
+
+To curate a new output: add an entry to `run_set.yaml`'s `outputs.include`
+(or a scenario's own `outputs:` block, if it's scenario-specific), run
+`validate-config`, then re-run the scenario — curation only happens as part
+of a run, there's no separate "re-curate" command for a run that already
+completed.
+
 ### Update override variables in a scenario YAML
 
 A scenario's `overrides:` block is layered on top of `run_set.yaml`'s own
