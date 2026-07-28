@@ -1,0 +1,29 @@
+#========================================================================================
+# run_sets/land-use-as-secret-weapon/run_set.yaml
+#========================================================================================
+run_set_id: land-use-as-secret-weapon
+author: ""
+description: ""
+tdm_ref: "v10.0.0-beta.1-land-use-as-secret-weapon"
+baseline_control_center: "_ControlCenter - LUSW-Base_2040.block"
+
+# prep_script:   # optional: path to a Python script relative to this run_set dir
+                 # run once per scenario before model execution
+                 # script receives --run-set-dir and --scenario-id as arguments
+
+overrides:
+  vizToolDir: 'M:\GitHub\WF-TDM-Runs\tdm\Scenarios\land-use-as-secret-weapon\.vizTool'
+  # created a copy of the master network that you can edit for this run set, just add new LN and FT fields for each scenario,
+  # and then use the scenario overrides to define those fields for each scenario
+  MasterPrefix: '..\..\..\run_sets\land-use-as-secret-weapon\inputs\WFv1000_MasterNet_20260430'
+
+# these are the outputs that are copied from the model run to the run_set output folder for each scenario
+outputs:
+  include:
+    - datafile: "4_ModeChoice/2_DetailedTripMatrices/*ZoneSummary_TripsByMode.csv"
+      columns: [Purpose, Period, PA, TAZID, All, Auto, Bike, Moto, NonM, Walk, tTrn]
+    - datafile: "4_ModeChoice/4_Shares/*Shares_Summary_long.csv"
+    - datafile: "5_AssignHwy/4_Summaries/*Summary_SEGID.csv"
+      columns: [SEGID, DISTANCE, DIRECTION, FUNCGROUP, SUBAREAID, CO_FIPS, LANES, LANEMILES, FTCLASS, CAP1HL, AM_Vol, MD_Vol, PM_Vol, EV_Vol, DY_Vol, FF_Spd, AM_Spd, MD_Spd, PM_Spd, EV_Spd, DY_Spd, FF_Tme, AM_Tme, MD_Tme, PM_Tme, EV_Tme, DY_Tme, AM_CAP, MD_CAP, PM_CAP, EV_CAP, DY_CAP, AM_VC, MD_VC, PM_VC, EV_VC, MAX_VC, AM_VMT, MD_VMT, PM_VMT, EV_VMT, DY_VMT, AM_VMT_PC, MD_VMT_PC, PM_VMT_PC, EV_VMT_PC, DY_VMT_PC, AM_VMT_LT, MD_VMT_LT, PM_VMT_LT, EV_VMT_LT, DY_VMT_LT, AM_VMT_MD, MD_VMT_MD, PM_VMT_MD, EV_VMT_MD, DY_VMT_MD, AM_VMT_HV, MD_VMT_HV, PM_VMT_HV, EV_VMT_HV, DY_VMT_HV, FF_VHT, AM_VHT, MD_VHT, PM_VHT, EV_VHT, DY_VHT, AM_VHD, MD_VHD, PM_VHD, EV_VHD, DY_VHD]
+  # want to filter by size so these can be <100 MB for GitHub upload
+  max_file_size_mb: 95

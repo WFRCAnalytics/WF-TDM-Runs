@@ -1,0 +1,7 @@
+;;<<PT>><<NT>>;;
+;
+;SCENARIO SPECIFIC HAND-CODED DRIVE ACCESS LINKS
+;   MODE 22 - Drive Access Links
+;   example syntax: NT LEG=3407-20131, MODE=22, COST=6.00, DIST=0.25, ONEWAY=F
+
+NT LEG=     1 -     1,  MODE=22,  COST= 2.40,  DIST= 1.00,  ONEWAY=F,  SPEED= 25.0    ;dummy link (need at least 1 to keep from crashing)

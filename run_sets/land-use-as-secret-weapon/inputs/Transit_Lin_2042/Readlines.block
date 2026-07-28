@@ -1,0 +1,17 @@
+	;local bus lines
+	FILEI LINEI[1] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@wfrc_og_lcl_2042.lin'	;wasatch front - weber and davis county local bus               
+	FILEI LINEI[2] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@wfrc_sl_lcl_2042.lin'	;wasatch front - salt lake county local bus                     
+	FILEI LINEI[3] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@mag_lcl_2042.lin'		  ;mountainland - utah county local bus	                          
+	                                                                                                                                            
+	;brt and core lines                                                                                                                                  
+	FILEI LINEI[4] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@wfrc_core_2042.lin'		;wasatch front future core route projects
+	FILEI LINEI[5] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@wfrc_brt_2042.lin'		;wasatch front future brt projects               
+	FILEI LINEI[6] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@mag_brt_2042.lin'     ;mountainland future brt projects                                                             
+	                                                                                                                                            
+	;express-bus lines                                                                                                                          
+	FILEI LINEI[7] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@wfrc_sl_exp_2042.lin'	;wasatch front - salt lake, weber, and davis express bus                              
+	                                                                                                                                            
+	;rail lines                                                                                                                                 
+	FILEI LINEI[8] = '@ModelDir@\1_Inputs\4_Transit\@Mlin@rail_2042.lin' 		    ;wasatch front and mountainland combined commuter and light rail
+
+	
