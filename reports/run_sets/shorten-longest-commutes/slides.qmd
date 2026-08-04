@@ -1,0 +1,486 @@
+---
+title: "Shortening the Longest Commutes"
+subtitle: "WF-TDM Sketch-Level Region-Wide HBW Trip Redistribution Test"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    embed-resources: true
+    width: 1280
+    height: 720
+    fig-align: center
+    footer: "Wasatch Front Regional Council | Shortening the Longest Commutes"
+    include-before-body: ../../back_link.html
+    include-after-body: ../../global_toggle_bar.html
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
+---
+
+```{python}
+#| label: setup
+
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import os
+import sys
+from IPython.display import HTML
+
+sys.path.insert(0, os.path.join('..', '..'))
+from chart_utils import (
+    use_slide_chart_defaults, figure_with_shift_toggle, styled_table_with_toggle,
+    attach_global_pct_meta, attach_global_period_meta, CHART_CONFIG,
+)
+use_slide_chart_defaults()
+
+sys.path.insert(0, os.path.join('..', '..', '..', 'run_sets', 'shorten-longest-commutes'))
+import report_loader as loader
+
+frames = loader.load()
+scenario_ids = frames['scenario_ids']
+corridor_volumes = frames['corridor_volumes']
+freeway_by_county = frames['freeway_by_county']
+corridor_orientation = frames['corridor_orientation']
+vmt_vhd = frames['vmt_vhd_by_county_facility']
+congested_miles = frames['congested_miles']
+vht_hh = frames['vht_per_household']
+transit = frames['transit_ridership']
+trip_length = frames['hbw_trip_length']
+trip_length_dist = frames['hbw_trip_length_distribution']
+
+COUNTY_ORDER = ['Salt Lake', 'Davis', 'Utah', 'Weber', 'Box Elder', 'Region']
+TRANSIT_LINE_ORDER = ['FrontRunner', 'TRAX Blue Line', 'TRAX Green Line', 'TRAX Red Line', loader.BUS_LABEL]
+PERIOD_ORDER = loader.PERIOD_ORDER  # ['Peak', 'Off-Peak', 'Daily']
+
+# No geography-type dimension here (unlike bring-work-trips-closer-to-home)
+# -- every chart shows one plain single-color series per county/facility/
+# corridor, with the shift-level toggle (chart_utils.figure_with_shift_
+# toggle's global_shift=True row, in the deck-wide toggle bar) picking
+# which shift level (5%/10%) is showing.
+BAR_COLOR = '#2a78d6'
+SHIFT_COLORS = {'5%': '#a6cee3', '10%': '#3182bd'}
+
+PRIMARY_SHIFT_PCT = 10
+
+# Two-column slides (::: {.column width="50%"}) need each chart's own
+# width override -- see bring-work-trips-closer-to-home/slides.qmd's own
+# docstring for why.
+HALF_WIDTH = 540
+```
+
+## The Question
+
+::: {.incremental}
+- What if we trimmed the region's **longest** home-based-work commutes back toward a typical commute length — wherever they are, no target area involved?
+- Sketch test: redistribute the longest 5% / 10% of region-wide daily HBW trip volume (selected purely by distance) toward destinations near the region's own median commute distance
+- No geography boundary — selection is region-wide, following today's existing destination pattern in that distance band
+- 2027 RTP adoption-year network, model v10.0.0-beta.1 — same baseline model run as the companion Bringing Work Trips Closer to Home run set
+:::
+
+::: {.notes}
+This is a directional, order-of-magnitude check, not a land-use forecast — see the caveats slide. Different mechanism from the companion run set: that one targets a named geography; this one targets trip length, region-wide.
+:::
+
+## Big Picture: Both Shift Levels at Once
+```{python}
+region_shift = vmt_vhd[
+    (vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)
+].groupby(['shift_pct', 'period'], as_index=False)[['delta_DY_VMT', 'base_DY_VMT', 'delta_DY_VHD', 'base_DY_VHD']].sum()
+region_shift['pct_DY_VMT'] = region_shift['delta_DY_VMT'] / region_shift['base_DY_VMT'] * 100
+region_shift['pct_DY_VHD'] = region_shift['delta_DY_VHD'] / region_shift['base_DY_VHD'] * 100
+region_shift['shift_label'] = region_shift['shift_pct'].apply(lambda v: f'{int(v)}%')
+shift_label_order = [f'{int(s)}%' for s in sorted(region_shift['shift_pct'].unique())]
+
+def _big_picture_variant(sub, y_col, y_title, suffix):
+    fig = px.bar(
+        sub, x='shift_label', y=y_col, color='shift_label',
+        category_orders={'shift_label': shift_label_order},
+        color_discrete_map=SHIFT_COLORS,
+        labels={'shift_label': 'Shift', y_col: y_title},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_layout(showlegend=False)
+    for trace in fig.data:
+        if trace.hovertemplate:
+            trace.hovertemplate = trace.hovertemplate.replace('%{y}', f'%{{y:+,.3r}}{suffix}')
+    return fig
+
+# Same deck-wide-toggle wiring pattern as bring-work-trips-closer-to-home/
+# slides.qmd's own Big Picture slide -- see that file's docstring for why
+# this chart participates in the Period and Value rows without going
+# through figure_with_shift_toggle itself (it already shows every shift
+# level at once).
+def _big_picture(abs_col, pct_col, abs_title, pct_title, title):
+    abs_by_period = {
+        p: _big_picture_variant(region_shift[region_shift['period'] == p], abs_col, abs_title, '')
+        for p in PERIOD_ORDER
+    }
+    pct_by_period = {
+        p: _big_picture_variant(region_shift[region_shift['period'] == p], pct_col, pct_title, '%')
+        for p in PERIOD_ORDER
+    }
+
+    fig = abs_by_period['Peak']
+    attach_global_period_meta(fig, abs_by_period, PERIOD_ORDER, default_period='Peak')
+
+    pct_combined = go.Figure()
+    for p in PERIOD_ORDER:
+        for trace in pct_by_period[p].data:
+            pct_combined.add_trace(trace)
+
+    abs_range, _pct_range = attach_global_pct_meta(fig, fig, pct_combined, abs_title, pct_title)
+    fig.update_layout(
+        height=420, width=HALF_WIDTH, title=dict(text=title, font_size=14),
+        yaxis=dict(tickformat='.0f', ticksuffix='', range=abs_range),
+    )
+    return fig
+```
+
+:::: {.columns}
+::: {.column width="50%"}
+```{python}
+_big_picture('delta_DY_VHD', 'pct_DY_VHD', 'Δ VHD (hrs)', 'Δ VHD (%)', 'VHD, Both Shift Levels').show(config=CHART_CONFIG)
+```
+:::
+::: {.column width="50%"}
+```{python}
+_big_picture('delta_DY_VMT', 'pct_DY_VMT', 'Δ VMT (mi)', 'Δ VMT (%)', 'VMT, Both Shift Levels').show(config=CHART_CONFIG)
+```
+:::
+::::
+
+Both shift levels at once, region-wide, Peak period — no toggle needed to see how the effect scales with shift size.
+
+## Congestion: Region-Wide VHD
+```{python}
+#| fig-align: center
+vhd_region_df = vmt_vhd[(vmt_vhd['CO_NAME'] == 'Region') & (vmt_vhd['scenario_id'] != loader.BASELINE_SCENARIO)]
+vhd_region_df = vhd_region_df.groupby(['shift_pct', 'period'], as_index=False)[['delta_DY_VHD', 'base_DY_VHD']].sum()
+vhd_region_df['pct_DY_VHD'] = vhd_region_df['delta_DY_VHD'] / vhd_region_df['base_DY_VHD'] * 100
+
+def _build_vhd_region(sub, y_col='delta_DY_VHD'):
+    fig = px.bar(
+        sub, x='shift_pct', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        labels={'shift_pct': '', y_col: 'Δ VHD (hrs)'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_layout(showlegend=False)
+    return fig
+
+fig = figure_with_shift_toggle(
+    vhd_region_df, _build_vhd_region, pct_col='pct_DY_VHD',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Change in Vehicle-Hours of Delay, Region', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+## VHD by County
+```{python}
+#| fig-align: center
+vhd_df = vmt_vhd.copy()
+vhd_df['CO_NAME'] = pd.Categorical(vhd_df['CO_NAME'], categories=COUNTY_ORDER, ordered=True)
+vhd_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
+    ['CO_NAME', 'shift_pct', 'period'], as_index=False, observed=True
+)[['delta_DY_VHD', 'base_DY_VHD']].sum()
+vhd_by_county['pct_DY_VHD'] = vhd_by_county['delta_DY_VHD'] / vhd_by_county['base_DY_VHD'] * 100
+
+def _build_vhd_county(sub, y_col='delta_DY_VHD'):
+    fig = px.bar(
+        sub, x='CO_NAME', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        category_orders={'CO_NAME': COUNTY_ORDER},
+        labels={'CO_NAME': 'County', y_col: 'Δ VHD (hrs)'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    return fig
+
+fig = figure_with_shift_toggle(
+    vhd_by_county, _build_vhd_county, pct_col='pct_DY_VHD',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Change in VHD by County', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+## Why: Vehicle Miles Traveled
+```{python}
+#| fig-align: center
+vmt_by_county = vhd_df[vhd_df['scenario_id'] != loader.BASELINE_SCENARIO].groupby(
+    ['CO_NAME', 'shift_pct', 'period'], as_index=False, observed=True
+)[['delta_DY_VMT', 'base_DY_VMT']].sum()
+vmt_by_county['pct_DY_VMT'] = vmt_by_county['delta_DY_VMT'] / vmt_by_county['base_DY_VMT'] * 100
+
+def _build_vmt_county(sub, y_col='delta_DY_VMT'):
+    fig = px.bar(
+        sub, x='CO_NAME', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        category_orders={'CO_NAME': COUNTY_ORDER},
+        labels={'CO_NAME': 'County', y_col: 'Δ VMT (mi)'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    return fig
+
+fig = figure_with_shift_toggle(
+    vmt_by_county, _build_vmt_county, pct_col='pct_DY_VMT',
+    value_axis_title='Δ VMT (mi)', pct_axis_title='Δ VMT (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Change in VMT by County', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+::: {.notes}
+Shorter commutes mean less driving; less driving on congested facilities is why delay falls.
+:::
+
+## Severe Congestion: Miles Over Capacity
+```{python}
+#| fig-align: center
+cm_ft = congested_miles[(congested_miles['CO_NAME'] == 'Region') & (congested_miles['scenario_id'] != loader.BASELINE_SCENARIO)].copy()
+cm_base_ft = cm_ft['base_congested_miles']
+cm_ft['pct_congested_miles'] = (
+    (cm_ft['delta_congested_miles'] / cm_base_ft.where(cm_base_ft > 0, 1) * 100).where(cm_base_ft > 0, 0.0)
+)
+cm_ft_order = cm_ft[cm_ft['period'] == 'Peak'].groupby('FTCLASS')['delta_congested_miles'].sum().sort_values().index.tolist()
+
+def _build_congested_miles(sub, y_col='delta_congested_miles'):
+    fig = px.bar(
+        sub, x='FTCLASS', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        category_orders={'FTCLASS': cm_ft_order},
+        labels={'FTCLASS': 'Facility Type', y_col: 'Δ Congested Miles'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_layout(xaxis_tickangle=-15)
+    return fig
+
+fig = figure_with_shift_toggle(
+    cm_ft, _build_congested_miles, pct_col='pct_congested_miles',
+    value_axis_title='Δ Congested Miles', pct_axis_title='Δ Congested Miles (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Change in Miles of Severe Congestion (V/C &gt; 1.0)', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+Miles of roadway with volume/capacity > 1.0 — a length-based capacity read, distinct from delay (VHD), more directly comparable to how funding/capacity-expansion needs are scoped.
+
+## Corridor Highlights
+```{python}
+#| fig-align: center
+corr_primary = corridor_volumes[
+    (corridor_volumes['shift_pct'] == PRIMARY_SHIFT_PCT) & (corridor_volumes['period'] == 'Peak')
+].sort_values('delta_DY_VHD')
+top8_order = corr_primary['corridor_label'].head(8).tolist()
+
+corr_all = corridor_volumes[corridor_volumes['corridor_label'].isin(top8_order)].copy()
+corr_all['corridor_label'] = pd.Categorical(corr_all['corridor_label'], categories=top8_order, ordered=True)
+corr_all['pct_DY_VHD'] = corr_all['delta_DY_VHD'] / corr_all['base_DY_VHD'] * 100
+
+def _build_top8(sub, y_col='delta_DY_VHD'):
+    fig = px.bar(
+        sub, x='corridor_label', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        category_orders={'corridor_label': top8_order},
+        labels={'corridor_label': 'Corridor', y_col: 'Δ VHD (hrs)'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_layout(xaxis_tickangle=-30)
+    return fig
+
+fig = figure_with_shift_toggle(
+    corr_all, _build_top8, pct_col='pct_DY_VHD',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Top 8 Corridors by VHD Reduction', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+I-15 and the region's other highest-volume, most delay-prone facilities see the largest reductions (Peak period, ranking fixed at the primary shift level).
+
+## Freeway Corridors by County
+```{python}
+#| fig-align: center
+freeway_primary = corr_primary[corr_primary['corridor_label'].isin(loader.FREEWAY_CORRIDORS)]
+freeway_order = freeway_primary.groupby('corridor_label')['delta_DY_VHD'].sum().sort_values().index.tolist()
+
+freeway_df = freeway_by_county.copy()
+freeway_df['corridor_label'] = pd.Categorical(freeway_df['corridor_label'], categories=freeway_order, ordered=True)
+freeway_df['pct_DY_VHD'] = freeway_df['delta_DY_VHD'] / freeway_df['base_DY_VHD'] * 100
+
+def _build_freeway_county(sub, y_col='delta_DY_VHD'):
+    fig = px.bar(
+        sub, x='corridor_label', y=y_col, color='CO_NAME', barmode='group',
+        category_orders={'corridor_label': freeway_order, 'CO_NAME': COUNTY_ORDER},
+        labels={'corridor_label': 'Freeway Corridor', y_col: 'Δ VHD (hrs)', 'CO_NAME': 'County'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_layout(xaxis_tickangle=-20)
+    return fig
+
+fig = figure_with_shift_toggle(
+    freeway_df, _build_freeway_county, pct_col='pct_DY_VHD',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Freeway Corridor VHD Change by County', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+I-15's reduction concentrates in Salt Lake and Utah counties, where its own daily VHD is largest to begin with.
+
+## Corridor Orientation: N/S vs. E/W
+```{python}
+#| fig-align: center
+orientation_df = corridor_orientation[corridor_orientation['scenario_id'] != loader.BASELINE_SCENARIO].copy()
+orientation_df['pct_DY_VHD'] = orientation_df['delta_DY_VHD'] / orientation_df['base_DY_VHD'] * 100
+
+def _build_orientation(sub, y_col='delta_DY_VHD'):
+    fig = px.bar(
+        sub, x='orientation', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        category_orders={'orientation': ['N/S', 'E/W', 'Loop']},
+        labels={'orientation': 'Corridor Orientation', y_col: 'Δ VHD (hrs)'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    return fig
+
+fig = figure_with_shift_toggle(
+    orientation_df, _build_orientation, pct_col='pct_DY_VHD',
+    value_axis_title='Δ VHD (hrs)', pct_axis_title='Δ VHD (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Change in VHD by Corridor Orientation', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+North/south corridors carry most of the reduction — the region's heaviest-volume facilities run north/south along the valley.
+
+## Transit Ridership
+```{python}
+#| fig-align: center
+transit_df = transit[transit['scenario_id'] != loader.BASELINE_SCENARIO].copy()
+transit_df['pct_Boardings'] = transit_df['delta_Boardings'] / transit_df['base_Boardings'] * 100
+
+def _build_transit(sub, y_col='delta_Boardings'):
+    fig = px.bar(
+        sub, x='line_label', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        category_orders={'line_label': TRANSIT_LINE_ORDER},
+        labels={'line_label': 'Line', y_col: 'Δ Daily Boardings'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    return fig
+
+fig = figure_with_shift_toggle(
+    transit_df, _build_transit, pct_col='pct_Boardings',
+    value_axis_title='Δ Daily Boardings', pct_axis_title='Δ Daily Boardings (%)',
+    global_shift=True, global_pct=True,
+)
+fig.update_layout(height=460, title=dict(text='Change in Daily Boardings — Rail Lines &amp; Bus', font_size=15))
+fig.show(config=CHART_CONFIG)
+```
+
+"Bus" aggregates every non-rail route (~160 local/BRT/express codes). The trips trimmed here are, by construction, the region's *longest* commutes — the ones most likely to have used transit — so ridership dips slightly on every line, including bus.
+
+## Free Time &amp; Trip Length
+:::: {.columns}
+::: {.column width="50%"}
+```{python}
+region_hh = vht_hh[(vht_hh['CO_NAME'] == 'Region') & (vht_hh['scenario_id'] != loader.BASELINE_SCENARIO)].copy()
+region_hh['delta_VHT_PER_HH_min'] = region_hh['delta_VHT_PER_HH'] * 60
+region_hh['pct_VHT_PER_HH'] = region_hh['delta_VHT_PER_HH'] / region_hh['base_VHT_PER_HH'] * 100
+
+def _build_vht_region(sub, y_col='delta_VHT_PER_HH_min'):
+    fig = px.bar(
+        sub, x='shift_pct', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        labels={'shift_pct': '', y_col: 'Δ VHT/HH (min)'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_layout(showlegend=False)
+    return fig
+
+fig = figure_with_shift_toggle(
+    region_hh, _build_vht_region, pct_col='pct_VHT_PER_HH',
+    value_axis_title='Δ VHT/HH (min)', pct_axis_title='Δ VHT/HH (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=420, width=HALF_WIDTH, title=dict(text='VHT / Household', font_size=14))
+fig.show(config=CHART_CONFIG)
+```
+:::
+::: {.column width="50%"}
+```{python}
+region_tl = trip_length[(trip_length['CO_NAME'] == 'Region') & (trip_length['scenario_id'] != loader.BASELINE_SCENARIO)].copy()
+region_tl['pct_trip_length'] = region_tl['delta_trip_length'] / region_tl['base_trip_length'] * 100
+
+def _build_tl_region(sub, y_col='delta_trip_length'):
+    fig = px.bar(
+        sub, x='shift_pct', y=y_col, color_discrete_sequence=[BAR_COLOR],
+        labels={'shift_pct': '', y_col: 'Δ HBW Trip Length (mi)'},
+    )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
+    fig.update_layout(showlegend=False)
+    return fig
+
+fig = figure_with_shift_toggle(
+    region_tl, _build_tl_region, pct_col='pct_trip_length',
+    value_axis_title='Δ HBW Trip Length (mi)', pct_axis_title='Δ HBW Trip Length (%)',
+    period_col='period', default_period='Peak', period_order=PERIOD_ORDER,
+    global_shift=True, global_period=True, global_pct=True,
+)
+fig.update_layout(height=420, width=HALF_WIDTH, title=dict(text='Avg. HBW Trip Length', font_size=14))
+fig.show(config=CHART_CONFIG)
+```
+:::
+::::
+
+## Trip Length Distribution
+```{python}
+#| fig-align: center
+td = trip_length_dist.copy()
+td['shift_label'] = td['shift_pct'].apply(lambda v: 'Baseline' if v == 0 else f'{int(v)}%')
+
+def _build_td(sub):
+    fig = px.line(
+        sub, x='bin_label', y='share_pct', color='shift_label', markers=True,
+        category_orders={'bin_label': loader.DISTANCE_BIN_LABELS, 'shift_label': ['Baseline', '5%', '10%']},
+        color_discrete_map={'5%': SHIFT_COLORS['5%'], '10%': SHIFT_COLORS['10%'], 'Baseline': '#898781'},
+        labels={'bin_label': 'HBW Trip Length', 'share_pct': 'Share of Trips (%)', 'shift_label': 'Scenario'},
+    )
+    fig.update_traces(selector=dict(name='Baseline'), line=dict(color='black', dash='dash', width=2), marker=dict(color='black'))
+    return fig
+
+fig = figure_with_shift_toggle(td, _build_td, always_include=[0], period_col='period', default_period='Peak', period_order=PERIOD_ORDER, global_shift=True, global_period=True)
+fig.update_layout(height=460, title=dict(text='HBW Trip Length Distribution, Baseline vs. Shift<br><sup>2-mile bins, Peak/Off-Peak-correct distance</sup>', font_size=15))
+fig.update_xaxes(range=[-0.5, loader.DISTANCE_BIN_EDGES.index(30) - 0.5])
+fig.update_yaxes(range=[0, 25])
+fig.show(config=CHART_CONFIG)
+```
+
+The long tail shrinks, the middle (near the region's median commute distance) grows — the mechanism working as intended, region-wide.
+
+## Caveats
+:::  {.incremental}
+- **Not a real land-use/economic forecast** — no businesses relocate, no zoning changes simulated
+- **Feasibility not checked** — model doesn't confirm destinations could absorb the added trips
+- **Sketch-level, order-of-magnitude** — trips manually reallocated on today's existing pattern
+- **HBW trips only** — other trip purposes untouched
+- **No geography boundary at all** — selection is purely by distance, region-wide; unlike the companion run set, no named area is targeted
+- **Selection concentrates unevenly** — some origins see no change, others (plausibly the periphery) see a lot
+- **Same mechanism at both shift levels** — 5%/10% test sensitivity to size, not to method
+:::
+
+## Questions
+
+**[Full write-up →](summary.html)**

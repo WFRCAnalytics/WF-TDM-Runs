@@ -56,6 +56,16 @@ for rs_id in run_set_ids:
         ))
         continue
 
+    if rs_id == "shorten-longest-commutes":
+        description = rd.run_set_description(rs_id)
+        display(Markdown(
+            f"## shorten-longest-commutes\n\n{byline_md}{description}\n\n"
+            "- [Slides view](run_sets/shorten-longest-commutes/slides.html)\n"
+            "- [Summary view](run_sets/shorten-longest-commutes/summary.html)\n\n"
+            + rd.run_history_html(rs_id)
+        ))
+        continue
+
     if rd.has_custom_report_pages(rs_id):
         # A run set with its own hand-written pages that isn't one of the
         # special cases above -- link to its custom directory rather than

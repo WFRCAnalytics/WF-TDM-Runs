@@ -1,0 +1,15 @@
+scenario_id: Shorten01
+description: "Shorten01 - 5% of longest region-wide HBW trips redistributed toward the regional median"
+driver_script: hail-mary/__HailMary_1Subfolder_shorten.s
+start_from_copy: Shorten00
+lock_down_copy: false
+
+variables:
+  # portion of region-wide HBW trip volume, selected by distance across all
+  # OD pairs (not per origin), that is redistributed from the longest trips
+  # toward destinations near the regional median commute distance
+  hbw_trip_redistribution_portion: 0.05
+
+overrides:
+  vizToolDir: 'M:\GitHub\WF-TDM-Runs\tdm\Scenarios\shorten-longest-commutes\.vizTool'
+  RunDescription: "Shorten01 - 5% longest-commute redistribution to regional median"
