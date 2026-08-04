@@ -40,3 +40,16 @@ def runs_dir(repo_root: Path, run_set_id: str, scenario_id: str = None, run_id: 
         if run_id:
             p = p / run_id
     return p
+
+
+def snapshot_dir(repo_root: Path, run_set_id: str) -> Path:
+    return run_set_dir(repo_root, run_set_id) / "snapshot"
+
+
+def is_run_set_retired(repo_root: Path, run_set_id: str) -> bool:
+    """True once a run set has a populated snapshot/ directory -- written by
+    `tdmruns snapshot-run-set`, the first step of retiring a run set. Mirrors
+    reports/report_data.py's is_retired(), which report loaders use the same
+    way; kept separate since that one resolves paths relative to reports/."""
+    d = snapshot_dir(repo_root, run_set_id)
+    return d.is_dir() and any(p.is_file() for p in d.iterdir())
