@@ -1,0 +1,6 @@
+# Curated model outputs are raw copies from Cube Voyager; their checksums in
+# run_metadata.json are computed against the exact bytes at copy time. Treat
+# them as binary so git never rewrites line endings on commit/checkout --
+# autocrlf normalization was silently corrupting checksum verification in CI
+# (Linux runner sees LF, Windows workstations see CRLF-reconstituted content).
+runs/**/outputs/** -text
