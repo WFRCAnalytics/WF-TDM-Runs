@@ -106,10 +106,35 @@ def _fixed_range(y_lists, pad_frac=0.08):
     return [lo - pad, hi + pad]
 
 
+def tickformat_for_range(rng, target_ticks=6):
+    """Picks a d3 tickformat with just enough decimal places that Plotly's
+    automatically-spaced ticks across rng don't collapse into repeated
+    whole-number labels. Plotly spaces ticks by `dtick`, chosen from the
+    axis range independently of tickformat -- a hardcoded ".0f" (this
+    module's original approach) rounds every tick's *label* to a whole
+    number regardless of dtick, so a small-span metric (e.g. VHT/household
+    deltas of a few hundredths, or per-day minutes under 1) ends up with
+    several ticks landing inside less than a single displayed unit, all
+    rounding to the same integer (e.g. "0, 0, 1, 1, 1"). Whole numbers stay
+    whole (".0f") once the estimated dtick is >= 1; smaller ranges get
+    however many decimal places that dtick actually needs, capped at 3 to
+    avoid absurd precision on a near-zero range."""
+    if not rng:
+        return ".0f"
+    span = abs(rng[1] - rng[0])
+    if span <= 0:
+        return ".0f"
+    step = span / target_ticks
+    if step >= 1:
+        return ".0f"
+    decimals = min(3, max(1, -math.floor(math.log10(step))))
+    return f".{decimals}f"
+
+
 def _pct_mode_relayout(axis_title, rng, suffix, axis="yaxis"):
     return {
         f"{axis}.title.text": axis_title, f"{axis}.range": rng,
-        f"{axis}.tickformat": ".0f", f"{axis}.ticksuffix": suffix,
+        f"{axis}.tickformat": tickformat_for_range(rng), f"{axis}.ticksuffix": suffix,
     }
 
 
@@ -569,13 +594,15 @@ def figure_with_shift_toggle(
     # also rescaling the axis -- a rescale on every click makes it hard to
     # judge whether one selection's effect is actually bigger than
     # another's at a glance. tickformat is set here too (not just in the
-    # pct-toggle relayouts below) so the axis has no decimal point on
-    # FIRST render, before any button has been clicked -- Plotly Express's
-    # own auto-formatting shows decimals for small-magnitude metrics (e.g.
-    # VHT/household, a few hundredths) otherwise.
+    # pct-toggle relayouts below) so the axis format is settled on FIRST
+    # render, before any button has been clicked, rather than left to
+    # Plotly Express's own auto-formatting -- tickformat_for_range derives
+    # it from abs_range's own span so a small-magnitude metric (e.g.
+    # VHT/household, a few hundredths) gets enough decimal places instead
+    # of every tick rounding to the same whole number (see its docstring).
     abs_range = _fixed_range(trace.y for f in per_cell_figs.values() for trace in f.data)
     if abs_range is not None:
-        combined.update_layout(yaxis=dict(range=abs_range, tickformat=".0f"))
+        combined.update_layout(yaxis=dict(range=abs_range, tickformat=tickformat_for_range(abs_range)))
 
     # Same, for x, but only when this chart also swaps x on the pct toggle
     # (pct_x_col) -- every other chart's x is a category axis (bar labels),
@@ -584,7 +611,7 @@ def figure_with_shift_toggle(
     if pct_x_col is not None:
         abs_x_range = _fixed_range(trace.x for f in per_cell_figs.values() for trace in f.data)
         if abs_x_range is not None:
-            combined.update_layout(xaxis=dict(range=abs_x_range, tickformat=".0f"))
+            combined.update_layout(xaxis=dict(range=abs_x_range, tickformat=tickformat_for_range(abs_x_range)))
 
     def _visible_for(fixed_shift=None, fixed_period=None, fixed_group=None):
         visible = []

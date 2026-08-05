@@ -33,7 +33,7 @@ from IPython.display import HTML
 sys.path.insert(0, os.path.join('..', '..'))
 from chart_utils import (
     use_slide_chart_defaults, figure_with_shift_toggle, styled_table_with_toggle,
-    attach_global_pct_meta, attach_global_period_meta, CHART_CONFIG,
+    attach_global_pct_meta, attach_global_period_meta, tickformat_for_range, CHART_CONFIG,
 )
 use_slide_chart_defaults()
 
@@ -148,7 +148,7 @@ def _big_picture(abs_col, pct_col, abs_title, pct_title, title):
     abs_range, _pct_range = attach_global_pct_meta(fig, fig, pct_combined, abs_title, pct_title)
     fig.update_layout(
         height=420, width=HALF_WIDTH, title=dict(text=title, font_size=14),
-        yaxis=dict(tickformat='.0f', ticksuffix='', range=abs_range),
+        yaxis=dict(tickformat=tickformat_for_range(abs_range), ticksuffix='', range=abs_range),
     )
     return fig
 ```
