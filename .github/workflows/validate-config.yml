@@ -16,10 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # NOTE: the TDM submodule is a separate, likely private repository.
-          # Checking it out in CI requires either a deploy key or a PAT with
-          # read access, configured as a repo secret and passed here as
-          # `token:`. See docs/architecture/ for details.
+          # The TDM submodule (WF-TDM-Development) is a separate private repo;
+          # the default GITHUB_TOKEN can't clone it, so TDM_SUBMODULE_PAT (a
+          # fine-grained PAT with Contents:Read on both repos) stands in.
+          token: ${{ secrets.TDM_SUBMODULE_PAT }}
           submodules: recursive
 
       - uses: astral-sh/setup-uv@v5

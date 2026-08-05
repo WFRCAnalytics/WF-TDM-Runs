@@ -947,26 +947,31 @@ MODE_GROUPS = {
 }
 mode_to_group = {m: g for g, ms in MODE_GROUPS.items() for m in ms}
 
-hbw = mode_share[mode_share['TRIPPURP'] == 'HBW'].copy()
+hbw = mode_share[(mode_share['TRIPPURP'] == 'HBW') & (mode_share['scenario_id'] != loader.BASELINE_SCENARIO)].copy()
 hbw['group'] = hbw['MODE'].map(mode_to_group).fillna('Other')
-hbw_grp = hbw.groupby(['scenario_id', 'geography_label', 'shift_pct', 'group'], as_index=False)['share_pct'].sum()
+hbw_grp = hbw.groupby(['scenario_id', 'geography_label', 'shift_pct', 'group'], as_index=False)[['delta_share_pct', 'base_share_pct']].sum()
 hbw_grp = hbw_grp[~hbw_grp['group'].isin(['Auto', 'Other'])]
+hbw_grp['pct_share_pct'] = hbw_grp['delta_share_pct'] / hbw_grp['base_share_pct'] * 100
 
-def _build_mode_share(sub):
+def _build_mode_share(sub, y_col='delta_share_pct'):
     fig = px.bar(
-        sub, x='group', y='share_pct', color='geography_label',
+        sub, x='group', y=y_col, color='geography_label',
         barmode='group',
-        category_orders={'group': ['Transit', 'Walk', 'Bike'], 'geography_label': ['Baseline'] + GEO_ORDER},
-        color_discrete_map={**GEO_COLORS, 'Baseline': '#898781'},
-        labels={'group': 'Mode', 'share_pct': 'Share of HBW Trips (%)', 'geography_label': 'Scenario'},
+        category_orders={'group': ['Transit', 'Walk', 'Bike'], 'geography_label': GEO_ORDER},
+        color_discrete_map=GEO_COLORS,
+        labels={'group': 'Mode', y_col: 'Change in Mode Share (pp)', 'geography_label': 'Geography Type'},
     )
+    fig.add_hline(y=0, line_color='#c3c2b7', line_width=1)
     return fig
 
-fig = figure_with_shift_toggle(hbw_grp, _build_mode_share, always_include=[0])
+fig = figure_with_shift_toggle(
+    hbw_grp, _build_mode_share, pct_col='pct_share_pct',
+    value_axis_title='Change in Mode Share (pp)', pct_axis_title='Change in Mode Share (%)',
+)
 fig.update_layout(
-    title=dict(text='Home-Based-Work Mode Share, Baseline vs. Shift<br><sup>Regionwide, peak + off-peak</sup>', font_size=15),
+    title=dict(text='Change in Home-Based-Work Mode Share vs. Baseline<br><sup>Regionwide, peak + off-peak</sup>', font_size=15),
     height=460, margin=dict(t=80),
-    legend_title_text='Scenario',
+    legend_title_text='Geography Type',
 )
 fig.show(config=CHART_CONFIG)
 ```

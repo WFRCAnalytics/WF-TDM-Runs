@@ -12,6 +12,15 @@ __pycache__/
 reports/_site/
 reports/.quarto/
 
+# `quarto preview` writes each currently-viewed page as a live HTML copy
+# directly alongside its source .qmd (distinct from `quarto render`'s
+# _site/ output above) -- not real project files, just preview-server
+# scratch that reappears while a local preview server is running.
+reports/index.html
+reports/site_libs/
+reports/run_sets/*/summary.html
+reports/run_sets/*/slides.html
+
 # _dev/ presentation source is committed; rendered output is not (render on demand)
 _dev/*.html
 _dev/.quarto/

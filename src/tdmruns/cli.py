@@ -12,7 +12,7 @@ from tdmruns import prep
 from tdmruns import retirement as ret
 from tdmruns import submodule as sub
 from tdmruns.exceptions import tdmrunsError
-from tdmruns.paths import find_repo_root
+from tdmruns.paths import find_repo_root, is_run_set_retired
 
 
 @click.group()
@@ -41,6 +41,9 @@ def validate_config(ctx, run_set_id):
     tdm_path = repo_root / framework["tdm_submodule_path"]
     had_error = False
     for rsid in run_set_ids:
+        if is_run_set_retired(repo_root, rsid):
+            click.echo(f"[SKIP] {rsid} (retired -- config no longer validated against tdm_ref)")
+            continue
         try:
             run_set = cfg.load_run_set(repo_root, rsid)
         except tdmrunsError as e:
