@@ -1,0 +1,23 @@
+scenario_id: Shift00
+description: "Shift00 - Baseline (no HBW trip-length adjustment)"
+
+# Points directly at bring-work-trips-closer-to-home's Closer00 raw output --
+# not a folder of Shift00's own. Both are the same unmodified, unrun-
+# through-this-run_set baseline (same tdm_ref/model version, same
+# pre-mode-choice pipeline), so this scenario is never executed; it exists
+# only so `tdmruns import-manual-run --run-set shorten-lengthen-all-work-trips
+# --scenario Shift00` can record a successful run here, giving the other
+# four scenarios' `start_from_copy: Shift00` a source to copy from within
+# this run set (start_from_copy only resolves against runs recorded in the
+# same run set).
+manual_scenario_folder: "Scenarios/bring-work-trips-closer-to-home/Closer00"
+
+variables:
+  # per-origin target %-change in that origin's own trip-volume-weighted
+  # mean HBW commute distance (fraction, signed: negative = shorten,
+  # positive = lengthen), applied identically to every origin zone
+  # region-wide (100% of trips with existing HBW volume), independently for
+  # each of HBW0/HBW1/HBW2. 0.0 here is a real target level (no
+  # adjustment), not merely "feature disabled" -- see
+  # scripts/shift_hbw_trip_length.py's `pct == 0` no-op guard.
+  hbw_trip_length_shift_pct: 0.0
