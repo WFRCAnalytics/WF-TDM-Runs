@@ -188,7 +188,8 @@ tdmruns validate-config --run-set <id>              # validate one run_set
 tdmruns sync-tdm --run-set <id>                     # sync the submodule to tdm_ref
 tdmruns sync-tdm --run-set <id> --scenario <id>     # ...or a scenario's tdm_ref override
 tdmruns prep-scenario --run-set <id> --scenario <id> # run prep_script only, no model execution
-tdmruns run-set --run-set <id>                      # run all scenarios
+tdmruns run-set --run-set <id>                      # run all scenarios (concurrently within
+                                                     # a shared tdm_ref, per max_parallel_runs)
 tdmruns run-scenario --run-set <id> --scenario <id> # run one scenario
 tdmruns run-scenario ... --force                    # re-run even if already successful
 tdmruns import-manual-run --run-set <id> --scenario <id> [--scenario-folder <path>]
@@ -351,9 +352,35 @@ model is touched.
 
 ### Architecture decisions (summary — full detail in `docs/architecture/`)
 
-- **In-place sequential submodule checkout, not git worktrees** — Cube runs
-  in place inside its own checkout. Worktree isolation adds complexity for no
-  immediate benefit. Deferred to a future PR if parallel execution is needed.
+- **In-place submodule checkout, not git worktrees — but same-ref scenarios
+  now run concurrently within that one checkout.** Cube runs in place inside
+  the submodule's own checkout; worktree isolation (one checkout per
+  concurrent scenario) is still deferred as unneeded complexity, per the
+  user's own confirmation that running two Cube Voyager instances
+  simultaneously on one machine already works fine and their license is
+  per-machine, not per-seat. `execution.run_scenarios()` (invoked by
+  `run-set`) groups a run set's scenarios by resolved `tdm_ref` first —
+  the shared working tree can only be checked out to one ref at a time — and
+  checks out each distinct ref exactly once (never once per scenario, never
+  concurrently: `submodule.resolve_version()` does a real `git fetch`+
+  `checkout`, and racing that across threads risks corrupting the checkout).
+  Only *after* a group's single checkout completes does it dispatch that
+  group's own scenarios through a `ThreadPoolExecutor` bounded by
+  `run_set.yaml`'s `max_parallel_runs` (an integer, defaults to 1 — today's
+  fully sequential behavior — if omitted); `run_scenario()` accepts an
+  optional pre-resolved `version_state` so a worker never calls
+  `resolve_version()` itself. Ref groups themselves always run one after
+  another regardless of `max_parallel_runs`, since a later group's checkout
+  would disrupt an earlier group's still-running scenarios reading from that
+  same shared tree — this is the one case still effectively sequential, and
+  would need actual worktree isolation to parallelize; a run set where every
+  scenario shares one `tdm_ref` (the common case) gets full concurrency in a
+  single group. A group whose own checkout fails records every scenario in
+  that group as failed with that error, since none of them could have run.
+  Covered by `tests/test_execution.py` (grouping/ordering/concurrency-cap/
+  cross-group-isolation/failure-isolation, all fully mocked — no real
+  submodule or Cube Voyager involved) — not yet exercised end-to-end against
+  a real concurrent multi-scenario `run-set` invocation.
 - **One override mechanism** — `_ControlCenter.yaml` keys are all just keys,
   whether they select input files or tune model parameters. `input_files` in
   scenario YAML is syntactic sugar for file-path overrides with automatic path
@@ -698,3 +725,17 @@ Closer01/02/03 once each has been seeded once and doesn't need Closer00's
 folder re-copied on further retries. Covered by new unit tests in
 `tests/test_scenario_seed.py`; still not exercised end-to-end via a live
 `run-scenario` invocation against the real TDM.
+
+**8. Concurrent `run-set` execution (`max_parallel_runs`) is wired up but
+not yet exercised end-to-end.** See the "In-place submodule checkout... but
+same-ref scenarios now run concurrently" architecture decision above for the
+full mechanism (`execution.run_scenarios()` groups by resolved `tdm_ref`,
+checks out each group's ref exactly once, dispatches that group's scenarios
+through a `ThreadPoolExecutor` bounded by `run_set.yaml`'s
+`max_parallel_runs`). Fully covered by mocked unit tests in
+`tests/test_execution.py` (no real submodule or Cube Voyager touched), but
+no run set has actually declared `max_parallel_runs > 1` and been run for
+real yet — worth a small, cheap real trial (e.g. 2 already-seeded scenarios
+in one run set, `max_parallel_runs: 2`) before trusting it on a large batch,
+to confirm Cube Voyager's own concurrent-instance behavior on the actual
+workstation matches what was manually verified outside the framework.

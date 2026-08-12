@@ -10,6 +10,7 @@ import platform
 import secrets
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -135,7 +136,13 @@ def decide_status(
     return status, error, "model_log", model_log_result
 
 
-def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool = False) -> dict:
+def run_scenario(
+    repo_root: Path,
+    run_set_id: str,
+    scenario_id: str,
+    force: bool = False,
+    version_state: "sub.TdmVersionState | None" = None,
+) -> dict:
     """
     Executes one full attempt of a scenario: resolve version, render
     Control Center, invoke the TDM, curate outputs, write metadata. Returns
@@ -144,6 +151,15 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     unresolvable TDM ref); execution and output failures are instead recorded
     in a 'failed' run record so a run set can continue to the next scenario
     rather than aborting.
+
+    version_state, if given, is used as-is instead of calling
+    sub.resolve_version() here -- run_scenarios() passes one in when it has
+    already checked out this scenario's resolved tdm_ref once on behalf of a
+    whole group of scenarios sharing that ref (see its own docstring for
+    why a per-scenario checkout can't run concurrently). Must match this
+    scenario's own resolved_tdm_ref(); passing a version_state for the wrong
+    ref would silently run this scenario against the wrong TDM version, so
+    that's checked explicitly rather than trusted.
     """
     framework = cfg.load_framework_config(repo_root)
     run_set = cfg.load_run_set(repo_root, run_set_id)
@@ -168,7 +184,15 @@ def run_scenario(repo_root: Path, run_set_id: str, scenario_id: str, force: bool
     fw_commit = md.framework_commit(repo_root)
 
     # --- version resolution (hard failure stops everything before execution) ---
-    version_state = sub.resolve_version(repo_root, tdm_path, requested_ref)
+    if version_state is None:
+        version_state = sub.resolve_version(repo_root, tdm_path, requested_ref)
+    elif version_state.requested_ref != requested_ref:
+        message = (
+            f"Internal error: pre-resolved version_state is for ref "
+            f"'{version_state.requested_ref}' but scenario '{scenario_id}' resolves to "
+            f"'{requested_ref}'. Refusing to run against the wrong TDM version."
+        )
+        raise ExecutionError(message)
     version_label = sub.short_version_label(version_state)
 
     # --- render Control Center (hard failure on unknown override keys) ---
@@ -389,26 +413,80 @@ def import_manual_run_set(repo_root: Path, run_set_id: str, only: list = None) -
 
 def run_scenarios(repo_root: Path, run_set_id: str, only: list = None, force: bool = False) -> list:
     """
-    Runs every scenario in a run set sequentially. A failed scenario does
-    not stop the run set -- successful runs already on disk are untouched,
-    and the function returns metadata for every attempted scenario so the
-    caller can report a clear success/failure summary.
+    Runs every scenario in a run set. Scenarios are grouped by their
+    resolved tdm_ref first -- the TDM submodule can only be checked out to
+    one ref at a time, so each distinct ref is checked out exactly once
+    (never concurrently, and never once per scenario) before that group's
+    own scenarios run. Within a group, up to run_set.yaml's
+    max_parallel_runs scenarios run concurrently (default 1, i.e. today's
+    fully sequential behavior if the run set doesn't declare it). Groups
+    themselves always run one after another, never overlapping -- a later
+    group's checkout would otherwise disrupt an earlier group's still-
+    running scenarios sharing the same submodule working tree. A run set
+    where every scenario shares one tdm_ref (the common case) gets full
+    concurrency up to the configured limit in a single group.
+
+    A failed scenario does not stop the run set -- successful runs already
+    on disk are untouched, and the function returns metadata for every
+    attempted scenario, in original scenario order (regardless of which
+    order concurrent scenarios actually finished in), so the caller can
+    report a clear success/failure summary. A group whose own ref fails to
+    resolve/check out records every scenario in that group as failed with
+    that same error, since none of them could have run.
     """
+    run_set = cfg.load_run_set(repo_root, run_set_id)
+    framework = cfg.load_framework_config(repo_root)
+    tdm_path = repo_root / framework["tdm_submodule_path"]
+    max_parallel = run_set.get("max_parallel_runs", 1)
+
     scenario_ids = cfg.list_scenario_ids(repo_root, run_set_id)
     if only:
         scenario_ids = [s for s in scenario_ids if s in only]
-    results = []
+
+    # Group by resolved tdm_ref, preserving each group's first-appearance
+    # order so group processing order (and thus checkout order) is
+    # deterministic across runs.
+    groups = {}
     for scenario_id in scenario_ids:
+        scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
+        ref = cfg.resolved_tdm_ref(run_set, scenario)
+        groups.setdefault(ref, []).append(scenario_id)
+
+    results_by_id = {}
+    for ref, group_scenario_ids in groups.items():
         try:
-            results.append(run_scenario(repo_root, run_set_id, scenario_id, force=force))
-        except Exception as e:  # noqa: BLE001 -- config/version errors stop this scenario, not the run set
-            results.append(
-                {
+            version_state = sub.resolve_version(repo_root, tdm_path, ref)
+        except Exception as e:  # noqa: BLE001 -- one ref's checkout failure shouldn't stop other groups
+            for scenario_id in group_scenario_ids:
+                results_by_id[scenario_id] = {
                     "run_set_id": run_set_id,
                     "scenario_id": scenario_id,
                     "run_id": None,
                     "status": "failed",
                     "error": str(e),
                 }
-            )
-    return results
+            continue
+
+        workers = min(max_parallel, len(group_scenario_ids))
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_to_id = {
+                executor.submit(
+                    run_scenario, repo_root, run_set_id, scenario_id,
+                    force=force, version_state=version_state,
+                ): scenario_id
+                for scenario_id in group_scenario_ids
+            }
+            for future in as_completed(future_to_id):
+                scenario_id = future_to_id[future]
+                try:
+                    results_by_id[scenario_id] = future.result()
+                except Exception as e:  # noqa: BLE001 -- config/version errors stop this scenario, not the run set
+                    results_by_id[scenario_id] = {
+                        "run_set_id": run_set_id,
+                        "scenario_id": scenario_id,
+                        "run_id": None,
+                        "status": "failed",
+                        "error": str(e),
+                    }
+
+    return [results_by_id[scenario_id] for scenario_id in scenario_ids]

@@ -48,6 +48,12 @@
       "type": "string",
       "description": "Path to a Python script, relative to the run_set directory, that freezes whatever this run set's reports need from runs/ into run_sets/<id>/snapshot/ so raw curated outputs can later be purged. Invoked by `tdmruns snapshot-run-set` with --run-set-dir and --snapshot-dir arguments."
     },
+    "max_parallel_runs": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Maximum number of this run set's scenarios `run-set` executes concurrently. Scenarios are grouped by their resolved tdm_ref first (the TDM submodule can only be checked out to one ref at a time); each group's ref is checked out once, then up to this many of that group's scenarios run at the same time, before moving to the next group. A run set where every scenario shares one tdm_ref (the common case) gets full concurrency up to this limit; a run set mixing tdm_ref values across scenarios still runs each ref's group sequentially relative to the others. Defaults to 1 (today's fully sequential behavior) if omitted -- raise it only once you've confirmed your machine's Cube Voyager license/hardware can actually run that many instances at once."
+    },
     "outputs": {
       "type": "object",
       "additionalProperties": false,

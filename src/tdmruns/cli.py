@@ -132,8 +132,11 @@ def run_scenario_cmd(run_set_id, scenario_id, force):
     "--force", is_flag=True, help="Re-run scenarios even if a successful run already exists."
 )
 def run_set_cmd(run_set_id, only, force):
-    """Run every scenario in a run set sequentially. A failed scenario does
-    not stop the rest of the run set."""
+    """Run every scenario in a run set. Scenarios sharing a tdm_ref run up
+    to run_set.yaml's max_parallel_runs at a time (default 1, i.e.
+    sequential); scenarios on a different tdm_ref always wait for the
+    current ref's group to finish first. A failed scenario does not stop
+    the rest of the run set."""
     repo_root = find_repo_root()
     only_list = only.split(",") if only else None
     results = ex.run_scenarios(repo_root, run_set_id, only=only_list, force=force)
