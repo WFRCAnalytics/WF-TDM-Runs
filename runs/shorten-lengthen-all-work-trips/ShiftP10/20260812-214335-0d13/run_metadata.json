@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "run_set_id": "shorten-lengthen-all-work-trips",
+  "scenario_id": "ShiftP10",
+  "run_id": "20260812-214335-0d13",
+  "status": "failed",
+  "execution_mode": "cli",
+  "started_at": "2026-08-12T21:43:35.844383+00:00",
+  "finished_at": "2026-08-12T21:45:28.931815+00:00",
+  "framework_commit": "f5ed1c8194e89b7d403ee7f0ebb533b8f5139e45",
+  "tdm": {
+    "requested_ref": "v10.0.0-beta.1-closer-to-home",
+    "resolved_commit": "1fc8a350743446c8f009c031c2839f1e056ebb21",
+    "resolved_tag": "v10.0.0-beta.1-closer-to-home",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - OY_2027.block",
+    "run_set_overrides": {
+      "Run_Documentation": 0
+    },
+    "scenario_overrides": {
+      "vizToolDir": "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\.vizTool",
+      "RunDescription": "ShiftP10 - +10% region-wide HBW trip-length shift"
+    },
+    "rendered_path": "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10\\_ControlCenter.block",
+    "driver_script": "hail-mary/__HailMary_1Subfolder_shiftlength.s"
+  },
+  "scenario_folder": "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10\\_ControlCenter.block",
+      "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10"
+    ],
+    "exit_code": 0,
+    "log_path": "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10\\logs\\orchestrator_invocation.log",
+    "status_source": "model_log",
+    "model_log": {
+      "outcome": "success",
+      "crashed_step": null,
+      "started_at": "2026-07-09,  15:53:57",
+      "finished_at": "2026-07-09,  22:43:03",
+      "run_time": "006:49:06",
+      "exit_code_mismatch": false
+    }
+  },
+  "outputs": {
+    "inventory_count": 1135,
+    "inventory_total_bytes": 37681730577,
+    "curated": []
+  },
+  "error": "Output curation failed: HDF5 error back trace\n\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5F.c\", line 827, in H5Fopen\n    unable to synchronously open file\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5F.c\", line 788, in H5F__open_api_common\n    unable to open file\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5VLcallback.c\", line 3680, in H5VL_file_open\n    open failed\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5VLcallback.c\", line 3514, in H5VL__file_open\n    open failed\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5VLnative_file.c\", line 128, in H5VL__native_file_open\n    unable to open file\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Fint.c\", line 2108, in H5F_open\n    unable to read root group\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Groot.c\", line 218, in H5G_mkroot\n    can't check if symbol table message exists\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Omessage.c\", line 788, in H5O_msg_exists\n    unable to protect object header\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Oint.c\", line 988, in H5O_protect\n    unable to load object header\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5AC.c\", line 1277, in H5AC_protect\n    H5C_protect() failed\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Centry.c\", line 3106, in H5C_protect\n    can't load entry\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Centry.c\", line 1180, in H5C__load_entry\n    incorrect metadata checksum after all read attempts\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Ocache.c\", line 185, in H5O__cache_get_final_load_size\n    can't deserialize object header prefix\n  File \"D:\\bld\\hdf5_1770389218786\\work\\src\\H5Ocache.c\", line 1096, in H5O__prefix_deserialize\n    bad object header version number\n\nEnd of HDF5 error back trace\n\nUnable to open/create file 'C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\runs\\shorten-lengthen-all-work-trips\\ShiftP10\\20260812-214335-0d13\\outputs\\_full_Skm_EV.omx'"
+}

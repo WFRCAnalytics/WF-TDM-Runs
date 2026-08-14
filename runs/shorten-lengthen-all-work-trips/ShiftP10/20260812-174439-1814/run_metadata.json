@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "run_set_id": "shorten-lengthen-all-work-trips",
+  "scenario_id": "ShiftP10",
+  "run_id": "20260812-174439-1814",
+  "status": "success",
+  "execution_mode": "cli",
+  "started_at": "2026-08-12T17:44:39.434745+00:00",
+  "finished_at": "2026-08-12T18:00:16.506853+00:00",
+  "framework_commit": "f5ed1c8194e89b7d403ee7f0ebb533b8f5139e45",
+  "tdm": {
+    "requested_ref": "v10.0.0-beta.1-closer-to-home",
+    "resolved_commit": "1fc8a350743446c8f009c031c2839f1e056ebb21",
+    "resolved_tag": "v10.0.0-beta.1-closer-to-home",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - OY_2027.block",
+    "run_set_overrides": {
+      "Run_Documentation": 0
+    },
+    "scenario_overrides": {
+      "vizToolDir": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\.vizTool",
+      "RunDescription": "ShiftP10 - +10% region-wide HBW trip-length shift"
+    },
+    "rendered_path": "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10\\_ControlCenter.block",
+    "driver_script": "hail-mary/__HailMary_1Subfolder_shiftlength.s"
+  },
+  "scenario_folder": "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10\\_ControlCenter.block",
+      "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10"
+    ],
+    "exit_code": 2,
+    "log_path": "C:\\Users\\bhereth\\Documents\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\shorten-lengthen-all-work-trips\\ShiftP10\\logs\\orchestrator_invocation.log",
+    "status_source": "model_log",
+    "model_log": {
+      "outcome": "success",
+      "crashed_step": null,
+      "started_at": "2026-07-09,  15:53:57",
+      "finished_at": "2026-07-09,  22:43:03",
+      "run_time": "006:49:06",
+      "exit_code_mismatch": true
+    }
+  },
+  "outputs": {
+    "inventory_count": 1124,
+    "inventory_total_bytes": 37181064628,
+    "curated": [
+      {
+        "relative_path": "0_InputProcessing/SE_File.dbf",
+        "size_bytes": 1693167,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "0bcf0a9e63fe6aa3e91ad303400c29da1b172d909d6da8ed7a02a8992ee77911",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/SE_File.dbf"
+      },
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/_ZoneSummary_TripsByMode.csv",
+        "size_bytes": 12135435,
+        "entry_type": "datafile",
+        "columns": [
+          "Purpose",
+          "Period",
+          "PA",
+          "TAZID",
+          "All",
+          "Auto",
+          "Bike",
+          "Moto",
+          "NonM",
+          "Walk",
+          "tTrn"
+        ],
+        "sha256": "d851c25c5aab9cee36d24233a16857965597795d028c53da82d54db5429a4dd8",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/_ZoneSummary_TripsByMode_filtered.csv"
+      },
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_Ok.mtx",
+        "size_bytes": 10685178,
+        "entry_type": "matrix",
+        "tabs": [
+          "motor",
+          "nonmotor"
+        ],
+        "format": "omx",
+        "sha256": "6e3ab3d6b635df3c18af898b8db6af63d1fba8904c59b0d109ffeaba12853f90",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/HBW_trips_allsegs_Ok.omx"
+      },
+      {
+        "relative_path": "4_ModeChoice/2_DetailedTripMatrices/HBW_trips_allsegs_Pk.mtx",
+        "size_bytes": 11923073,
+        "entry_type": "matrix",
+        "tabs": [
+          "motor",
+          "nonmotor"
+        ],
+        "format": "omx",
+        "sha256": "f4ed47c968b678d4d2baa0b4143709554b124750313bddaa6393b2c48d363aeb",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/HBW_trips_allsegs_Pk.omx"
+      },
+      {
+        "relative_path": "4_ModeChoice/3_TransitAssign/_transit_brding_summary_route.csv",
+        "size_bytes": 26075,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "d48ad4ef187fc6ca22cf62968b1a6a8562e907850ac6086352071cf7c8989b53",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/_transit_brding_summary_route.csv"
+      },
+      {
+        "relative_path": "4_ModeChoice/4_Shares/Shares_Summary_long.csv",
+        "size_bytes": 2450,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "0b56dcd6ce16cb5e9ea7bd96bfb9bde8dd89d0122f75232d7d80aecda61d1a4f",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/Shares_Summary_long.csv"
+      },
+      {
+        "relative_path": "5_AssignHwy/4_Summaries/Summary_SEGID.csv",
+        "size_bytes": 3509626,
+        "entry_type": "datafile",
+        "columns": [
+          "SEGID",
+          "DISTANCE",
+          "DIRECTION",
+          "FUNCGROUP",
+          "SUBAREAID",
+          "CO_FIPS",
+          "LANES",
+          "LANEMILES",
+          "FTCLASS",
+          "CAP1HL",
+          "AM_Vol",
+          "MD_Vol",
+          "PM_Vol",
+          "EV_Vol",
+          "DY_Vol",
+          "FF_Spd",
+          "AM_Spd",
+          "MD_Spd",
+          "PM_Spd",
+          "EV_Spd",
+          "DY_Spd",
+          "FF_Tme",
+          "AM_Tme",
+          "MD_Tme",
+          "PM_Tme",
+          "EV_Tme",
+          "AM_CAP",
+          "MD_CAP",
+          "PM_CAP",
+          "EV_CAP",
+          "DY_CAP",
+          "AM_VC",
+          "MD_VC",
+          "PM_VC",
+          "EV_VC",
+          "MAX_VC",
+          "AM_VMT",
+          "MD_VMT",
+          "PM_VMT",
+          "EV_VMT",
+          "DY_VMT",
+          "AM_VMT_PC",
+          "MD_VMT_PC",
+          "PM_VMT_PC",
+          "EV_VMT_PC",
+          "DY_VMT_PC",
+          "AM_VMT_LT",
+          "MD_VMT_LT",
+          "PM_VMT_LT",
+          "EV_VMT_LT",
+          "DY_VMT_LT",
+          "AM_VMT_MD",
+          "MD_VMT_MD",
+          "PM_VMT_MD",
+          "EV_VMT_MD",
+          "DY_VMT_MD",
+          "AM_VMT_HV",
+          "MD_VMT_HV",
+          "PM_VMT_HV",
+          "EV_VMT_HV",
+          "DY_VMT_HV",
+          "FF_VHT",
+          "AM_VHT",
+          "MD_VHT",
+          "PM_VHT",
+          "EV_VHT",
+          "DY_VHT",
+          "AM_VHD",
+          "MD_VHD",
+          "PM_VHD",
+          "EV_VHD",
+          "DY_VHD"
+        ],
+        "sha256": "77f246d04a3c2a358922ea2bf697c65176c82791c331f0099d1d658e1fbc7560",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/Summary_SEGID_filtered.csv"
+      },
+      {
+        "relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv",
+        "size_bytes": 35246665,
+        "entry_type": "datafile",
+        "columns": [
+          "TAZID",
+          "Metric",
+          "Purpose",
+          "Period",
+          "PA",
+          "Total"
+        ],
+        "sha256": "40e82db5e6a379484fe682b66bdfc9165ee1aac74a3353819569c172f73c477d",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/TAZ-Based Metrics_filtered.csv"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_AM.mtx",
+        "size_bytes": 37400982,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "89b08f2bd4a7c3d9f10d9bf571b08d7a67477a0ffb1588e699e8da7b62e8b227",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/Skm_AM.omx"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_EV.mtx",
+        "size_bytes": 37354676,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "487b51c0573770f187a06e4ee9a8cdb81445db7bd6f8d84617463550c12f38b2",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/Skm_EV.omx"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_MD.mtx",
+        "size_bytes": 37392572,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "6441f38aea20af80aecf343723f744ef4e99671acb5b7407ed4095d3247b4ed0",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/Skm_MD.omx"
+      },
+      {
+        "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_PM.mtx",
+        "size_bytes": 37464790,
+        "entry_type": "matrix",
+        "tabs": [
+          "GP_Dist"
+        ],
+        "format": "omx",
+        "sha256": "3677dcc567c23a77b3d79c3629b83975a1aadd50c82b6994f9a4a69c66fb405d",
+        "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/20260812-174439-1814/outputs/Skm_PM.omx"
+      }
+    ]
+  },
+  "error": null,
+  "seeded_from": {
+    "scenario_id": "Shift00",
+    "run_id": "20260812-044057-56f4"
+  }
+}

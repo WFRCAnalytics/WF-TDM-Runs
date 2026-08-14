@@ -1,0 +1,646 @@
+SEGID,corridor_label,street_names
+0071_004.1,12300 South,12300 Sou
+0071_004.7,12300 South,12300 Sou
+0071_005.0,12300 South,12300 Sou
+0071_005.1,12300 South,12300 Sou
+0071_005.5,12300 South,12300 Sou
+2062_000.0,12300 South,12300 Sou
+2062_000.5,12300 South,12300 Sou
+2062_000.9,12300 South,12300 Sou;1565 East
+0194_000.0,2100 N Lehi,2100 North
+0194_000.8,2100 N Lehi,2100 North
+0194_001.9,2100 N Lehi,2100 North
+0194_002.4,2100 N Lehi,2100 North;Blank
+2374_000.6,2100 N Lehi,2100 Nort
+2374_002.3,2100 N Lehi,2100 Nort
+2875_001.2,2100 N Lehi,2100 North
+2875_002.0,2100 N Lehi,2100 North;Center Str
+3454_000.0,2100 N Lehi,2100 North
+3454_000.6,2100 N Lehi,2100 North
+0171_008.0,3300 South,3300 Sout
+0171_008.8,3300 South,3300 Sout
+0171_009.2,3300 South,3300 Sout
+0171_009.5,3300 South,3300 Sout
+0171_009.8,3300 South,3300 Sout
+0171_010.0,3300 South,3300 Sout
+0171_010.1,3300 South,3300 Sout
+0171_010.2,3300 South,3300 Sout
+0171_010.4,3300 South,3300 Sout
+0171_010.6,3300 South,3300 Sout
+0171_010.7,3300 South,3300 Sout
+0171_011.0,3300 South,3300 Sout
+0171_011.3,3300 South,3300 Sout
+0171_011.6,3300 South,3300 Sout
+0171_011.9,3300 South,3300 Sout
+0171_012.2,3300 South,3300 Sout
+0171_012.5,3300 South,3300 Sout
+0171_012.7,3300 South,3300 Sout
+0171_013.1,3300 South,3300 Sout
+0171_013.6,3300 South,3300 Sout
+0171_014.1,3300 South,3300 Sout
+0171_014.6,3300 South,3300 Sout
+0171_015.6,3300 South,3300 Sout
+2191_000.0,3300 South,3300 Sout
+2246_004.5,3300 South,3100 Sout;3300 Sout
+3362_000.0,3300 South,3300 Sout
+3362_000.5,3300 South,3300 Sout
+3362_001.5,3300 South,3300 Sout
+3362_002.5,3300 South,3300 Sout
+WFRC_8431,3300 South,3300 Sout
+0097_003.1,5600 South,5600 Sout
+0097_003.6,5600 South,5600 Sout
+0097_004.1,5600 South,5600 Sout
+0097_004.4,5600 South,5600 Sout
+0097_005.1,5600 South,5600 Sout
+0097_005.3,5600 South,5600 Sout
+2122_000.0,5600 South,5600 Sout
+2122_000.5,5600 South,5600 Sout
+2122_000.9,5600 South,5600 Sout
+2122_001.2,5600 South,5600 Sout
+2122_001.8,5600 South,5600 Sout
+2122_002.1,5600 South,5600 Sout
+3344_002.2,5600 South,5600 Sout
+MAG_6072,5600 South,5600 South;650 West;800 West
+MAG_6088,5600 South,5600 South
+MAG_6089,5600 South,5600 South
+MAG_6091,5600 South,1600 North;5600 South
+MAG_6192,5600 South,5600 South
+MAG_6262,5600 South,5600 South
+MAG_6263,5600 South,5600 South;Collector
+MAG_6367,5600 South,5600 South
+MAG_6405,5600 South,5600 South
+MAG_6411,5600 South,5600 South
+0209_004.6,9000 South,9000 Sout
+0209_005.0,9000 South,9000 Sout
+0209_005.2,9000 South,9000 Sout
+0209_005.7,9000 South,9000 Sout
+0209_006.2,9000 South,9000 Sout
+0209_006.8,9000 South,9000 Sout
+0209_007.2,9000 South,9000 Sout
+0209_007.7,9000 South,9000 Sout
+0209_008.2,9000 South,9000 Sout
+0209_008.7,9000 South,9000 Sout
+0209_009.2,9000 South,9000 Sout
+0209_009.7,9000 South,9000 Sout
+0209_010.2,9000 South,9000 Sout
+0209_011.2,9000 South,9000 Sout
+0209_011.5,9000 South,9000 Sout
+0209_011.7,9000 South,9000 Sout
+0209_011.9,9000 South,9000 Sout
+0209_012.2,9000 South,9000 Sout
+0209_012.5,9000 South,9000 Sout
+0209_012.7,9000 South,9000 Sout
+0209_013.1,9000 South,9000 Sout
+2098_001.4,9000 South,9000 Sout;9400 Sout
+WFRC_8131,9000 South,9000 South
+WFRC_8132,9000 South,9000 Sout
+WFRC_8294,9000 South,9000 South
+WFRC_8295,9000 South,9000 South
+WFRC_8318,9000 South,9000 Sout
+WFRC_8319,9000 South,9000 Sout
+0108_000.0,Antelope Dr,Antelope
+0108_000.1,Antelope Dr,Antelope
+0108_000.5,Antelope Dr,Antelope
+0108_000.7,Antelope Dr,Antelope
+1468_000.0,Antelope Dr,ANTELOPE ISLAND CAUSE
+1478_000.0,Antelope Dr,Antelope
+1478_000.7,Antelope Dr,Antelope
+1478_001.5,Antelope Dr,Antelope
+1478_002.0,Antelope Dr,Antelope
+1478_002.2,Antelope Dr,Antelope
+0154_000.5,Bangerter Highway,Bangerter;HOT Bangerter
+0154_000.8,Bangerter Highway,Bangerter;HOT Bangerter
+0154_001.4,Bangerter Highway,Bangerter;HOT Bangerter
+0154_003.2,Bangerter Highway,Bangerter;HOT Bangerter
+0154_004.2,Bangerter Highway,Bang Off;Bangerter;Bangrtr;HOT Bangerter
+0154_005.8,Bangerter Highway,Bang Off;Bangerter;Bangrtr;HOT Bangerter
+0154_006.8,Bangerter Highway,Bangerter;HOT Bangerter
+0154_008.3,Bangerter Highway,Bangerter;HOT Bangerter
+0154_009.6,Bangerter Highway,Bangerter;HOT Bangerter
+0154_010.4,Bangerter Highway,Bangerter;HOT Bangerter
+0154_011.4,Bangerter Highway,Bangerter;HOT Bangerter
+0154_012.9,Bangerter Highway,Bangerter;HOT Bangerter
+0154_013.9,Bangerter Highway,Bangerter;HOT Bangerter
+0154_014.9,Bangerter Highway,Bangerter;HOT Bangerter
+0154_015.9,Bangerter Highway,Bangerter;HOT Bangerter
+0154_016.9,Bangerter Highway,Bangerter;HOT Bangerter
+0154_017.9,Bangerter Highway,Bangerter;CD Road;HOT Bangerter
+0154_018.9,Bangerter Highway,Bang Off;Bang On;Bangerter;Frontage;HOT Bangerter
+0154_019.5,Bangerter Highway,Bang Off;Bang On;Bangerter;Frontage;HOT Bangerter
+0154_020.0,Bangerter Highway,Bangerter;Frontage;HOT Bangerter
+0154_021.0,Bangerter Highway,Bang Off;Bang On;Bangerter;CD Road;Frontage;HOT Bangerter
+0154_022.3,Bangerter Highway,Bang Off;Bang On;Bangerter;HOT Bangerter
+2370_000.0,Bangerter Highway,Bangerter
+0015_241.6,I-15,I-15
+0015_242.4,I-15,I-15
+0015_244.8,I-15,I-15
+0015_246.9,I-15,I-15
+0015_248.8,I-15,HOV I-15;I-15
+0015_250.9,I-15,I-15;South Wasa
+0015_251.6,I-15,I-15;South Wasa
+0015_252.5,I-15,HOV I-15;I-15
+0015_253.6,I-15,HOV I-15;I-15
+0015_255.9,I-15,HOV I-15;I-15
+0015_257.3,I-15,HOV I-15;I-15
+0015_257.6,I-15,FR CD System;HOV I-15;I-15
+0015_258.8,I-15,FR CD System;HOV I-15;I-15
+0015_260.0,I-15,FR CD System;HOV I-15;I-15
+0015_261.8,I-15,FR CD System;HOV I-15;I-15
+0015_263.4,I-15,FR CD System;HOV I-15;I-15
+0015_264.2,I-15,FR CD System;HOV I-15;I-15
+0015_265.6,I-15,HOV I-15;I-15
+0015_266.5,I-15,FR CD System;HOV I-15;I-15
+0015_267.0,I-15,FR CD System;HOV I-15;I-15
+0015_267.9,I-15,FR CD System;HOV I-15;I-15
+0015_269.0,I-15,FR CD System;HOV I-15;I-15
+0015_269.6,I-15,FR CD System;HOV I-15;I-15
+0015_270.6,I-15,FR CD System;HOV I-15;I-15
+0015_271.6,I-15,FR CD System;HOV I-15;I-15
+0015_272.7,I-15,FR CD System;HOV I-15;I-15
+0015_274.7,I-15,FR CD System;HOV I-15;I-15
+0015_275.3,I-15,FR CD System;HOV I-15;I-15
+0015_276.4,I-15,FR CD System;HOV I-15;I-15
+0015_278.5,I-15,2100 North;FR CD System;HOV I-15;I-15
+0015_279.6,I-15,FR CD System;HOV I-15;I-15
+0015_282.2,I-15,2100 North;Blank;CD Road;Frontage R;HOV I-15;I-15
+0015_283.3,I-15,2100 North;Blank;CD Road;Frontage R;HOV I-15;I-15
+0015_283.9,I-15,2100 North;Blank;HOV I-15;I-15
+0015_285.1,I-15,Blank;Frontage;HOV I-15;I-15
+0015_285.5,I-15,2100 North;Frontage;HOV I-15;I-15
+0015_285.8,I-15,HOV I-15;I-15
+0015_286.8,I-15,HOV I-15;I-15
+0015_288.2,I-15,HOV I-15;I-15
+0015_289.8,I-15,CD Road;HOV I-15;I-15;I-15 Elev
+0015_291.4,I-15,CD Road;HOV I-15;I-15;I-15 Elev
+0015_292.6,I-15,CD Road;HOV I-15;I-15;I-15 Elev
+0015_293.0,I-15,CD Road;HOV I-15;I-15
+0015_293.6,I-15,CD Road;HOV I-15;HOV on-of;I-15;I-15 Elev;I-15 NB o;I-15 SB o
+0015_295.6,I-15,CD Road;HOV I-15;HOV on-of;I-15;I-15 Elev;I-15 NB o
+0015_297.9,I-15,CD Road;HOV I-15;I-15;I-15 Elev
+0015_299.0,I-15,HOV I-15;I-15;I-15 Elev
+0015_300.3,I-15,HOV I-15;I-15;I-15 Elev
+0015_301.7,I-15,HOV I-15;I-15;I-15 Elev
+0015_302.5,I-15,HOV I-15;I-15;I-15 Elev
+0015_303.4,I-15,HOV I-15;I-15;I-15 Elev
+0015_304.7,I-15,CD Road;HOV I-15;I-15
+0015_305.2,I-15,CD Road;HOV I-15;I-15
+0015_305.9,I-15,CD Road;HOV I-15;I-15
+0015_306.3,I-15,HOV I-15;I-15
+0015_307.2,I-15,CD Road;HOV I-15;I-15
+0015_307.5,I-15,CD Road;HOV I-15;HOV on-of;I-15
+0015_307.6,I-15,CD Road;HOV I-15;I-15;I-15 NB o
+0015_307.8,I-15,CD Road;HOV I-15;HOV on-of;I-15
+0015_308.4,I-15,HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_309.3,I-15,HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_310.2,I-15,HOV I-15;I-15
+0015_311.4,I-15,HOV I-15;I-15
+0015_311.8,I-15,HOV I-15;I-15
+0015_313.7,I-15,HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_315.3,I-15,HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_316.9,I-15,HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_317.6,I-15,HOV I-15;I-15
+0015_318.3,I-15,HOV I-15;I-15;I-15 SB o
+0015_319.5,I-15,Blank;HOV I-15;I-15;I-15 SB o
+0015_321.0,I-15,HOV I-15;I-15
+0015_322.0,I-15,HOV I-15;I-15
+0015_323.8,I-15,HOV I-15;I-15
+0015_324.4,I-15,HOV I-15;I-15
+0015_325.6,I-15,HOV I-15;I-15
+0015_328.7,I-15,HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_330.1,I-15,HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_331.6,I-15,Blank;HOV I-15;I-15;I-15 NB o;I-15 SB o
+0015_332.9,I-15,Blank;HOV I-15;I-15;I-15 NB o
+0015_334.1,I-15,Blank;HOV I-15;I-15
+0015_335.8,I-15,Blank;HOV I-15;I-15
+0015_337.0,I-15,HOV I-15;I-15
+0015_338.5,I-15,Blank;HOV I-15;I-15
+0015_339.1,I-15,HOV I-15;I-15
+0015_340.3,I-15,Blank;HOV I-15;I-15
+0015_342.0,I-15,Blank;I-15;I-15 NB o;I-15 SB o
+0015_343.1,I-15,I-15;I-15 NB o;I-15 SB o
+0015_343.9,I-15,I-15;I-15 NB o;I-15 SB o
+0015_345.0,I-15,I-15;I-15 NB o;I-15 SB o
+0015_346.7,I-15,I-15;I-15 NB o;I-15 SB o
+0015_349.4,I-15,I-15;I-15 NB o;I-15 SB o
+0015_351.9,I-15,I-15;I-15 NB o;I-15 SB o
+0015_357.6,I-15,I-15;I-15 NB o;I-15 SB o
+0015_362.0,I-15,I-15;I-15 NB o;I-15 SB o
+0015_363.7,I-15,I-15;I-15 NB o;I-15 SB o
+0015_365.5,I-15,I-15;I-15 NB o;I-15 SB o
+0073_035.4,I-15,I-15;Pioneer Cr
+0114_001.1,I-15,Center St;I-15;MVC
+0114_004.7,I-15,Geneva Rd;Gevena Frontage;I-15
+0114_005.0,I-15,Geneva Rd;Gevena Frontage;I-15
+0114_005.3,I-15,Geneva Rd;Gevena Frontage;I-15
+0114_005.5,I-15,Geneva Rd;Gevena Frontage;I-15
+0114_005.8,I-15,Geneva Rd;Gevena Frontage;I-15
+0114_006.1,I-15,Geneva Rd;Gevena Frontage;I-15
+0114_006.6,I-15,Geneva Rd;Gevena Frontage;I-15
+0114_007.1,I-15,Geneva Rd;Gevena Frontage;I-15
+0145_000.0,I-15,I-15;Pioneer Cr
+0145_000.3,I-15,I-15;Pioneer Cr
+0145_000.6,I-15,I-15;Pioneer Cr
+0145_001.1,I-15,I-15;Pioneer Cr
+0145_001.4,I-15,I-15;Pioneer Cr
+0145_002.8,I-15,I-15;Pioneer Cr
+0145_003.3,I-15,I-15;Pioneer Cr
+0145_003.8,I-15,I-15;Pioneer Cr
+0145_004.4,I-15,I-15;Pioneer Cr
+0145_004.8,I-15,I-15;Pioneer Cr
+0145_005.3,I-15,I-15;Pioneer Cr
+0145_005.8,I-15,I-15;Main St
+0145_006.2,I-15,I-15;Main St
+0227_000.0,I-15,200 West;I-15 Off;I-15 On R
+0265_000.4,I-15,I-15;Univ Pkwy
+2367_000.0,I-15,I-15 NB 2
+2367_000.3,I-15,I-15 NB 2
+MAG_6145,I-15,Airport Rd;Gevena Frontage;I-15
+MAG_6168,I-15,Airport Rd;Gevena Frontage;I-15;South Wasa
+MAG_6253,I-15,I-15
+0201_014.7,I-215,CD Road;HOT I-215;SR-201
+0201_015.3,I-215,HOT I-215;SR-201
+0215_000.0,I-215,I-215
+0215_000.3,I-215,I-215
+0215_000.7,I-215,I-215
+0215_001.8,I-215,I-215;I-215 NB;I-215 SB
+0215_002.7,I-215,I-215;I-215 NB;I-215 SB
+0215_003.7,I-215,I-215;I-215 NB;I-215 SB
+0215_006.3,I-215,HOT I-215;I-215;I-215 NB;I-215 SB
+0215_007.7,I-215,HOT I-215;I-215
+0215_009.2,I-215,HOT I-215;I-215
+0215_010.6,I-215,HOT I-215;I-215
+0215_011.5,I-215,HOT I-215;I-215
+0215_013.5,I-215,HOT I-215;I-215;I-215 SB
+0215_015.5,I-215,Frontage;HOT I-215;I-215
+0215_017.5,I-215,Frontage;HOT I-215;I-215
+0215_019.5,I-215,HOT I-215;I-215
+0215_020.6,I-215,HOT I-215;I-215
+0215_022.3,I-215,HOT I-215;I-215
+0215_023.7,I-215,HOT I-215;I-215
+0215_025.7,I-215,HOT I-215;I-215
+0215_026.7,I-215,I-215
+0215_027.4,I-215,I-215
+0080_101.5,I-80,I-80
+0080_104.3,I-80,HOT I-80;I-80
+0080_111.3,I-80,HOT I-80;I-80
+0080_112.5,I-80,HOT I-80;I-80
+0080_113.3,I-80,HOT I-80;I-80
+0080_114.3,I-80,HOT I-80;I-80
+0080_115.3,I-80,CD Road;HOT I-80;I-80
+0080_117.7,I-80,HOT I-80;I-80;I-80 EB o;I-80 WB o
+0080_122.4,I-80,CD Road;HOT I-80;I-80
+0080_123.2,I-80,HOT I-80;I-80;I-80 WB o;SR-201 EB
+0080_124.1,I-80,HOT I-80;I-80;I-80 EB o;SR-201 EB
+0080_125.1,I-80,HOT I-80;I-80;I-80 WB o;SR-201 EB
+0080_126.8,I-80,HOT I-80;I-80
+0080_127.0,I-80,I-80
+0080_127.8,I-80,I-80
+0080_128.7,I-80,I-80
+0080_130.4,I-80,I-80
+0080_131.9,I-80,I-80
+0080_133.7,I-80,I-80
+0080_136.1,I-80,I-80
+0067_000.0,Legacy Parkway,HOV Lgcy;Legacy Pk
+0067_001.0,Legacy Parkway,HOV Lgcy;Legacy Pk
+0067_004.1,Legacy Parkway,HOV Lgcy;Legacy Pk
+0067_007.3,Legacy Parkway,HOV Lgcy;Legacy Pk;legacy pk
+0067_010.1,Legacy Parkway,HOV Lgcy;Legacy Pk;legacy pk
+0052_000.0,Mountain View Corridor,800 North;800N Orem;MVC
+0068_017.2,Mountain View Corridor,MVC;SR 68
+0085_003.5,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_004.5,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_005.8,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_006.0,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_006.6,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_007.0,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_007.9,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_008.1,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_008.9,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_010.0,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_010.3,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_010.8,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_011.3,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_011.9,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_012.5,Mountain View Corridor,Frontage;HOV MVC N;HOV MVC S;MVC
+0085_013.9,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+0085_015.5,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+0085_017.7,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+0085_018.7,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+0114_001.2,Mountain View Corridor,Center St;MVC
+2040_000.0,Mountain View Corridor,MVC
+2883_007.5,Mountain View Corridor,10000 S;Mountainvi
+2883_008.0,Mountain View Corridor,10000 S;Mountainvi
+2883_008.2,Mountain View Corridor,10000 S;Mountainvi
+2883_008.3,Mountain View Corridor,10000 S;Mountainvi
+2883_008.5,Mountain View Corridor,800 W;Mountainvi
+2883_008.7,Mountain View Corridor,10000 S;Mountainvi
+3004_001.1,Mountain View Corridor,Center St;MVC
+MAG_6000,Mountain View Corridor,MVC
+MAG_6020,Mountain View Corridor,Mountainvi
+MAG_6060,Mountain View Corridor,Cedar Vall;MVC
+MAG_6067,Mountain View Corridor,HOV MVC S;Mountainvi
+MAG_6068,Mountain View Corridor,HOV MVC N;HOV MVC S;Mountainvi
+MAG_6069,Mountain View Corridor,2100 North;Mountainvi
+MAG_6090,Mountain View Corridor,MVC
+MAG_6106,Mountain View Corridor,MVC
+MAG_6108,Mountain View Corridor,MVC
+MAG_6109,Mountain View Corridor,MVC
+MAG_6134,Mountain View Corridor,MVC
+MAG_6136,Mountain View Corridor,Mountainvi
+MAG_6137,Mountain View Corridor,Mountainvi
+MAG_6138,Mountain View Corridor,Mountainvi
+MAG_6139,Mountain View Corridor,HOV MVC S;Mountainvi
+MAG_6150,Mountain View Corridor,MVC
+MAG_6155,Mountain View Corridor,MVC
+MAG_6160,Mountain View Corridor,MVC
+MAG_6169,Mountain View Corridor,Mountainvi
+MAG_6171,Mountain View Corridor,Mountainvi
+MAG_6172,Mountain View Corridor,Mountainvi
+MAG_6197,Mountain View Corridor,MVC
+MAG_6239,Mountain View Corridor,MVC
+MAG_6240,Mountain View Corridor,MVC
+MAG_6242,Mountain View Corridor,MVC
+MAG_6244,Mountain View Corridor,MVC
+MAG_6245,Mountain View Corridor,MVC
+MAG_6246,Mountain View Corridor,MVC
+MAG_6795,Mountain View Corridor,Mountainvi
+MAG_6852,Mountain View Corridor,Mountainvi
+MAG_6853,Mountain View Corridor,HOV MVC N;HOV MVC S;Mountainvi
+WFRC_8154,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+WFRC_8155,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+WFRC_8156,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+WFRC_8157,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+WFRC_8159,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+WFRC_8198,Mountain View Corridor,HOV MVC N;HOV MVC S;MVC
+0085_003.0,Porter Rockwell,Porter Ro
+0131_000.0,Porter Rockwell,Porter Ro
+0131_001.5,Porter Rockwell,Porter Ro
+0131_001.9,Porter Rockwell,Porter Ro
+0068_023.7,Redwood Road,Redwood Rd
+0068_024.7,Redwood Road,Redwood Rd
+0068_025.0,Redwood Road,Redwood Rd
+0068_025.4,Redwood Road,Redwood Rd
+0068_026.5,Redwood Road,Redwood Rd
+0068_026.9,Redwood Road,Redwood Rd
+0068_027.4,Redwood Road,Redwood Rd
+0068_028.3,Redwood Road,Redwood Rd
+0068_029.3,Redwood Road,Redwood Rd
+0068_029.7,Redwood Road,Redwood Rd
+0068_030.5,Redwood Road,Redwood Rd
+0068_031.0,Redwood Road,Redwood Rd
+0068_031.5,Redwood Road,Redwood Rd
+0068_031.7,Redwood Road,Redwood Rd
+0068_032.2,Redwood Road,Redwood Rd
+0068_032.4,Redwood Road,Redwood Rd
+0068_032.7,Redwood Road,Redwood Rd
+0068_033.3,Redwood Road,Redwood Rd
+0068_033.6,Redwood Road,Redwood Rd
+0068_034.0,Redwood Road,Redwood Rd
+0068_034.5,Redwood Road,Redwood Rd
+0068_034.6,Redwood Road,Redwood Rd
+0068_036.0,Redwood Road,Redwood R
+0068_038.1,Redwood Road,Redwood R
+0068_039.2,Redwood Road,Redwood R
+0068_039.8,Redwood Road,Redwood R
+0068_040.1,Redwood Road,Redwood R
+0068_040.8,Redwood Road,Redwood R
+0068_041.3,Redwood Road,Redwood R
+0068_042.3,Redwood Road,Redwood R
+0068_043.3,Redwood Road,Redwood R
+0068_043.8,Redwood Road,Redwood R
+0068_044.8,Redwood Road,Redwood R
+0068_045.1,Redwood Road,Redwood R
+0068_045.8,Redwood Road,Redwood R
+0068_046.8,Redwood Road,Redwood R
+0068_047.2,Redwood Road,Redwood R
+0068_047.8,Redwood Road,Redwood R
+0068_048.0,Redwood Road,Redwood R
+0068_048.3,Redwood Road,Redwood R
+0068_049.3,Redwood Road,Redwood R
+0068_050.3,Redwood Road,Redwood R
+0068_050.7,Redwood Road,Redwood R
+0068_051.3,Redwood Road,Redwood R
+0068_052.1,Redwood Road,Redwood R
+0068_052.3,Redwood Road,Redwood R
+0068_053.1,Redwood Road,Redwood R
+0068_053.3,Redwood Road,Redwood R
+0068_054.3,Redwood Road,Redwood R
+0068_054.8,Redwood Road,Redwood R
+0068_055.3,Redwood Road,Redwood R
+0068_055.7,Redwood Road,Redwood R
+0068_056.0,Redwood Road,Redwood R
+0068_056.2,Redwood Road,Redwood R
+0068_056.3,Redwood Road,Redwood R
+0068_056.8,Redwood Road,Redwood R
+0068_057.3,Redwood Road,Redwood R
+0068_058.1,Redwood Road,Redwood R
+0068_058.7,Redwood Road,Redwood R
+0068_059.1,Redwood Road,Redwood R
+0068_059.5,Redwood Road,Redwood R
+0068_060.4,Redwood Road,Redwood R
+0068_060.8,Redwood Road,Redwood R
+0068_061.8,Redwood Road,Redwood R
+0068_062.6,Redwood Road,Redwood R
+0068_063.8,Redwood Road,Redwood R
+0068_064.4,Redwood Road,Redwood R
+0068_065.7,Redwood Road,Redwood R
+0068_066.6,Redwood Road,Redwood R
+0201_002.8,SR-201,Blank;SR-201
+0201_006.2,SR-201,SR-201;SR-201 EB
+0201_007.2,SR-201,SR-201;SR-201 EB;SR201HOT
+0201_007.7,SR-201,Blank;SR-201;SR201HOT
+0201_008.7,SR-201,Blank;SR-201;SR201HOT
+0201_010.8,SR-201,SR-201;SR201HOT
+0201_012.8,SR-201,SR-201;SR-201 EB;SR-201 WB;SR201HOT
+0201_013.8,SR-201,SR-201;SR-201 EB;SR-201 WB;SR201HOT
+0073_015.5,SR-73,SR 73
+0073_018.5,SR-73,SR 73
+0073_020.7,SR-73,SR 73
+0073_022.2,SR-73,SR 73
+0073_023.2,SR-73,SR 73
+0073_023.8,SR-73,SR 73
+0073_024.3,SR-73,SR 73
+0073_024.6,SR-73,SR 73
+0073_025.7,SR-73,SR 73
+0073_026.5,SR-73,SR 73
+0073_026.7,SR-73,SR 73
+0073_027.7,SR-73,SR 73
+0073_027.8,SR-73,SR 73
+0073_028.5,SR-73,SR 73
+0073_029.2,SR-73,SR 73
+0073_029.7,SR-73,16800 West;Cedar Vall;SR 73
+0073_030.2,SR-73,Cedar Vall;SR 73
+0073_030.7,SR-73,Cedar Vall;SR 73
+0073_031.3,SR-73,Cedar Vall;SR 73
+0073_031.8,SR-73,Cedar Vall;SR 73
+0073_032.3,SR-73,Cedar Vall;Cent;SR 73
+0073_033.3,SR-73,Cedar Vall;SR 73
+0073_033.9,SR-73,Cedar Vall;SR 73
+0089_329.8,State Street,State St
+0089_331.1,State Street,State St
+0089_331.6,State Street,State St
+0089_331.7,State Street,State St
+0089_333.1,State Street,State St
+0089_333.2,State Street,State St
+0089_336.0,State Street,State St
+0089_336.5,State Street,State St
+0089_336.7,State Street,State St
+0089_337.2,State Street,State St
+0089_337.5,State Street,State St
+0089_337.9,State Street,State St
+0089_338.0,State Street,State St
+0089_338.5,State Street,State St
+0089_339.1,State Street,State St
+0089_339.6,State Street,State St
+0089_340.2,State Street,State St
+0089_340.7,State Street,State St
+0089_341.3,State Street,State St
+0089_341.8,State Street,State St
+0089_342.4,State Street,State St
+0089_343.3,State Street,State St
+0089_344.0,State Street,State St
+0089_344.3,State Street,State St
+0089_344.6,State Street,State St
+0089_344.7,State Street,State St
+0089_345.0,State Street,State St
+0089_345.4,State Street,State St
+0089_345.9,State Street,State St
+0089_346.5,State Street,State St
+0089_347.4,State Street,Main St;State St
+0089_348.8,State Street,State St
+0089_349.3,State Street,State St
+0089_349.8,State Street,State St
+0089_350.1,State Street,State St
+0089_350.9,State Street,State St
+0089_351.4,State Street,State St
+0089_351.8,State Street,State St
+0089_352.0,State Street,State St
+0089_352.2,State Street,State St
+0089_362.5,State Street,State St
+0089_363.3,State Street,State St
+0089_363.8,State Street,State St
+0089_364.3,State Street,State St
+0089_364.8,State Street,State St
+0089_365.5,State Street,State St
+0089_366.3,State Street,State St
+0089_366.8,State Street,State St
+0089_367.2,State Street,State St
+0089_368.0,State Street,State St
+0089_368.4,State Street,State St
+0089_369.0,State Street,State St
+0089_369.8,State Street,State St
+0089_369.9,State Street,State St
+0089_370.6,State Street,State St
+0089_371.0,State Street,State St
+0089_371.5,State Street,State St
+0089_372.0,State Street,State St
+0089_372.2,State Street,State St
+0089_372.6,State Street,State St
+0089_372.7,State Street,State St
+0089_373.6,State Street,State St
+0089_374.5,State Street,State St
+0089_375.3,State Street,State St
+0089_375.7,State Street,State St
+0089_376.2,State Street,State St
+0089_376.8,State Street,State St
+0089_377.3,State Street,State St
+0089_377.9,State Street,State St
+0089_378.0,State Street,State St
+0089_378.3,State Street,State St
+0089_378.5,State Street,State St
+0106_006.1,State Street,200 East;State St
+0126_004.6,State Street,State St
+0126_005.0,State Street,State St
+0126_005.2,State Street,State St
+0186_001.6,State Street,State St
+0186_001.9,State Street,State St
+0186_002.1,State Street,State St
+0186_002.2,State Street,State St
+0186_002.4,State Street,State St
+0186_002.5,State Street,State St
+0194_002.8,State Street,1200 W;Blank;State St
+0227_000.5,State Street,State St
+1454_000.0,State Street,State St
+1454_000.6,State Street,State St
+1459_003.1,State Street,Clark Ln;Park Ln;State St
+0038_000.5,US-89 (north Davis),SR-38;US-89
+0089_297.1,US-89 (north Davis),US 89
+0089_322.3,US-89 (north Davis),1600 West;US 89
+0089_326.1,US-89 (north Davis),1600 West;US 89
+0089_326.5,US-89 (north Davis),US 89
+0089_326.8,US-89 (north Davis),US 89
+0089_327.0,US-89 (north Davis),US 89
+0089_327.7,US-89 (north Davis),Main St;SR 51;US 89
+0089_383.5,US-89 (north Davis),CD Road;US-89
+0089_384.6,US-89 (north Davis),US-89
+0089_384.9,US-89 (north Davis),US-89
+0089_385.0,US-89 (north Davis),US-89
+0089_385.2,US-89 (north Davis),US-89
+0089_385.7,US-89 (north Davis),US-89
+0089_386.3,US-89 (north Davis),US-89
+0089_386.8,US-89 (north Davis),US-89
+0089_396.1,US-89 (north Davis),Blank;Frontage;HOV 89;US-89
+0089_396.8,US-89 (north Davis),Blank;Frontage;HOV 89;US-89
+0089_397.6,US-89 (north Davis),Blank;HOV 89;US-89
+0089_398.7,US-89 (north Davis),HOV 89;US-89;US-89 NB;US-89 SB;US89 Fron
+0089_399.7,US-89 (north Davis),HOV 89;US-89;US-89 NB;US-89 SB;US89 Fron
+0089_400.5,US-89 (north Davis),HOV 89;US-89;US89 Fron
+0089_400.9,US-89 (north Davis),US-89;US-89 NB;US-89 SB;US89 Fron
+0089_401.4,US-89 (north Davis),Blank;HOV 89;US-89;US-89 NB;US-89 SB;US89 Fron
+0089_402.2,US-89 (north Davis),Blank;HOV 89;US-89;US-89 NB;US-89 SB;US89 Fron
+0089_403.2,US-89 (north Davis),HOV 89;US-89;US-89 NB;US-89 SB;US89 Fron
+0089_404.3,US-89 (north Davis),HOV 89;US-89
+0089_405.7,US-89 (north Davis),HOV 89;US-89
+0089_406.4,US-89 (north Davis),US-89
+0089_406.6,US-89 (north Davis),US-89
+0089_407.0,US-89 (north Davis),US-89
+0089_408.1,US-89 (north Davis),US-89
+0089_408.4,US-89 (north Davis),US-89
+0089_409.3,US-89 (north Davis),US-89
+0089_409.6,US-89 (north Davis),US-89
+0089_410.0,US-89 (north Davis),US-89
+0089_410.2,US-89 (north Davis),US-89
+0089_416.5,US-89 (north Davis),US-89
+0089_417.0,US-89 (north Davis),US-89
+0089_417.4,US-89 (north Davis),US-89
+0089_417.9,US-89 (north Davis),US-89
+0089_418.2,US-89 (north Davis),US-89
+0089_418.6,US-89 (north Davis),US-89
+0089_419.3,US-89 (north Davis),US-89
+0089_420.1,US-89 (north Davis),US-89
+0089_420.3,US-89 (north Davis),US-89
+0089_421.7,US-89 (north Davis),US-89
+0089_422.5,US-89 (north Davis),US-89
+0089_422.7,US-89 (north Davis),US-89
+0089_423.4,US-89 (north Davis),US-89
+0089_423.8,US-89 (north Davis),US-89
+0089_425.0,US-89 (north Davis),US-89
+0089_427.1,US-89 (north Davis),US-89
+0089_427.7,US-89 (north Davis),US-89
+0089_428.1,US-89 (north Davis),US-89
+0089_428.8,US-89 (north Davis),US-89
+0089_430.3,US-89 (north Davis),US-89
+0089_432.1,US-89 (north Davis),US-89
+0089_433.3,US-89 (north Davis),US-89
+0090_000.5,US-89 (north Davis),SR-90;US-89
+0091_002.0,US-89 (north Davis),US-89
+WFRC_8465,US-89 (north Davis),US-89
+0265_000.0,University Pkwy,Univ Pkwy
+0265_000.7,University Pkwy,Univ Pkwy
+0265_001.2,University Pkwy,Univ Pkwy
+0265_001.7,University Pkwy,Univ Pkwy
+0265_002.3,University Pkwy,Univ Pkwy
+0265_002.7,University Pkwy,Univ Pkwy
+0265_003.6,University Pkwy,Univ Pkwy
+0265_004.1,University Pkwy,Univ Pkwy
+3022_000.0,University Pkwy,Univ Pkwy
+3022_000.1,University Pkwy,Univ Pkwy
+3022_000.4,University Pkwy,Univ Pkwy
+WFRC_8543,University Pkwy,University St
+WFRC_8544,University Pkwy,University St
+WFRC_8019,West Davis Corridor,West Davi;West Davis
+WFRC_8024,West Davis Corridor,West Davis
+WFRC_8025,West Davis Corridor,West Davis
+WFRC_8026,West Davis Corridor,West Davis
+WFRC_8027,West Davis Corridor,5100 West;West Davis
+WFRC_8088,West Davis Corridor,4825 Sout;5100 West;West Davis

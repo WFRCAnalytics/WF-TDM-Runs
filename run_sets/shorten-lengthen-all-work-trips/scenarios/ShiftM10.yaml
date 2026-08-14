@@ -1,0 +1,16 @@
+scenario_id: ShiftM10
+description: "ShiftM10 - Shorten every origin's average HBW trip length by 10%"
+#driver_script: hail-mary/__HailMary_1Subfolder_shiftlength.s
+driver_script: hail-mary/__HailMary_1Subfolder_restartMC14.s
+start_from_copy: Shift00
+lock_down_copy: true
+
+variables:
+  # per-origin target %-change in that origin's own trip-volume-weighted
+  # mean HBW commute distance -- see Shift00.yaml's comment for the full
+  # mechanism description
+  hbw_trip_length_shift_pct: -0.10
+
+overrides:
+  vizToolDir: 'C:\Users\bhereth\Documents\GitHub\WF-TDM-Runs\tdm\Scenarios\shorten-lengthen-all-work-trips\.vizTool'
+  RunDescription: "ShiftM10 - -10% region-wide HBW trip-length shift"
