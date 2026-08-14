@@ -11,5 +11,5 @@ variables:
   hbw_trip_length_shift_pct: 0.10
 
 overrides:
-  vizToolDir: 'M:\GitHub\WF-TDM-Runs\tdm\Scenarios\shorten-lengthen-all-work-trips\.vizTool'
+  vizToolDir: 'C:\Users\bhereth\Documents\GitHub\WF-TDM-Runs\tdm\Scenarios\shorten-lengthen-all-work-trips\.vizTool'
   RunDescription: "ShiftP10 - +10% region-wide HBW trip-length shift"
