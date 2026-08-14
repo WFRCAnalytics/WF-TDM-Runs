@@ -206,13 +206,13 @@
       },
       {
         "relative_path": "5_AssignHwy/5_FinalNetSkims/Skm_EV.mtx",
-        "size_bytes": 14173585,
+        "size_bytes": 37354676,
         "entry_type": "matrix",
         "tabs": [
           "GP_Dist"
         ],
         "format": "omx",
-        "sha256": "992ccc05af1f28bb5261de082b0f879e7445ff6651dea148f5cceed6819303a9",
+        "sha256": "719b40cbee871f942be7f45f20d15424632e97f3e2fb7b21e47d03f7f13baec8",
         "repo_path": "runs/shorten-lengthen-all-work-trips/Shift00/20260812-044057-56f4/outputs/Skm_EV.omx"
       },
       {
