@@ -33,12 +33,10 @@ def scenarios_dir(repo_root: Path, run_set_id: str) -> Path:
     return run_set_dir(repo_root, run_set_id) / "scenarios"
 
 
-def runs_dir(repo_root: Path, run_set_id: str, scenario_id: str = None, run_id: str = None) -> Path:
+def runs_dir(repo_root: Path, run_set_id: str, scenario_id: str = None) -> Path:
     p = repo_root / "runs" / run_set_id
     if scenario_id:
         p = p / scenario_id
-        if run_id:
-            p = p / run_id
     return p
 
 

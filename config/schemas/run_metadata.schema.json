@@ -99,7 +99,11 @@
               "relative_path": { "type": "string" },
               "size_bytes": { "type": "integer" },
               "sha256": { "type": "string" },
-              "repo_path": { "type": "string" }
+              "repo_path": { "type": "string" },
+              "committed": {
+                "type": "boolean",
+                "description": "False when this file exceeded outputs.max_file_size_mb -- it was still written to repo_path locally (e.g. for rendering reports on this machine) but is listed in its outputs/ folder's auto-generated .gitignore and was never committed to the repo."
+              }
             }
           }
         },

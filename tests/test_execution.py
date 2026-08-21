@@ -8,7 +8,7 @@ import pytest
 
 from tdmruns import execution as ex
 from tdmruns import submodule as sub
-from tdmruns.execution import decide_status
+from tdmruns.execution import _append_prn_errors, decide_status
 from tdmruns.exceptions import ExecutionError, VersionResolutionError
 
 LOG_PATH = Path("logs/orchestrator_invocation.log")
@@ -202,17 +202,25 @@ def test_run_scenario_rejects_mismatched_pre_resolved_version_state():
             )
 
 
-def test_no_model_log_falls_back_to_exit_code_success():
+def test_no_model_log_is_failed_even_with_zero_exit_code():
+    # A clean exit code alone is never enough to call a run "success" -- the
+    # model's own completion log is the only signal trusted for that (see
+    # decide_status()'s docstring). Missing/unresolved (e.g. superseded by
+    # further step activity, see model_log.py) means "unconfirmed", not
+    # "assume it worked".
     status, error, source, result = decide_status(0, None, LOG_PATH, FOLDER)
-    assert (status, error, source, result) == ("success", None, "exit_code", None)
+    assert status == "failed"
+    assert source == "exit_code"
+    assert result is None
+    assert "exit code: 0" in error.lower()
 
 
-def test_no_model_log_falls_back_to_exit_code_failure():
+def test_no_model_log_reports_exit_code_on_failure():
     status, error, source, result = decide_status(1, None, LOG_PATH, FOLDER)
     assert status == "failed"
     assert source == "exit_code"
     assert result is None
-    assert "code 1" in error
+    assert "exit code: 1" in error.lower()
 
 
 def test_model_log_success_wins_over_nonzero_exit_code():
@@ -248,3 +256,17 @@ def test_model_log_crashed_with_no_step_name_still_reports_failure():
     assert status == "failed"
     assert "unrecognized step" in error
     assert result["exit_code_mismatch"] is False  # crashed and exit code agreed
+
+
+def test_append_prn_errors_folds_in_voyager_fatal_lines(tmp_path):
+    (tmp_path / "TPPL0004.PRN").write_text(
+        "F(004): Problems opening 1_TripGen_vizTool.s (err=2)\n", encoding="utf-8"
+    )
+    error = _append_prn_errors("Model crashed during STEP 3.", tmp_path)
+    assert error.startswith("Model crashed during STEP 3.")
+    assert "F(004): Problems opening 1_TripGen_vizTool.s (err=2)" in error
+
+
+def test_append_prn_errors_no_op_without_a_prn_file(tmp_path):
+    error = _append_prn_errors("Model crashed during STEP 3.", tmp_path)
+    assert error == "Model crashed during STEP 3."

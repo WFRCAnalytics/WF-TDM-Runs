@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
-"""Validates every committed runs/**/run_metadata.json against the schema,
-and cross-checks that every curated output's checksum still matches the file
-on disk -- catching accidental hand-edits or partial commits."""
+"""Validates every committed runs/**/run_info/*.json against the schema, and
+cross-checks that the latest attempt's curated outputs' checksums still
+match the files on disk -- catching accidental hand-edits or partial
+commits. Only the latest attempt per scenario ever has live output files
+(execution.py wipes and re-curates outputs/ on every attempt -- see
+metadata.py's module docstring), so only that record's curated[] entries
+are checked against disk; every older, superseded attempt's curated[]
+paths are expected to no longer exist and are skipped for that check
+(schema validation still runs against every record regardless of age)."""
 import hashlib
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 import jsonschema
@@ -24,32 +31,43 @@ def main():
     schema = json.load(open(REPO_ROOT / "config" / "schemas" / "run_metadata.schema.json"))
     validator = jsonschema.Draft7Validator(schema)
 
+    by_scenario = defaultdict(list)
+    for path in sorted(REPO_ROOT.glob("runs/**/run_info/*.json")):
+        by_scenario[path.parent].append(path)
+
     had_error = False
-    for path in sorted(REPO_ROOT.glob("runs/**/run_metadata.json")):
-        data = json.load(open(path))
-        errors = list(validator.iter_errors(data))
-        if errors:
-            had_error = True
-            print(f"[FAIL] {path}:", file=sys.stderr)
-            for e in errors:
-                loc = "/".join(str(p) for p in e.path) or "(root)"
-                print(f"    {loc}: {e.message}", file=sys.stderr)
-            continue
+    for _run_info_dir, paths in sorted(by_scenario.items()):
+        latest_path = max(paths)  # run_id is timestamp-prefixed -- sorts chronologically
+        for path in paths:
+            data = json.load(open(path))
+            errors = list(validator.iter_errors(data))
+            if errors:
+                had_error = True
+                print(f"[FAIL] {path}:", file=sys.stderr)
+                for e in errors:
+                    loc = "/".join(str(p) for p in e.path) or "(root)"
+                    print(f"    {loc}: {e.message}", file=sys.stderr)
+                continue
 
-        if not data.get("outputs", {}).get("retired"):
-            for entry in data.get("outputs", {}).get("curated", []):
-                file_path = Path(entry["repo_path"])
-                if not file_path.is_file():
-                    had_error = True
-                    print(f"[FAIL] {path}: curated output missing on disk: {file_path}", file=sys.stderr)
-                    continue
-                actual = sha256(file_path)
-                if actual != entry["sha256"]:
-                    had_error = True
-                    print(f"[FAIL] {path}: checksum mismatch for {file_path}", file=sys.stderr)
+            if path == latest_path and not data.get("outputs", {}).get("retired"):
+                for entry in data.get("outputs", {}).get("curated", []):
+                    if entry.get("committed") is False:
+                        # Oversized -- kept locally by whoever curated it but
+                        # deliberately never committed (see outputs.py), so it
+                        # won't exist in a fresh checkout. Nothing to check.
+                        continue
+                    file_path = Path(entry["repo_path"])
+                    if not file_path.is_file():
+                        had_error = True
+                        print(f"[FAIL] {path}: curated output missing on disk: {file_path}", file=sys.stderr)
+                        continue
+                    actual = sha256(file_path)
+                    if actual != entry["sha256"]:
+                        had_error = True
+                        print(f"[FAIL] {path}: checksum mismatch for {file_path}", file=sys.stderr)
 
-        if not errors:
-            print(f"[OK]   {path.relative_to(REPO_ROOT)}")
+            if not errors:
+                print(f"[OK]   {path.relative_to(REPO_ROOT)}")
 
     sys.exit(1 if had_error else 0)
 

@@ -66,11 +66,19 @@ def snapshot_run_set(repo_root: Path, run_set: dict, run_set_id: str) -> list:
 
 
 def purge_outputs(repo_root: Path, run_set_id: str) -> dict:
-    """Deletes every curated output file under runs/<run_set_id>/**/outputs/
-    and marks each run's metadata as retired. Refuses unless a populated
-    snapshot already exists, since that snapshot becomes the only surviving
-    copy of what those reports read. Returns a summary dict (runs_purged,
-    files_removed, bytes_freed)."""
+    """Deletes every curated output file under runs/<run_set_id>/*/outputs/
+    and marks each scenario's latest attempt as retired. Refuses unless a
+    populated snapshot already exists, since that snapshot becomes the only
+    surviving copy of what those reports read. Returns a summary dict
+    (runs_purged, files_removed, bytes_freed).
+
+    Only the latest attempt per scenario is ever touched here: since
+    execution.py wipes and re-curates outputs/ on every attempt (see
+    _reset_run_outputs()), a scenario's older, superseded attempts never had
+    live output files to begin with by the time this runs -- their absence
+    isn't something retirement caused, so their run_info/ records don't get
+    a "retired" flag. Only the one record whose curated[] paths were
+    actually live before this call needs one."""
     snap_dir = snapshot_dir_path(repo_root, run_set_id)
     if not _snapshot_is_populated(snap_dir):
         raise RetirementError(
@@ -78,22 +86,20 @@ def purge_outputs(repo_root: Path, run_set_id: str) -> dict:
             f"--run-set {run_set_id}` first."
         )
 
-    runs_root = repo_root / "runs" / run_set_id
-    metadata_paths = sorted(runs_root.glob("*/*/run_metadata.json"))
-    if not metadata_paths:
-        raise RetirementError(f"No runs found under {runs_root}.")
+    runs = md.list_runs(repo_root, run_set_id)
+    if not runs:
+        raise RetirementError(f"No runs found under {repo_root / 'runs' / run_set_id}.")
 
     runs_purged = 0
     files_removed = 0
     bytes_freed = 0
     retired_at = datetime.now(timezone.utc).isoformat()
 
-    for meta_path in metadata_paths:
-        run_dir = meta_path.parent
-        data = md.read(run_dir)
+    for data in runs:
         if data.get("outputs", {}).get("retired"):
             continue
 
+        run_dir = repo_root / "runs" / data["run_set_id"] / data["scenario_id"]
         outputs_dir = run_dir / "outputs"
         if outputs_dir.is_dir():
             for f in outputs_dir.iterdir():

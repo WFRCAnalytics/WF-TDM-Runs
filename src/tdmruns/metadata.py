@@ -1,6 +1,19 @@
-"""Run metadata: the framework's source of truth. One JSON document per run,
-schema-versioned, committed to the repo. Reporting reads only this -- never
-the TDM submodule or the gitignored scenario working folders directly."""
+"""Run metadata: the framework's source of truth. One JSON document per
+attempt, schema-versioned, committed to the repo. Reporting reads only this
+-- never the TDM submodule or the gitignored scenario working folders
+directly.
+
+Every attempt for a (run_set_id, scenario_id) pair keeps its own metadata
+document, forever, at runs/{run_set_id}/{scenario_id}/run_info/{run_id}.json
+-- a permanent audit trail of every run/import invocation, kept regardless
+of outcome. This is the one part of runs/{run_set_id}/{scenario_id}/ that is
+never wiped. Curated outputs (runs/{run_set_id}/{scenario_id}/outputs/*, a
+sibling of run_info/) are a different story: only the latest attempt's
+outputs are ever kept on disk (see execution.py, which wipes and re-curates
+them on every attempt) -- so "latest attempt" still matters for outputs/
+status purposes even though metadata history is now unbounded.
+list_runs()/latest_run() resolve it by run_id, which sorts chronologically
+since generate_run_id() (execution.py) prefixes it with a UTC timestamp."""
 import json
 import subprocess
 from datetime import datetime, timezone
@@ -102,31 +115,81 @@ def build(
 
 
 def write(run_dir: Path, metadata: dict):
-    run_dir.mkdir(parents=True, exist_ok=True)
-    with open(run_dir / "run_metadata.json", "w") as f:
+    run_info_dir = run_dir / "run_info"
+    run_info_dir.mkdir(parents=True, exist_ok=True)
+    with open(run_info_dir / f"{metadata['run_id']}.json", "w") as f:
         json.dump(metadata, f, indent=2)
         f.write("\n")
 
 
-def read(run_dir: Path) -> dict:
-    with open(run_dir / "run_metadata.json") as f:
+def _latest_run_id(run_dir: Path) -> str:
+    """The most recent attempt's run_id under run_dir/run_info/, or None if
+    none exist. run_id sorts chronologically (see module docstring), so the
+    lexicographically-greatest filename stem is the latest attempt."""
+    run_info_dir = run_dir / "run_info"
+    if not run_info_dir.is_dir():
+        return None
+    candidates = sorted(run_info_dir.glob("*.json"))
+    return candidates[-1].stem if candidates else None
+
+
+def read(run_dir: Path, run_id: str = None) -> dict:
+    """Reads one attempt's metadata document. run_id=None (the default)
+    resolves to the latest attempt."""
+    run_id = run_id or _latest_run_id(run_dir)
+    with open(run_dir / "run_info" / f"{run_id}.json") as f:
         return json.load(f)
 
 
+def _scenario_run_dir(repo_root: Path, run_set_id: str, scenario_id: str) -> Path:
+    return repo_root / "runs" / run_set_id / scenario_id
+
+
 def list_runs(repo_root: Path, run_set_id: str = None, scenario_id: str = None) -> list:
-    """Scans runs/ for run_metadata.json files, optionally filtered, sorted
-    newest-first by run_id (which is timestamp-prefixed)."""
+    """The latest attempt for each (run_set_id, scenario_id) under runs/,
+    optionally filtered to one run set or one scenario -- sorted by
+    (run_set_id, scenario_id) for a stable order. Full attempt history lives
+    in each scenario's own run_info/ -- see list_attempts() -- but this,
+    like the old single-file-per-run layout, only ever surfaces the latest
+    one per scenario."""
     runs_root = repo_root / "runs"
     if not runs_root.is_dir():
         return []
-    pattern = f"{run_set_id or '*'}/{scenario_id or '*'}/*/run_metadata.json"
-    found = sorted(runs_root.glob(pattern), key=lambda p: p.parent.name, reverse=True)
-    return [read(p.parent) for p in found]
+    rs_ids = [run_set_id] if run_set_id else sorted(p.name for p in runs_root.iterdir() if p.is_dir())
+    found = []
+    for rs_id in rs_ids:
+        rs_dir = runs_root / rs_id
+        if not rs_dir.is_dir():
+            continue
+        scen_ids = (
+            [scenario_id] if scenario_id
+            else sorted(p.name for p in rs_dir.iterdir() if p.is_dir())
+        )
+        for scen_id in scen_ids:
+            run = latest_run(repo_root, rs_id, scen_id)
+            if run is not None:
+                found.append(run)
+    return found
+
+
+def list_attempts(repo_root: Path, run_set_id: str, scenario_id: str) -> list:
+    """Every attempt ever recorded for (run_set_id, scenario_id),
+    newest-first -- the permanent audit trail run_info/ keeps regardless of
+    outcome (see module docstring). Newest-first (unlike ported sibling
+    tdmcalib's oldest-first list_attempts()) since both of this repo's own
+    consumers -- latest_successful_run() below and reports/report_data.py's
+    run-history table -- want to see the most recent attempt first."""
+    run_dir = _scenario_run_dir(repo_root, run_set_id, scenario_id)
+    run_info_dir = run_dir / "run_info"
+    if not run_info_dir.is_dir():
+        return []
+    return [read(run_dir, run_id=p.stem) for p in sorted(run_info_dir.glob("*.json"), reverse=True)]
 
 
 def latest_run(repo_root: Path, run_set_id: str, scenario_id: str) -> dict:
-    runs = list_runs(repo_root, run_set_id, scenario_id)
-    return runs[0] if runs else None
+    run_dir = _scenario_run_dir(repo_root, run_set_id, scenario_id)
+    run_id = _latest_run_id(run_dir)
+    return read(run_dir, run_id=run_id) if run_id else None
 
 
 def latest_successful_run(repo_root: Path, run_set_id: str, scenario_id: str) -> dict:
@@ -137,7 +200,7 @@ def latest_successful_run(repo_root: Path, run_set_id: str, scenario_id: str) ->
     for an unrelated reason (e.g. a later attempt that failed) shouldn't
     shadow an earlier successful one.
     """
-    for run in list_runs(repo_root, run_set_id, scenario_id):
+    for run in list_attempts(repo_root, run_set_id, scenario_id):
         if run["status"] == "success":
             return run
     return None

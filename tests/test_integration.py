@@ -10,8 +10,8 @@ def test_run_scenario_succeeds_and_writes_metadata(framework_repo):
     assert result["control_center"]["scenario_overrides"]["HOT_Toll_Min"] == 50
     assert result["control_center"]["run_set_overrides"]["Run_Documentation"] == 0
 
-    run_dir = framework_repo / "runs" / "test-run-set" / "S01" / result["run_id"]
-    assert (run_dir / "run_metadata.json").is_file()
+    run_dir = framework_repo / "runs" / "test-run-set" / "S01"
+    assert (run_dir / "run_info" / f"{result['run_id']}.json").is_file()
     assert (run_dir / "outputs" / "reports" / "assignment_summary.csv").is_file()
     assert (run_dir / "outputs" / "logs" / "RunModel.log").is_file()
     assert not (run_dir / "outputs" / "skims").exists()
@@ -58,7 +58,7 @@ def test_simulated_failure_is_recorded_not_raised(framework_repo):
     assert result["status"] == "failed"
     assert result["error"] is not None
     assert (
-        framework_repo / "runs" / "test-run-set" / "S01" / result["run_id"] / "run_metadata.json"
+        framework_repo / "runs" / "test-run-set" / "S01" / "run_info" / f"{result['run_id']}.json"
     ).is_file()
 
 
@@ -86,9 +86,12 @@ def test_output_size_limit_violation_fails_run_cleanly(framework_repo):
     run_set_path.write_text(yaml.safe_dump(data, sort_keys=False))
 
     result = ex.run_scenario(framework_repo, "test-run-set", "S01")
-    assert result["status"] == "failed"
-    assert "exceed the 1 MB limit" in result["error"]
-    assert result["outputs"]["curated"] == []
+    # An oversized curated file no longer fails the run -- it's kept
+    # uncommitted (see outputs.py) rather than marking an otherwise-
+    # successful model run "failed".
+    assert result["status"] == "success"
+    oversized = [c for c in result["outputs"]["curated"] if not c["committed"]]
+    assert oversized
 
 
 def test_run_set_continues_after_one_scenario_fails(framework_repo):

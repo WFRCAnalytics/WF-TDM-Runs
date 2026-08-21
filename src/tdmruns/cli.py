@@ -167,11 +167,12 @@ def run_set_cmd(run_set_id, only, force):
 def import_manual_run_cmd(ctx, run_set_id, scenario_id, scenario_folder):
     """Curate outputs for a scenario that was run manually, outside
     run-scenario/run-set. Applies the scenario's outputs.include glob
-    selection and size ceiling exactly as a CLI-driven run would, copies the
-    result into runs/<run-set>/<scenario>/<run-id>/outputs/, and records
-    run_metadata.json with execution_mode "manual" so it's clear the model
-    itself wasn't invoked by this framework. Does not touch the TDM
-    submodule. Always creates a new timestamped run -- there's no
+    selection and size ceiling exactly as a CLI-driven run would, replaces
+    whatever was in runs/<run-set>/<scenario>/outputs/ with the new result,
+    and records the attempt permanently at runs/<run-set>/<scenario>/
+    run_info/<run-id>.json with execution_mode "manual" so it's clear the
+    model itself wasn't invoked by this framework. Does not touch the TDM
+    submodule. Always creates a new timestamped attempt -- there's no
     skip-if-unchanged check, since running this command is itself the
     deliberate signal to (re-)gather outputs."""
     repo_root = ctx.obj["repo_root"]
@@ -184,7 +185,7 @@ def import_manual_run_cmd(ctx, run_set_id, scenario_id, scenario_folder):
         f"[{result['status'].upper()}] {run_set_id}/{scenario_id} run {result['run_id']} (manual)"
     )
     n_curated = len(result["outputs"]["curated"])
-    click.echo(f"  {n_curated} file(s) curated to runs/{run_set_id}/{scenario_id}/{result['run_id']}/outputs/")
+    click.echo(f"  {n_curated} file(s) curated to runs/{run_set_id}/{scenario_id}/outputs/")
     if result["status"] != "success":
         click.echo(f"  {result.get('error')}", err=True)
         sys.exit(1)
@@ -239,10 +240,11 @@ def snapshot_run_set_cmd(ctx, run_set_id):
 @main.command("purge-run-set-outputs")
 @click.option("--run-set", "run_set_id", required=True)
 def purge_run_set_outputs_cmd(run_set_id):
-    """Delete curated output files under runs/<run-set>/**/outputs/ and mark
-    each run's metadata as retired. Refuses unless run_sets/<run-set>/snapshot/
-    already exists and is populated -- run snapshot-run-set first. Deletes
-    real, currently-committed files; this is the irreversible-ish step."""
+    """Delete curated output files under runs/<run-set>/*/outputs/ and mark
+    each scenario's latest attempt as retired. Refuses unless
+    run_sets/<run-set>/snapshot/ already exists and is populated -- run
+    snapshot-run-set first. Deletes real, currently-committed files; this is
+    the irreversible-ish step."""
     repo_root = find_repo_root()
     try:
         summary = ret.purge_outputs(repo_root, run_set_id)

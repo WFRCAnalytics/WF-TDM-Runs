@@ -37,17 +37,6 @@ def test_select_with_no_patterns_selects_nothing():
     assert out.select(entries, []) == []
 
 
-def test_validate_size_limit_raises_for_oversized_file():
-    entries = [{"relative_path": "skims/big.mtx", "size_bytes": 2 * 1024 * 1024}]
-    with pytest.raises(OutputCollectionError):
-        out.validate_size_limit(entries, max_file_size_mb=1)
-
-
-def test_validate_size_limit_passes_when_under_limit():
-    entries = [{"relative_path": "reports/a.csv", "size_bytes": 1024}]
-    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
-
-
 def test_copy_selected_flattens_to_dest_dir(tmp_path):
     folder = _make_scenario_folder(tmp_path)
     entries = out.inventory(folder)
@@ -58,6 +47,40 @@ def test_copy_selected_flattens_to_dest_dir(tmp_path):
     assert not (dest / "reports").exists()
     assert curated[0]["repo_path"] == (dest / "a.csv").relative_to(tmp_path).as_posix()
     assert len(curated[0]["sha256"]) == 64
+    assert curated[0]["committed"] is True
+    assert not (dest / ".gitignore").exists()  # nothing over the ceiling
+
+
+def test_copy_selected_keeps_oversized_file_uncommitted_and_gitignored(tmp_path):
+    folder = _make_scenario_folder(tmp_path)
+    entries = out.inventory(folder)
+    selected = out.select(entries, [{"datafile": "skims/*.mtx"}])  # big.mtx is 2 MB
+    dest = tmp_path / "curated"
+
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path)
+
+    assert (dest / "big.mtx").is_file()  # kept on disk, not deleted
+    assert curated[0]["committed"] is False
+    assert (dest / ".gitignore").is_file()
+    assert "big.mtx" in (dest / ".gitignore").read_text()
+
+
+def test_copy_selected_removes_gitignore_once_nothing_is_oversized(tmp_path):
+    # A prior curation left an oversized file + .gitignore; re-curating with
+    # only small files should regenerate (not append to) the .gitignore,
+    # rather than leave a stale entry behind.
+    folder = _make_scenario_folder(tmp_path)
+    entries = out.inventory(folder)
+    dest = tmp_path / "curated"
+
+    big_selected = out.select(entries, [{"datafile": "skims/*.mtx"}])
+    out.copy_selected(folder, big_selected, dest, max_file_size_mb=1, repo_root=tmp_path)
+    assert (dest / ".gitignore").is_file()
+
+    small_selected = out.select(entries, [{"datafile": "reports/*.csv"}])
+    curated = out.copy_selected(folder, small_selected, dest, max_file_size_mb=1, repo_root=tmp_path)
+    assert curated[0]["committed"] is True
+    assert not (dest / ".gitignore").exists()
 
 
 def test_copy_selected_raises_on_filename_collision(tmp_path):
@@ -118,21 +141,7 @@ def test_copy_selected_writes_column_filtered_csv(tmp_path):
     assert curated[0]["size_bytes"] == out_path.stat().st_size
 
 
-def test_validate_size_limit_skips_filtered_entries():
-    # Raw size is huge, but this entry is destined to be filtered -- its raw
-    # size says nothing about what actually gets committed, so the pre-copy
-    # check must not reject it here (copy_selected checks the real bytes).
-    entries = [
-        {
-            "relative_path": "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv",
-            "size_bytes": 200 * 1024 * 1024,
-            "columns": ["TAZID", "Total"],
-        }
-    ]
-    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
-
-
-def test_copy_selected_raises_and_cleans_up_when_filtered_output_still_too_big(tmp_path):
+def test_copy_selected_keeps_oversized_filtered_output_uncommitted(tmp_path):
     folder = tmp_path / "scenario"
     _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv", rows=1000)
     entries = out.inventory(folder)
@@ -140,9 +149,11 @@ def test_copy_selected_raises_and_cleans_up_when_filtered_output_still_too_big(t
         entries, [{"datafile": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "Total"]}]
     )
     dest = tmp_path / "curated"
-    with pytest.raises(OutputCollectionError):
-        out.copy_selected(folder, selected, dest, max_file_size_mb=0.0001, repo_root=tmp_path)
-    assert not (dest / "TAZ-Based Metrics_filtered.csv").exists()
+
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=0.0001, repo_root=tmp_path)
+
+    assert (dest / "TAZ-Based Metrics_filtered.csv").is_file()  # kept, not deleted
+    assert curated[0]["committed"] is False
 
 
 def test_copy_selected_raises_when_declared_column_missing(tmp_path):
@@ -224,7 +235,10 @@ def test_curate_preserves_and_appends_to_existing_error_on_no_match(tmp_path):
     assert curated == []
 
 
-def test_curate_fails_when_curation_itself_raises(tmp_path):
+def test_curate_stays_success_with_oversized_output_marked_uncommitted(tmp_path):
+    # An oversized curated file no longer fails the run -- it's kept on disk
+    # uncommitted (see outputs.py's _write_outputs_gitignore()) rather than
+    # marking an otherwise-successful model run "failed".
     folder = _make_scenario_folder(tmp_path)
     inventory = out.inventory(folder)
     output_spec = {"include": [{"datafile": "skims/*.mtx"}], "max_file_size_mb": 1}  # big.mtx is 2 MB
@@ -232,8 +246,25 @@ def test_curate_fails_when_curation_itself_raises(tmp_path):
 
     status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None, tmp_path)
 
+    assert status == "success"
+    assert error is None
+    assert curated[0]["committed"] is False
+
+
+def test_curate_fails_when_curation_itself_raises(tmp_path):
+    folder = tmp_path / "scenario"
+    _make_wide_csv(folder, "5_AssignHwy/4_Summaries/TAZ-Based Metrics.csv")
+    inventory = out.inventory(folder)
+    output_spec = {
+        "include": [{"datafile": "5_AssignHwy/4_Summaries/*.csv", "columns": ["TAZID", "NoSuchColumn"]}],
+        "max_file_size_mb": 1,
+    }
+    run_dir = tmp_path / "run"
+
+    status, error, curated = out.curate(folder, inventory, output_spec, run_dir, "success", None, tmp_path)
+
     assert status == "failed"
-    assert "exceed the 1 MB limit" in error
+    assert "NoSuchColumn" in error
     assert curated == []
 
 
@@ -278,18 +309,24 @@ def test_dest_filename_for_matrix_mtx_format():
     assert out._dest_filename(entry) == "Skm_DY.mtx"
 
 
-def test_validate_size_limit_skips_matrix_entries():
-    # Raw .mtx size is routinely hundreds of MB by design -- the pre-copy
-    # check must not reject it; only the extracted OMX's actual size matters.
-    entries = [
-        {
-            "relative_path": "skims/Skm_DY.mtx",
-            "size_bytes": 400 * 1024 * 1024,
-            "entry_type": "matrix",
-            "tabs": ["GP_Dist"],
-        }
-    ]
-    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
+def test_copy_selected_matrix_entry_keeps_oversized_extraction_uncommitted(tmp_path, monkeypatch):
+    def fake_extract(source_mtx, tabs, dest_omx, voyager_exe, output_format="omx"):
+        dest_omx.parent.mkdir(parents=True, exist_ok=True)
+        dest_omx.write_bytes(b"0" * (2 * 1024 * 1024))
+
+    monkeypatch.setattr(matrix_utils, "extract_matrix_tabs", fake_extract)
+
+    folder = tmp_path / "scenario"
+    (folder / "skims").mkdir(parents=True)
+    (folder / "skims" / "Skm_DY.mtx").write_bytes(b"fake")
+    entries = out.inventory(folder)
+    selected = out.select(entries, [{"matrix": "skims/*.mtx", "tabs": ["GP_Dist"]}])
+    dest = tmp_path / "curated"
+
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path, voyager_exe="fake.exe")
+
+    assert (dest / "Skm_DY.omx").is_file()
+    assert curated[0]["committed"] is False
 
 
 def test_copy_selected_matrix_entry_requires_voyager_exe(tmp_path):
@@ -401,16 +438,28 @@ def test_dest_filename_for_network_net_format():
     assert out._dest_filename(entry) == "_Assigned.net"
 
 
-def test_validate_size_limit_skips_network_entries():
-    entries = [
-        {
-            "relative_path": "5_AssignHwy/2a_Networks/_Assigned.net",
-            "size_bytes": 300 * 1024 * 1024,
-            "entry_type": "network",
-            "fields": ["SEGID"],
-        }
-    ]
-    out.validate_size_limit(entries, max_file_size_mb=1)  # should not raise
+def test_copy_selected_network_entry_keeps_oversized_export_uncommitted(tmp_path, monkeypatch):
+    def fake_find_geom(scenario_folder):
+        return scenario_folder / "geom.shp"
+
+    def fake_export(net_path, geometry_shp, fields, dest_geojson, voyager_exe, output_format="geojson"):
+        dest_geojson.parent.mkdir(parents=True, exist_ok=True)
+        dest_geojson.write_bytes(b"0" * (2 * 1024 * 1024))
+
+    monkeypatch.setattr(network_utils, "find_geometry_shapefile", fake_find_geom)
+    monkeypatch.setattr(network_utils, "export_network_fields", fake_export)
+
+    folder = tmp_path / "scenario"
+    (folder / "5_AssignHwy" / "2a_Networks").mkdir(parents=True)
+    (folder / "5_AssignHwy" / "2a_Networks" / "_Assigned.net").write_bytes(b"fake")
+    entries = out.inventory(folder)
+    selected = out.select(entries, [{"network": "5_AssignHwy/2a_Networks/*.net", "fields": ["SEGID"]}])
+    dest = tmp_path / "curated"
+
+    curated = out.copy_selected(folder, selected, dest, max_file_size_mb=1, repo_root=tmp_path, voyager_exe="fake.exe")
+
+    assert (dest / "_Assigned.geojson").is_file()
+    assert curated[0]["committed"] is False
 
 
 def test_copy_selected_network_entry_requires_voyager_exe(tmp_path):

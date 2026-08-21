@@ -15,27 +15,72 @@ the wrapping batch process's ERRORLEVEL.
 The log file is opened with APPEND=T and reused across every CLI-driven retry
 of a given scenario_id (the raw scenario folder is not unique per attempt),
 so it can accumulate several full run reports over time. Only the most recent
-one -- the text from the previous "TOTAL MODEL RUN TIME" entry (or the start
-of the file) up to and including the last one -- describes this run.
+one -- the text up to and including the last "TOTAL MODEL RUN TIME" entry --
+describes this run.
+
+Because the driver script never calls Exit from :ONERROR, a caught error logs
+its crash+total block and execution simply falls through to whatever comes
+next in the script, rather than stopping. If that next thing is another real
+step, :ONERROR can fire again later for a different step, appending another
+crash+total block, and so on, all within one single process run. So "TOTAL
+MODEL RUN TIME" alone is not reliably a once-per-run final marker -- a crash+
+total block can describe a superseded checkpoint that the run recovered from
+and kept going past. read_model_log() therefore returns None (unresolved,
+caller falls back to the exit code) whenever anything is logged *after* the
+last TOTAL MODEL RUN TIME block, rather than trusting a possibly-superseded
+checkpoint as this attempt's final outcome.
+
+Newer TDM pins add an unambiguous fix for this: _TimeStamp_ModelSuccess.block
+(only ever reached via the single :ENDMODEL, never :ONERROR) writes a
+trailing "MODEL RUN SUCCESSFUL" line that the crash block does not. Its mere
+presence at the true tail of the file is conclusive proof of a real finish,
+regardless of how many crash+retry checkpoints came before it, so it's
+checked first and preferred whenever present. A TDM pin that predates this
+line falls back to the "nothing after the last TOTAL block" heuristic above.
 """
 
 import re
 from pathlib import Path
 
+_SUCCESS_MARKER = "MODEL RUN SUCCESSFUL"
 _TOTAL_RE = re.compile(r"TOTAL MODEL RUN TIME")
-_CRASHED_RE = re.compile(r"-- Model Crashed --")
-_CRASHED_STEP_RE = re.compile(r"The model crashed in:\s*(.+)")
 _BEG_TIME_RE = re.compile(r"Beg Time:\s*(.+)")
 _END_TIME_RE = re.compile(r"End Time:\s*(.+)")
 _RUN_TIME_RE = re.compile(r"Run Time:\s*(.+)")
 
+# _TimeStamp_ModelCrashed.block writes "-- Model Crashed --" and its crashed
+# step directly ahead of "TOTAL MODEL RUN TIME" in the same PRINT statement,
+# with nothing but that fixed template text in between -- so anchoring the
+# crash marker to end exactly where a given TOTAL MODEL RUN TIME occurrence
+# starts ties it to *that* occurrence specifically, unlike a search anywhere
+# in the segment since the previous TOTAL block, which can cross into an
+# earlier, unrelated checkpoint's crash marker once enough step activity
+# separates the two.
+_CRASH_THEN_TOTAL_RE = re.compile(
+    r"-- Model Crashed --\s*\nThe model crashed in:\s*(.+?)\s*\n\s*\nTOTAL MODEL RUN TIME"
+)
+
+
+def _times_from(text: str, total_pos: int) -> dict:
+    tail = text[total_pos:total_pos + 400]
+    beg = _BEG_TIME_RE.search(tail)
+    end = _END_TIME_RE.search(tail)
+    run = _RUN_TIME_RE.search(tail)
+    return {
+        "started_at": beg.group(1).strip() if beg else None,
+        "finished_at": end.group(1).strip() if end else None,
+        "run_time": run.group(1).strip() if run else None,
+    }
+
 
 def read_model_log(scenario_folder: Path) -> dict | None:
     """Returns the outcome of the most recent attempt recorded in
-    <scenario_folder>\\_Log\\_RunTime.txt, or None if the file doesn't exist
-    or has no recognizable "TOTAL MODEL RUN TIME" entry yet (e.g. Cube
-    crashed or was killed before writing anything) -- callers should fall
-    back to the process exit code in that case.
+    <scenario_folder>\\_Log\\_RunTime.txt, or None if the file doesn't exist,
+    has no recognizable completion entry yet (e.g. Cube crashed or was
+    killed before writing anything), or its last entry has been superseded
+    by further step activity logged after it (a checkpoint that was caught,
+    retried, and kept going) -- callers should fall back to the process exit
+    code in all of these cases.
 
     Returned dict: {"outcome": "success" | "crashed", "crashed_step": str
     or None, "started_at": str or None, "finished_at": str or None,
@@ -46,28 +91,36 @@ def read_model_log(scenario_folder: Path) -> dict | None:
         return None
     text = log_path.read_text(encoding="utf-8", errors="replace")
 
+    success_pos = text.rfind(_SUCCESS_MARKER)
+    if success_pos != -1 and not text[success_pos + len(_SUCCESS_MARKER):].strip():
+        total_pos = text.rfind("TOTAL MODEL RUN TIME", 0, success_pos)
+        return {
+            "outcome": "success",
+            "crashed_step": None,
+            **_times_from(text, total_pos if total_pos != -1 else success_pos),
+        }
+
     totals = [m.start() for m in _TOTAL_RE.finditer(text)]
     if not totals:
         return None
     last_total = totals[-1]
-    prev_boundary = totals[-2] if len(totals) > 1 else 0
-
-    this_attempt = text[prev_boundary:last_total]
-    crashed = _CRASHED_RE.search(this_attempt) is not None
-    crashed_step = None
-    if crashed:
-        m = _CRASHED_STEP_RE.search(this_attempt)
-        crashed_step = m.group(1).strip() if m else None
 
     tail = text[last_total:last_total + 400]
-    beg = _BEG_TIME_RE.search(tail)
-    end = _END_TIME_RE.search(tail)
     run = _RUN_TIME_RE.search(tail)
+    block_end = last_total + (run.end() if run else len(tail))
+    if text[block_end:].strip():
+        return None
+
+    crashed = False
+    crashed_step = None
+    for m in _CRASH_THEN_TOTAL_RE.finditer(text):
+        if m.end() == last_total + len("TOTAL MODEL RUN TIME"):
+            crashed = True
+            crashed_step = m.group(1).strip()
+            break
 
     return {
         "outcome": "crashed" if crashed else "success",
         "crashed_step": crashed_step,
-        "started_at": beg.group(1).strip() if beg else None,
-        "finished_at": end.group(1).strip() if end else None,
-        "run_time": run.group(1).strip() if run else None,
+        **_times_from(text, last_total),
     }

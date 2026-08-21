@@ -49,9 +49,12 @@ Sits around the existing TDM (never modifies it). For each scenario run:
    identity/path fields, writes `_ControlCenter.yaml` into a fresh run folder
 4. Invokes the TDM's fixed batch entry point with the control file path and
    scenario folder path as arguments
-5. Inventories all outputs, copies only the glob-selected subset (hard 100
-   MB/file ceiling) into the repo
-6. Writes `run_metadata.json` — the source of truth for reporting
+5. Inventories all outputs, copies only the glob-selected subset (over the
+   configured size ceiling stays local, uncommitted, gitignored — see
+   "Curated outputs..." below) into the repo, replacing whatever the
+   scenario's previous attempt left there
+6. Writes a permanent per-attempt metadata record — the source of truth for
+   reporting
 
 ### What it doesn't touch
 
@@ -113,9 +116,11 @@ wf-tdm-runs/
 │                                    once runs/ curated outputs are purged
 ├── runs/                         ← committed metadata + curated outputs only, whether
 │   │                                gathered by a CLI-driven run or import-manual-run(-set)
-│   └── <run_set_id>/<scenario_id>/<run_id>/
-│       ├── run_metadata.json     ← execution_mode: "cli" or "manual"
-│       └── outputs/
+│   └── <run_set_id>/<scenario_id>/
+│       ├── run_info/             ← one <run_id>.json per attempt, forever, never
+│       │                            deleted -- execution_mode: "cli" or "manual"
+│       └── outputs/              ← only the LATEST attempt's curated files, flat;
+│                                    wiped and replaced on every attempt
 ├── reports/                      ← Quarto website
 │   ├── _quarto.yml
 │   ├── index.qmd                 ← auto-discovers CLI-run run sets from runs/;
@@ -211,8 +216,9 @@ before rendering anything.
 (Cube Voyager invoked directly, outside `run-scenario`) when a real CLI-driven
 run isn't possible yet (see the `.block`-format blocker below) or isn't
 desired. It applies the scenario's `outputs.include` selection and size
-ceiling exactly like a real run would, curates into `runs/<run_set>/<scenario>/
-<run_id>/outputs/`, and records `run_metadata.json` with `execution_mode:
+ceiling exactly like a real run would, replacing whatever was in
+`runs/<run_set>/<scenario>/outputs/`, and records the attempt permanently at
+`runs/<run_set>/<scenario>/run_info/<run_id>.json` with `execution_mode:
 "manual"`. `--scenario-folder` defaults to the scenario's declared
 `manual_scenario_folder` (relative to the TDM submodule root) when omitted,
 falling back further to the `scenario_folder_template` convention
@@ -231,13 +237,16 @@ folder's mtime) was tried and dropped as unnecessary complexity.
 
 ### Retiring a run set
 
-`runs/` bloats as run_sets accumulate curated outputs — non-motorized-2023
-alone was 491 MB across 13 scenarios, almost all of it in per-scenario
-`*_ZoneSummary_TripsByMode.csv` files (~39 MB each) that the reports filter
-down to a handful of columns/rows at render time. Once a run_set is done and
-won't be re-run, most of that is redundant with what its reports actually
-display. "If we need the data, we run the models again" is the accepted
-tradeoff — `purge-run-set-outputs` deletes real, currently-committed files.
+Since curated outputs are always latest-attempt-only now (see "Curated
+outputs..." below), `runs/` no longer accumulates a full copy per retry —
+but a scenario's outputs still change if it's ever re-run *after* a run set
+is considered "done," which would silently change a report's numbers with
+no record of what it used to say. That's what retirement guards against now
+— freezing report data, not primarily reclaiming disk space (though
+`purge-run-set-outputs` still does that too, for whatever the run set's
+scenarios currently hold). "If we need the data, we run the models again"
+is the accepted tradeoff — `purge-run-set-outputs` deletes real,
+currently-committed files.
 
 Two steps, deliberately separate (the first is safe and repeatable; the
 second is the irreversible-ish one):
@@ -252,12 +261,18 @@ second is the irreversible-ish one):
    below) to confirm they still match before ever purging.
 2. **`tdmruns purge-run-set-outputs --run-set <id>`** — refuses unless
    `run_sets/<id>/snapshot/` already exists and is populated. Deletes every
-   `runs/<id>/**/outputs/` directory's contents and marks each run's
-   `run_metadata.json` with `outputs.retired: true` / `outputs.retired_at`.
-   The metadata JSON itself (TDM ref, overrides, checksums) is never deleted
-   — it's the permanent, tiny audit trail of what once existed, even after
-   the bytes are gone. `scripts/validate_run_metadata.py` skips the on-disk
-   checksum check for runs marked retired.
+   `runs/<id>/*/outputs/` directory's contents and marks each scenario's
+   **latest** attempt (`runs/<id>/<scenario>/run_info/<latest_run_id>.json`)
+   with `outputs.retired: true` / `outputs.retired_at`. Older, already-
+   superseded attempts under `run_info/` never get this flag — their
+   `curated[]` paths were already gone before retirement touched anything
+   (see "Curated outputs..." below), so there's nothing for retirement to
+   mark there. No metadata document is ever deleted — every attempt's record
+   (TDM ref, overrides, checksums) stays forever as the permanent, tiny
+   audit trail of what once existed, even after the bytes are gone.
+   `scripts/validate_run_metadata.py` only ever checksums a scenario's
+   latest `run_info/` record in the first place, and skips even that one
+   when it's marked retired.
 
 Reports don't get an "if retired" branch of their own — that's centralized
 once in each run_set's own loader module, which checks
@@ -442,16 +457,30 @@ model is touched.
   `input_prep.ipynb` notebook at its root that generates input files (e.g.
   SE CSVs) into its `inputs/` folder. The framework does not run prep;
   analysts run it once before executing the run_set.
-- **Curated outputs with a hard size ceiling** — raw outputs stay gitignored.
-  Only a declared, glob-selected, size-checked subset enters the repo.
-  Checksums are computed only for that curated subset (at copy time), not for
-  every file the model produced — the full inventory (for the aggregate
-  count/byte-total in metadata) is stat()-only, since scenario folders
-  routinely hold thousands of files and tens of GB and nothing ever read the
-  per-file checksum for anything not selected (see `docs/architecture/0003-output-management.md`'s update note).
-- **Success/failure is decided from the model's own completion log, not
-  Voyager's process exit code, when that log is available** — reverses an
-  earlier deliberate choice. `src/tdmruns/model_log.py` parses
+- **Curated outputs with a size ceiling that degrades gracefully, not a hard
+  failure** — raw outputs stay gitignored. Only a declared, glob-selected
+  subset gets copied into `runs/<run_set>/<scenario>/outputs/` (only the
+  latest attempt's files — see the "Only the latest attempt's curated
+  outputs..." bullet below), and every copied file gets a checksum (at copy
+  time) — the full inventory (for
+  the aggregate count/byte-total in metadata) is stat()-only, since scenario
+  folders routinely hold thousands of files and tens of GB and nothing ever
+  read the per-file checksum for anything not selected (see
+  `docs/architecture/0003-output-management.md`'s update note). Ported from
+  `WF-TDM-Calibration`'s `tdmcalib`: a selected file that turns out to exceed
+  `outputs.max_file_size_mb` once actually written no longer fails curation
+  (and with it, marks an otherwise-successful model run `"failed"` in
+  `run_metadata.json`) — it's kept on disk with `"committed": false` in its
+  manifest entry, and `outputs/.gitignore` is regenerated on every curation
+  run to list exactly the currently-oversized files (see
+  `src/tdmruns/outputs.py`'s `_write_outputs_gitignore()`). The file is still
+  usable locally (e.g. rendering a report on the machine that curated it);
+  it's just never committed. `scripts/validate_run_metadata.py` skips the
+  on-disk checksum check for `"committed": false` entries the same way it
+  already does for retired runs, since a fresh checkout won't have the file.
+- **Success/failure is decided from the model's own completion log, never
+  from Voyager's process exit code alone** — reverses an earlier deliberate
+  choice. `src/tdmruns/model_log.py` parses
   `<scenario_folder>\_Log\_RunTime.txt`, written by the model scripts
   themselves via `_TimeStamp_ModelSuccess.block` / `_TimeStamp_ModelCrashed.block`
   at `:ENDMODEL` / `:ONERROR` in the Hail Mary driver script. Real recorded
@@ -462,30 +491,76 @@ model is touched.
   what the model itself reported it did. (The driver script also never calls
   `Exit` after `:ONERROR`, so the reverse — a crash that still exits 0 — is
   equally possible, not just the direction seen so far.) `execution.py`'s
-  `decide_status()` now prefers the log when a recognizable
-  "TOTAL MODEL RUN TIME" entry is found for the current attempt (the file is
-  `APPEND=T` and reused across every CLI-driven retry of a given
-  `scenario_id`, so only the text since the *previous* such entry — or file
-  start — is read as this attempt's), and falls back to the exit code alone
-  when no entry exists yet (e.g. Cube never started). `run_metadata.json`'s
+  `decide_status()` prefers the log when a recognizable "TOTAL MODEL RUN
+  TIME" entry is found for the current attempt (the file is `APPEND=T` and
+  reused across every CLI-driven retry of a given `scenario_id`, so only the
+  text up to and including the *last* such entry is read as this attempt's),
+  and now (ported from `tdmcalib`) treats a missing or *unresolved* log
+  result as `"failed"` rather than falling back to a clean exit code — a run
+  is never called `"success"` without the model's own confirmation.
+  `model_log.py`'s `read_model_log()` also gained a correctness fix ported
+  from `tdmcalib`: since the driver script never calls `Exit` after
+  `:ONERROR`, a caught crash can log a crash+total block and keep running
+  into a *later* step, which can crash again and append another block — so
+  the last "TOTAL MODEL RUN TIME" entry isn't reliably a once-per-run final
+  marker. `read_model_log()` now returns `None` (unresolved, so
+  `decide_status()` records the run as failed pending confirmation) whenever
+  anything is logged *after* that last block, rather than trusting a
+  possibly-superseded checkpoint. It also prefers a trailing `"MODEL RUN
+  SUCCESSFUL"` line (written only via `:ENDMODEL`, on newer TDM pins) as
+  conclusive proof of a real finish when present, regardless of how many
+  earlier crash+retry checkpoints preceded it. `run_metadata.json`'s
   `execution.status_source` records which signal won
   (`"model_log"`/`"exit_code"`), and `execution.model_log` carries the parsed
   outcome, crashed step (if any), and the model's own Beg/End/Run-Time
   strings — also the source for run-duration/crash-point detail in reports.
   `execution.model_log.exit_code_mismatch` is `true` whenever the two
   signals disagreed, so a run can still be audited even though the log won.
+  On a failed run, `src/tdmruns/prn_log.py` (also ported from `tdmcalib`)
+  folds Voyager's own `F(NNN): <description>` fatal-error lines from the
+  most recently written `*.PRN` file in the scenario folder into the error
+  message, alongside `model_log.py`'s crashed step name — see
+  `execution.py`'s `_append_prn_errors()`.
 - **Manual execution is a first-class path, not just a workaround** —
   `import-manual-run(-set)` curates outputs for a scenario run outside the
   CLI the same way `run-scenario` does after a real execution (same
   select/size-check/copy sequence), flattening curated files into
-  `outputs/` (no preserved subfolder structure) and tagging
-  `run_metadata.json` with `execution_mode: "manual"`. It never touches the
-  TDM submodule. It always creates a new run rather than trying to detect
-  whether the raw folder changed since the last import (an mtime-based
-  staleness check was tried and deliberately removed as unneeded complexity
-  — every invocation is already a deliberate human action).
-- **Flat JSON metadata as source of truth** — one `run_metadata.json` per run,
-  committed, schema-versioned. No database. Quarto reads these directly.
+  `outputs/` (no preserved subfolder structure) and tagging that attempt's
+  `run_info/<run_id>.json` with `execution_mode: "manual"`. It never
+  touches the TDM submodule. It always creates a new attempt rather than
+  trying to detect whether the raw folder changed since the last import
+  (an mtime-based staleness check was tried and deliberately removed as
+  unneeded complexity — every invocation is already a deliberate human
+  action).
+- **Only the latest attempt's curated outputs are ever kept on disk per
+  scenario — permanent per-attempt metadata is a separate, unbounded
+  history** — ported from `WF-TDM-Calibration`'s `tdmcalib`. Before this,
+  every attempt (including every failed retry) kept its own full
+  `runs/<run_set>/<scenario>/<run_id>/outputs/` copy forever, so a scenario
+  under active iteration accumulated one copy per retry — real, not
+  theoretical: `bring-work-trips-closer-to-home` alone reached 3.7 GB across
+  2–5 attempts per scenario before this change, most of it superseded
+  output nobody was reading. `execution.py`'s `run_scenario()` and
+  `import_manual_run()` now call `_reset_run_outputs()` immediately before
+  curating — wiping everything under `runs/<run_set>/<scenario>/` except
+  `run_info/` — so `outputs/` always holds exactly the current attempt's
+  files, win or lose. `run_info/<run_id>.json`, by contrast, is never
+  touched by this reset: `metadata.write()` adds one file there per attempt
+  and nothing ever deletes them, so the full history (every override set,
+  every TDM ref, every checksum manifest — even for output files long since
+  overwritten) survives regardless of how many times a scenario is re-run.
+  `metadata.list_runs()` surfaces only each scenario's latest attempt (what
+  reports and `tdmruns status` want); `metadata.list_attempts()` surfaces
+  the full newest-first history for one scenario (what
+  `latest_successful_run()` — used by `start_from_copy` seeding — and
+  `reports/report_data.py`'s run-history table want). This narrows what the
+  snapshot/purge retirement mechanism above is *for* — it no longer exists
+  primarily to reclaim disk space (there's much less to reclaim now, by
+  construction) but still matters to freeze report numbers before a
+  "finished" run set's scenarios might ever be re-run again.
+- **Flat JSON metadata as source of truth** — one metadata document per
+  attempt (`runs/<run_set>/<scenario>/run_info/<run_id>.json`), committed,
+  schema-versioned. No database. Quarto reads these directly.
 - **CI scoped to validation and reporting** — never model execution.
 - **Future capabilities** (parallel runs, scheduled reruns, cross-version
   comparison, dashboards) are all deferred but attach cleanly to existing
@@ -602,8 +677,11 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
 - **Outputs gathered via `tdmruns import-manual-run-set --run-set
   non-motorized-2023`**, which curates each scenario's raw, unfiltered
   `outputs.include`-matched files into `runs/non-motorized-2023/S01`–`S13/
-  <run_id>/outputs/` and writes `run_metadata.json` with `execution_mode:
-  "manual"`. There used to be a separate, pre-filtered backfill under
+  outputs/` and writes a permanent per-attempt record to `run_info/` with
+  `execution_mode: "manual"`. This run set is already retired (see
+  "Retiring a run set"), so its `outputs/` is empty now regardless — its
+  numbers live in `run_sets/non-motorized-2023/snapshot/` instead. There
+  used to be a separate, pre-filtered backfill under
   `run_sets/non-motorized-2023/data/outputs/` (and a one-off script to
   produce it) — both were deleted once the reports were pointed at `runs/`
   directly; `runs/` is now the only copy of curated output for this run set.
