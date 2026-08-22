@@ -43,6 +43,7 @@ def build(
     baseline_file: str,
     run_set_overrides: dict,
     scenario_overrides: dict,
+    general_parameter_overrides: dict = None,
     rendered_path: str = None,
     driver_script: str = None,
     seeded_from: dict = None,
@@ -111,6 +112,11 @@ def build(
     # scenario -- absent otherwise, same "leave out entirely" convention.
     if seeded_from is not None:
         result["seeded_from"] = seeded_from
+    # general_parameters is only set when this run actually declares
+    # general_parameter_overrides (run_set and/or scenario level, merged) --
+    # absent otherwise, same "leave out entirely" convention.
+    if general_parameter_overrides:
+        result["general_parameters"] = {"overrides": general_parameter_overrides}
     return result
 
 

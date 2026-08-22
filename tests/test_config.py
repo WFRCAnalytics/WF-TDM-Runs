@@ -69,3 +69,19 @@ def test_resolved_manual_scenario_folder_prefers_declared_value(tmp_path):
         tmp_path, framework, "non-motorized-2023", "S01", scenario
     )
     assert result == tmp_path / "Scenarios" / "non-motorized-2023" / "BY_2019_SensitivityTest_01"
+
+
+def test_resolved_general_parameter_overrides_merges_run_set_and_scenario():
+    run_set = {"general_parameter_overrides": {"ZoneMsgRate": 100, "UsedZones": 3629}}
+    scenario = {"general_parameter_overrides": {"ZoneMsgRate": 200}}
+    result = cfg.resolved_general_parameter_overrides(run_set, scenario)
+    assert result == {"ZoneMsgRate": 200, "UsedZones": 3629}  # scenario wins on conflict
+
+
+def test_resolved_general_parameter_overrides_empty_when_neither_declares():
+    assert cfg.resolved_general_parameter_overrides({}, {}) == {}
+
+
+def test_resolved_general_parameter_overrides_run_set_only():
+    run_set = {"general_parameter_overrides": {"ZoneMsgRate": 100}}
+    assert cfg.resolved_general_parameter_overrides(run_set, {}) == {"ZoneMsgRate": 100}

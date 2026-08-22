@@ -64,6 +64,14 @@ execution:
   args: ["{control_center_path}", "{scenario_folder}"]
   timeout_seconds: 86400
 
+# Path to GeneralParameters.block, relative to the submodule root -- a
+# single file shared by every scenario's working folder (unlike the Control
+# Center, which is templated per run). run_set/scenario general_parameter_overrides
+# are validated against this file, then applied via an extra READ FILE the
+# framework inserts into the staged driver script rather than by editing a
+# per-run copy of the file itself -- see src/tdmruns/general_parameters.py.
+general_parameters_path: "1_Inputs/0_GlobalData/GeneralParameters.block"
+
 # Output curation. Individual run_set/scenario configs may override
 # max_file_size_mb, but never above this hard ceiling.
 outputs:

@@ -36,6 +36,11 @@
       "description": "Control Center key/value overrides shared by every scenario in this run set, applied before any scenario-specific overrides.",
       "additionalProperties": true
     },
+    "general_parameter_overrides": {
+      "type": "object",
+      "description": "GeneralParameters.block (tdm/1_Inputs/0_GlobalData/, config/framework.yaml's general_parameters_path) key/value overrides shared by every scenario in this run set, applied before any scenario-specific ones. A separate mechanism from overrides above: GeneralParameters.block is shared by every scenario's working folder rather than templated per run, so these are applied via an extra READ FILE the framework inserts into the staged driver script, not by editing a per-run copy of the file itself -- see src/tdmruns/general_parameters.py.",
+      "additionalProperties": true
+    },
     "driver_script": {
       "type": "string",
       "description": "Path to a custom driver script (a _HailMary_1Subfolder.s variant), relative to the run_set directory, unless a scenario overrides it. When declared, this one file is staged (copied, keeping its own filename) into the per-run scenario folder before execution, in place of the framework's default (config/framework.yaml's default_driver_script, from the TDM's Scenarios/_default/). Companion/modified step scripts are NOT auto-staged and stay in place, referenced from this file by a relative path back to their own location. Must reference default TDM step scripts as '..\\..\\..\\2_ModelScripts\\...' (three levels up, matching the per-run scenario folder's depth)."

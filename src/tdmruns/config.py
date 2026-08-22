@@ -162,6 +162,19 @@ def _resolve_input_files(run_set_dir: Path, input_files: dict) -> dict:
     return resolved
 
 
+def resolved_general_parameter_overrides(run_set: dict, scenario: dict) -> dict:
+    """Merges run_set-level and scenario-level general_parameter_overrides
+    into a single dict, scenario winning -- unlike Control Center overrides,
+    these aren't recorded per-layer in metadata (see general_parameters.py),
+    so there's no need to keep them separate the way
+    merged_control_center_overrides() does. No input_files-style path
+    resolution: GeneralParameters.block values are plain parameters, not
+    file selections."""
+    merged = dict(run_set.get("general_parameter_overrides", {}))
+    merged.update(scenario.get("general_parameter_overrides", {}))
+    return merged
+
+
 def merged_control_center_overrides(run_set: dict, scenario: dict, run_set_dir: Path) -> tuple:
     """Returns (run_set_overrides, scenario_overrides) separately -- kept
     distinct rather than pre-merged so run metadata can show exactly which

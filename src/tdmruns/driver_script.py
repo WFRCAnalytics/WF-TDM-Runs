@@ -33,13 +33,51 @@ keeping the invariant that exactly one is ever present.
 This is a distinct mechanism from Control Center overrides (controlcenter.py):
 it substitutes which code runs, not a parameter value, so it never touches
 the overrides dict or its baseline-key validation.
+
+When a run declares a non-empty general_parameter_overrides, stage() also
+inserts an extra `READ FILE = '{general_parameters.OVERRIDE_FILENAME}'` line
+right after the driver script's own GeneralParameters.block READ -- see
+general_parameters.py for why this, not a per-run copy of
+GeneralParameters.block itself, is how those overrides are applied. The
+source driver script file itself is never modified; only the staged copy is.
 """
 
+import re
 import shutil
 from pathlib import Path
 
 from tdmruns import config as cfg
+from tdmruns import general_parameters as gp
 from tdmruns.exceptions import DriverScriptError
+
+# Matches the driver script's own `READ FILE = '...GeneralParameters.block'`
+# line (see general_parameters.py) so an extra READ FILE for this run's
+# override file can be inserted right after it, keeping the same
+# indentation. Path prefix is left open (`[^']*`) since it's a relative path
+# that depends on the working-folder depth convention -- only the filename
+# itself is fixed.
+_GENERAL_PARAMETERS_READ_RE = re.compile(
+    r"^([ \t]*)READ FILE[ \t]*=[ \t]*'[^']*GeneralParameters\.block'[ \t]*$", re.MULTILINE
+)
+
+
+def _insert_general_parameters_override_read(text: str, script_path: Path) -> str:
+    """Inserts an extra `READ FILE = '{gp.OVERRIDE_FILENAME}'` line right
+    after the driver script's own GeneralParameters.block READ, matching
+    that line's indentation."""
+
+    def _insert(m: re.Match) -> str:
+        indent = m.group(1)
+        return f"{m.group(0)}\n{indent}READ FILE = '{gp.OVERRIDE_FILENAME}'"
+
+    new_text, n = _GENERAL_PARAMETERS_READ_RE.subn(_insert, text, count=1)
+    if n == 0:
+        raise DriverScriptError(
+            f"general_parameter_overrides is set but {script_path} has no "
+            "\"READ FILE = '...GeneralParameters.block'\" line to insert the override "
+            "READ FILE after -- it isn't a recognized driver script variant."
+        )
+    return new_text
 
 
 def stage(
@@ -50,12 +88,18 @@ def stage(
     run_set: dict,
     scenario: dict,
     scenario_folder: Path,
+    general_parameter_overrides: dict = None,
 ) -> str:
     """Copies the resolved driver script into scenario_folder, keeping its
     own filename. Uses the scenario/run_set's declared driver_script if any,
     otherwise the TDM's own default_filename under defaults_dir. Always
     stages something. Returns the source path for the metadata record --
-    run_set-relative for a custom script, tdm-relative for the default."""
+    run_set-relative for a custom script, tdm-relative for the default.
+
+    When general_parameter_overrides is non-empty, the staged copy's text is
+    rewritten to insert an extra READ FILE line for the override file (see
+    _insert_general_parameters_override_read) instead of a plain byte-for-
+    byte copy -- the source script itself is never modified."""
     declared = cfg.resolved_driver_script(run_set, scenario)
     if declared:
         script_path = run_set_dir / declared
@@ -70,6 +114,11 @@ def stage(
     for stale in scenario_folder.glob("*.s"):
         stale.unlink()
 
-    shutil.copy2(script_path, scenario_folder / script_path.name)
+    dest_path = scenario_folder / script_path.name
+    if general_parameter_overrides:
+        text = _insert_general_parameters_override_read(script_path.read_text(), script_path)
+        dest_path.write_text(text)
+    else:
+        shutil.copy2(script_path, dest_path)
 
     return source_label

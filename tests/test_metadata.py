@@ -100,3 +100,26 @@ def test_list_runs_filters_by_scenario(tmp_path):
 
 def test_list_runs_empty_when_no_runs_dir(tmp_path):
     assert md.list_runs(tmp_path) == []
+
+
+def test_build_includes_general_parameters_when_declared():
+    data = md.build(
+        schema_version=1,
+        run_set_id="rs",
+        scenario_id="S01",
+        run_id="20260101-000000-aaaa",
+        status="success",
+        started_at="2026-01-01T00:00:00+00:00",
+        framework_commit_sha="deadbeef",
+        tdm_state={},
+        baseline_file="BY.block",
+        run_set_overrides={},
+        scenario_overrides={},
+        general_parameter_overrides={"ZoneMsgRate": 100},
+    )
+    assert data["general_parameters"] == {"overrides": {"ZoneMsgRate": 100}}
+
+
+def test_build_omits_general_parameters_when_not_declared():
+    data = _build("rs", "S01", "20260101-000000-aaaa")
+    assert "general_parameters" not in data

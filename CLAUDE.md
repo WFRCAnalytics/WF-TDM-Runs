@@ -409,7 +409,38 @@ model is touched.
   whether they select input files or tune model parameters. `input_files` in
   scenario YAML is syntactic sugar for file-path overrides with automatic path
   resolution; it merges into the same single override dict.
-- **Driver script is staged every run, default or custom — a second, narrow
+- **`general_parameter_overrides` is a second, separate override mechanism,
+  for a file Control Center overrides can't reach** — ported from
+  `WF-TDM-Calibration`'s `tdmcalib`. `tdm/1_Inputs/0_GlobalData/
+  GeneralParameters.block` (`config/framework.yaml`'s
+  `general_parameters_path`) is a single file shared by *every* scenario's
+  working folder — unlike the Control Center, which is templated fresh per
+  run, there's no per-scenario copy of it to substitute lines into, and
+  copying the whole ~1200-line file would mean either editing inside `tdm/`
+  (forbidden) or a per-scenario copy that's immediately stale the moment the
+  TDM team updates the shared original. `run_set.yaml`/`scenario.yaml` may
+  declare `general_parameter_overrides` (scenario overrides run_set, same
+  precedence as `overrides`, merged via
+  `config.resolved_general_parameter_overrides()` — recorded as one merged
+  dict in metadata, not layer-by-layer like Control Center's
+  `run_set_overrides`/`scenario_overrides` split, since there's no per-layer
+  file to attribute a key to). Validated the same way as Control Center keys
+  (`cc.validate_overrides()` against `general_parameters.load_baseline()`'s
+  real parse of the shared file — an unknown key is a hard failure before
+  execution). If non-empty, `execution.py` writes only the overridden key/
+  value pairs to a small per-run file
+  (`general_parameters.OVERRIDE_FILENAME`,
+  `_GeneralParametersOverrides.block`, in the scenario folder — never a copy
+  of the real file), and `driver_script.stage()` inserts one extra
+  `READ FILE = '_GeneralParametersOverrides.block'` line into the *staged
+  copy* of the driver script, immediately after its own
+  `READ FILE = '...GeneralParameters.block'` line — Cube Voyager's own
+  last-assignment-wins semantics then apply the override with the real file
+  never touched or copied. No run_set currently declares this (added ahead
+  of need, not because one does yet) — not yet exercised end-to-end against
+  real Cube Voyager, only via `tests/test_general_parameters.py`/
+  `tests/test_driver_script.py`'s unit coverage of each piece.
+- **Driver script is staged every run, default or custom — a third, narrow
   mechanism deliberately separate from overrides** — every run stages a
   driver script into its scenario folder: the TDM's own default
   (`config/framework.yaml`'s `default_driver_script`, currently
@@ -432,7 +463,7 @@ model is touched.
   — confirmed end-to-end via `bring-work-trips-closer-to-home`'s recorded
   run history.
 - **`start_from_copy` seeds a scenario's raw folder from a prior scenario's
-  run — a third, narrow mechanism, orthogonal to overrides and driver
+  run — a fourth, narrow mechanism, orthogonal to overrides and driver
   scripts** — a scenario may declare `start_from_copy: <scenario_id>`
   (naming a sibling scenario in the same run set) to have its entire raw
   scenario folder copied from that scenario's most recent *successful*

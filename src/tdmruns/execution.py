@@ -18,6 +18,7 @@ from pathlib import Path
 from tdmruns import config as cfg
 from tdmruns import controlcenter as cc
 from tdmruns import driver_script as ds
+from tdmruns import general_parameters as gp
 from tdmruns import metadata as md
 from tdmruns import model_log as mlog
 from tdmruns import outputs as out
@@ -215,6 +216,7 @@ def run_scenario(
     run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(
         run_set, scenario, rs_dir
     )
+    general_parameter_overrides = cfg.resolved_general_parameter_overrides(run_set, scenario)
     output_spec = cfg.resolved_output_spec(framework, run_set, scenario)
 
     run_id = generate_run_id()
@@ -246,6 +248,16 @@ def run_scenario(
     cc_local_layer = {k: v for k, v in local_layer.items() if k != "Voyager_EXE"}
     cc.validate_overrides(baseline, cc_local_layer, "config/local.yaml")
 
+    # --- validate General Parameter overrides against the real, shared
+    # GeneralParameters.block (hard failure on unknown keys, same as
+    # Control Center overrides above) -- see general_parameters.py ---
+    if general_parameter_overrides:
+        gp_baseline = gp.load_baseline(tdm_path, framework["general_parameters_path"])
+        cc.validate_overrides(
+            gp_baseline, general_parameter_overrides,
+            f"run set '{run_set_id}'/scenario '{scenario_id}'.general_parameter_overrides",
+        )
+
     # --- prep scripts (hard failure stops this scenario before execution) ---
     prep.run_prep_scripts(run_set, scenario, rs_dir, scenario_id)
 
@@ -269,6 +281,12 @@ def run_scenario(
     control_center_path = folder / "_ControlCenter.block"
     cc.write_block_file(baseline_path, rendered, control_center_path)
 
+    # --- write the General Parameter override file, if declared (see
+    # general_parameters.py) -- driver_script.stage() below inserts the
+    # extra READ FILE line that picks this up ---
+    if general_parameter_overrides:
+        gp.write_override_file(general_parameter_overrides, folder / gp.OVERRIDE_FILENAME)
+
     # --- stage the driver script: declared custom one, or the TDM's default ---
     driver_script_path = ds.stage(
         rs_dir,
@@ -278,6 +296,7 @@ def run_scenario(
         run_set,
         scenario,
         folder,
+        general_parameter_overrides=general_parameter_overrides,
     )
 
     # --- execute ---
@@ -323,6 +342,7 @@ def run_scenario(
         baseline_file=baseline_filename,
         run_set_overrides=run_set_overrides,
         scenario_overrides=scenario_overrides,
+        general_parameter_overrides=general_parameter_overrides,
         rendered_path=str(control_center_path),
         driver_script=driver_script_path,
         seeded_from=seeded_from,
@@ -388,6 +408,7 @@ def import_manual_run(
     run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(
         run_set, scenario, rs_dir
     )
+    general_parameter_overrides = cfg.resolved_general_parameter_overrides(run_set, scenario)
     output_spec = cfg.resolved_output_spec(framework, run_set, scenario)
 
     run_id = generate_run_id()
@@ -417,6 +438,7 @@ def import_manual_run(
         baseline_file=baseline_filename,
         run_set_overrides=run_set_overrides,
         scenario_overrides=scenario_overrides,
+        general_parameter_overrides=general_parameter_overrides,
         scenario_folder=str(scenario_folder),
         inventory_count=len(full_inventory),
         inventory_total_bytes=sum(e["size_bytes"] for e in full_inventory),
