@@ -46,7 +46,7 @@ Sits around the existing TDM (never modifies it). For each scenario run:
 3. Loads a baseline Control Center file from the TDM's `Scenarios/_default/`
    library, layers run_set overrides then scenario overrides on top (resolving
    any `input_files` relative paths to absolute), fills in orchestrator-computed
-   identity/path fields, writes `_ControlCenter.yaml` into a fresh run folder
+   identity/path fields, writes `_ControlCenter.block` into a fresh run folder
 4. Invokes the TDM's fixed batch entry point with the control file path and
    scenario folder path as arguments
 5. Inventories all outputs, copies only the glob-selected subset (over the
@@ -67,15 +67,17 @@ or the `Scenarios/` gitignored working folder convention.
   taking exactly two arguments: a Control Center file path and a scenario folder
   path. That calling convention is captured in `config/framework.yaml`
   `execution:` — not hardcoded.
-- The `_ControlCenter.yaml` the orchestrator **writes** is plain YAML. The
-  baseline `.block` files it **reads** from the defaults library were assumed
-  to also be plain YAML with a `.block` extension — confirmed true for the
-  mock TDM, but **not true for the real TDM** (see "What's currently mocked
-  vs. real" below): the real `1ControlCenter - BY_2019.block` is Cube
-  Voyager's native indented `KEY = value` block format with `;` comments, not
-  YAML. `controlcenter.py`'s `load_baseline()` calls `yaml.safe_load()` on it
-  directly and fails. This is the current top blocker for running anything
-  through the CLI against the real TDM.
+- The baseline `.block` files the orchestrator **reads** from the defaults
+  library were originally assumed to be plain YAML with a `.block`
+  extension — confirmed true for the early mock TDM, but **not true for the
+  real TDM**: the real `1ControlCenter - BY_2019.block` is Cube Voyager's
+  native indented `KEY = value` block format with `;` comments, not YAML.
+  This was a real blocker for a while (`controlcenter.py`'s `load_baseline()`
+  originally called `yaml.safe_load()` on it directly and failed) — resolved
+  in commit `bc56130`; `controlcenter.py` now parses and writes the real
+  block format on both sides (`_ControlCenter.block`, not `.yaml` — see
+  "What's currently mocked vs. real" below for the confirmed-working
+  end-to-end evidence).
 - Input file selection (e.g. `WFRC_SEFile`) and sensitivity knobs (e.g.
   `HOT_Toll_Min`) are both just keys in the same flat YAML file. There is
   exactly one override mechanism, not two.
@@ -332,33 +334,40 @@ model is touched.
   the bat file fails loudly if that's unset or points at a nonexistent path.
   Because of this, `build_command()` (`src/tdmruns/execution.py`) now
   resolves `execution.entry_point` against `repo_root`, not `tdm_path`.
-  **Still unconfirmed end-to-end** — blocked on the next bullet, since the
-  driver script's hardcoded `READ FILE = '0GeneralParameters.block'` /
-  `'1ControlCenter.block'` won't find anything in the scenario folder until
-  that's fixed.
+  **Confirmed end-to-end** — see the next bullet.
 - `control_center_defaults_dir` in `config/framework.yaml` is `Scenarios/_default`
   (**singular**, not `_defaults` as earlier drafts of this doc said) — verified
   against the real submodule, which has `tdm/Scenarios/_default/`.
-- **Blocker (still open):** `tdmruns validate-config` fails against the real
-  TDM — `1ControlCenter - BY_2019.block` in the real defaults library is Cube
-  Voyager's native block format, not YAML (see the constraints note above).
-  `cli.py`/`controlcenter.py` haven't been updated for this yet, so no real
-  scenario has been run through `run-scenario`/`run-set`. Relatedly,
-  `controlcenter.write_block_file()` currently writes plain YAML to
-  `_ControlCenter.yaml`, but the driver script expects Cube block syntax in a
-  file literally named `1ControlCenter.block` (plus a `0GeneralParameters.block`
-  neither this function nor anything else currently stages into the scenario
-  folder) — fixing the read side (`load_baseline()`) without also fixing the
-  write side won't be enough to actually run Cube. Until it's fixed, new run
-  sets are executed manually (Cube Voyager invoked directly) and their
-  outputs gathered with `tdmruns import-manual-run(-set)` (see CLI commands
-  above) — a first-class, supported path now, not a one-off workaround. See
-  `non-motorized-2023` below for the current example.
+- **Resolved: Control Center block-format parsing/writing.** `controlcenter.py`
+  reads and writes Cube Voyager's real native `KEY = value` / `;`-comment
+  block format (not YAML) — `write_block_file()` writes `_ControlCenter.block`
+  by substituting overridden lines into a full copy of the baseline template,
+  preserving everything else byte-for-byte (see "Config layer order" above).
+  This was fixed in commit `bc56130` ("Write real Cube .block Control Center
+  files instead of YAML") — an earlier draft of this doc described this as a
+  live, unfixed blocker for some time after that; it wasn't. Real proof it
+  works end-to-end: `bring-work-trips-closer-to-home`'s recorded run history
+  (`runs/bring-work-trips-closer-to-home/*/run_info/`) shows one real
+  `execution_mode: "cli"` attempt per scenario that rendered a real
+  `_ControlCenter.block`, invoked `bin/RunModel.bat`, ran Cube Voyager for
+  hours, and produced a full 1000+-file inventory with curated outputs.
+  Those specific attempts are recorded `status: "failed"` — not because
+  anything about Control Center rendering or execution failed, but because
+  they predate the "decide status from the model's own log, not the exit
+  code alone" fix (see that architecture decision below) and got
+  misclassified by Voyager's own unreliable exit code. Rather than re-running
+  through the CLI once that fix landed, the already-completed raw folders
+  were curated via `import-manual-run` instead (a pragmatic call, not a
+  structural need) — which is why every *subsequent* attempt for these
+  scenarios shows `execution_mode: "manual"`. `non-motorized-2023` predates
+  this fix entirely and was always run manually by design (see below); that
+  one's `manual_scenario_folder` convention has no bearing on whether CLI
+  execution itself works.
 - The test suite's fixtures still assume the old mock TDM layout (they try to
   copy a `RunModel_stub.py` that no longer exists in the now-real submodule),
   so `pytest tests/` currently shows ~19 errors in `test_config.py` /
-  `test_integration.py` / `test_prep.py` — pre-existing, unrelated to the
-  block-file blocker above, and not something recent work introduced.
+  `test_integration.py` / `test_prep.py` — pre-existing, unrelated to Control
+  Center rendering, and not something recent work introduced.
 - Quarto reporting (`reports/`) renders successfully locally (`quarto render
   reports` / `quarto preview reports`) as of this session. GitHub Actions
   (`publish-report.yml`) installs `geopandas`/`plotly` and registers a
@@ -396,7 +405,7 @@ model is touched.
   cross-group-isolation/failure-isolation, all fully mocked — no real
   submodule or Cube Voyager involved) — not yet exercised end-to-end against
   a real concurrent multi-scenario `run-set` invocation.
-- **One override mechanism** — `_ControlCenter.yaml` keys are all just keys,
+- **One override mechanism** — `_ControlCenter.block` keys are all just keys,
   whether they select input files or tune model parameters. `input_files` in
   scenario YAML is syntactic sugar for file-path overrides with automatic path
   resolution; it merges into the same single override dict.
@@ -419,9 +428,9 @@ model is touched.
   it's not folded into `overrides`/`validate_overrides()` — see
   `docs/architecture/0007-custom-driver-script.md`. `bin/RunModel.bat` now
   exists and does glob for whatever driver script it finds staged in the
-  scenario folder it's given (see "What's currently mocked vs. real" above);
-  still unconfirmed end-to-end since it depends on the Control Center
-  block-format blocker being fixed first.
+  scenario folder it's given (see "What's currently mocked vs. real" above)
+  — confirmed end-to-end via `bring-work-trips-closer-to-home`'s recorded
+  run history.
 - **`start_from_copy` seeds a scenario's raw folder from a prior scenario's
   run — a third, narrow mechanism, orthogonal to overrides and driver
   scripts** — a scenario may declare `start_from_copy: <scenario_id>`
@@ -441,9 +450,8 @@ model is touched.
   tripping the size limit) even though an earlier attempt had succeeded.
   This mechanism only copies files; it never makes Cube Voyager skip a step
   — that's the analyst's own `driver_script` logic to write. Wired into
-  `run-scenario`/`run-set` only (no standalone command), so it depends on
-  the same block-format blocker as everything else routed through Cube, plus
-  the source scenario needing a successful run first. Because the raw
+  `run-scenario`/`run-set` only (no standalone command); the source scenario
+  needs a successful run on record first. Because the raw
   scenario folder is reused across every run attempt for a given
   `scenario_id` (`scenario_folder_template` has no `run_id` component), a
   scenario declaring `start_from_copy` re-copies the source's entire folder
@@ -665,9 +673,12 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
   path. `input_files:` itself is untouched as a mechanism (schema + `config.py`
   still support it) for any run set that wants the absolute-path version; only
   non-motorized-2023 has stopped using it, for now.
-- **Not run through `run-scenario`/`run-set`.** The block-file-parsing
-  blocker above means these scenarios were run manually (Cube Voyager
-  invoked directly, outside the framework). Each scenario YAML declares a
+- **Not run through `run-scenario`/`run-set`.** This run set predates the
+  Control Center block-format fix (see "What's currently mocked vs. real"
+  above), so these scenarios were run manually (Cube Voyager invoked
+  directly, outside the framework) — not a limitation that still applies to
+  new run sets today, just how this one was actually done. Each scenario
+  YAML declares a
   `manual_scenario_folder` (e.g. `Scenarios/non-motorized-2023/
   BY_2019_SensitivityTest_01`, relative to the TDM submodule root) pointing
   at that raw, gitignored output. `run_set.yaml` and `S10.yaml`/`S11.yaml`'s
@@ -719,73 +730,44 @@ Example run set for toll sensitivity testing. Scenarios defined, no runs execute
 
 In rough priority order:
 
-**1. Fix `controlcenter.py`'s Control Center handling for the real TDM's `.block` format — both directions.**
-`load_baseline()` (`src/tdmruns/controlcenter.py:23`) calls `yaml.safe_load()`
-directly on the baseline file, which works for the mock TDM but not the real
-one — the real `1ControlCenter - BY_2019.block` is Cube Voyager's native
-indented `KEY = value` / `;`-comment block format. This blocks
-`tdmruns validate-config` and any real CLI-driven run. Separately,
-`write_block_file()` writes plain YAML to a file named `_ControlCenter.yaml`,
-but the driver script (`READ FILE = '0GeneralParameters.block'` /
-`'1ControlCenter.block'`, both relative to the scenario folder) expects Cube
-block syntax under the literal name `1ControlCenter.block`, plus a
-`0GeneralParameters.block` that nothing currently stages into the scenario
-folder at all (it's presumably an unmodified copy from `Scenarios/_default/`,
-but that needs confirming). Fixing only the read side isn't enough to
-actually run Cube end-to-end via `bin/RunModel.bat` (see "What's currently
-mocked vs. real" above) — both sides need to agree on the real format before
-a real scenario can run through `run-scenario`/`run-set`. Until it's fixed,
-run sets have to be executed manually outside the framework and their outputs
-gathered with `tdmruns import-manual-run(-set)`, the way `non-motorized-2023`
-is (declaring `manual_scenario_folder` per scenario).
-
-**2. Fix the test suite's fixtures.**
+**1. Fix the test suite's fixtures.**
 `tests/` fixtures still assume the old mock TDM layout (copying a
 `RunModel_stub.py` that no longer exists now that `tdm/` points at the real
 repo) — ~19 errors in `test_config.py` / `test_integration.py` / `test_prep.py`.
 Pre-existing, not caused by recent work, but blocks using `pytest` as a
 signal until updated.
 
-**3. Once #1 is fixed, run `tdmruns validate-config --run-set non-motorized-2023`**
+**2. Run `tdmruns validate-config --run-set non-motorized-2023`**
 against the real submodule to confirm S01–S13's override keys are valid, then
 consider re-running the scenarios through `run-scenario`/`run-set` so this run
 set no longer depends on `manual_scenario_folder`/`import-manual-run-set` —
 though that path is now solid enough (flattened, checksummed, schema-validated)
 that switching isn't urgent on its own.
 
-**4. Verify GitHub Actions actually deploys.**
+**3. Verify GitHub Actions actually deploys.**
 `publish-report.yml` was updated this session to install `geopandas`/`plotly`
 and register a `july2025` Jupyter kernel matching what the report `.qmd` files
 declare — confirmed to render locally via `quarto render reports`, but not yet
 confirmed against a real GitHub Pages deploy. Watch the first push's Actions
 run for kernel/package issues that don't show up locally.
 
-**5. `validate-config.yml` / `validate-run-metadata.yml` workflows** are
+**4. `validate-config.yml` / `validate-run-metadata.yml` workflows** are
 written but still unconfirmed against the real (possibly private) TDM repo —
 if private, they'll need a deploy key or PAT to check out the submodule.
 
-**6. Exercise `bin/RunModel.bat` end-to-end once #1 is fixed.**
-`bin/RunModel.bat` now exists (lives in the framework repo, not `tdm/` — see
-"What's currently mocked vs. real" above): it globs the scenario folder for
-whatever driver script `src/tdmruns/driver_script.py` staged there (default
-`_HailMary_1Subfolder.s` or a run_set's custom one, see ADR 0007), `pushd`s
-into the scenario folder so the driver script's relative
-`..\..\..\2_ModelScripts\...` paths resolve, and invokes Cube Voyager via
-the `VOYAGER_EXE` env var (sourced from `config/local.yaml`'s `Voyager_EXE`
-by `execution.invoke()`). None of this has been run against real Cube
-Voyager yet — it can't produce a working run until #1's block-format fix
-lands, since the driver script's `READ FILE = '1ControlCenter.block'` /
-`'0GeneralParameters.block'` won't find anything until then. Once #1 is
-fixed, verify: the bat file actually locates and runs the staged driver
-script, and `VOYAGER_EXE` resolves correctly on a real workstation.
-Success/failure now prefers the model's own `_Log\_RunTime.txt` completion
-report over Voyager's process exit code (`%ERRORLEVEL%` right after
-`start /w`, propagated by `RunModel.bat` and read by `execution.invoke()`) —
-see the "Success/failure is decided from the model's own completion log"
-architecture decision above. Falls back to the exit code alone when no
-recognizable log entry exists yet.
+**5. `bin/RunModel.bat` end-to-end is confirmed working** (see "What's
+currently mocked vs. real" above) — `bring-work-trips-closer-to-home`'s
+recorded history shows it locating and running the staged driver script,
+Cube Voyager executing for hours, and `VOYAGER_EXE` resolving correctly on a
+real workstation. What's *not* yet confirmed: a CLI-driven run that also
+comes back `status: "success"` end-to-end on the first try — every recorded
+`execution_mode: "cli"` attempt so far predates the "decide status from the
+model's own log" fix and got misclassified as failed by Voyager's exit code
+alone (see above). Worth a fresh `run-scenario` invocation against an
+already-seeded scenario to confirm the fix actually produces a clean
+`"success"` now, rather than inferring it from older records.
 
-**7. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
+**6. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
 `Closer00` (`Closer01`/`Closer02`/`Closer03` all declare `start_from_copy:
 Closer00`) has recorded successful runs now that `RunModel.bat` works
 end-to-end, so the copy source resolves. Fixed a real bug in
@@ -804,7 +786,7 @@ folder re-copied on further retries. Covered by new unit tests in
 `tests/test_scenario_seed.py`; still not exercised end-to-end via a live
 `run-scenario` invocation against the real TDM.
 
-**8. Concurrent `run-set` execution (`max_parallel_runs`) is wired up but
+**7. Concurrent `run-set` execution (`max_parallel_runs`) is wired up but
 not yet exercised end-to-end.** See the "In-place submodule checkout... but
 same-ref scenarios now run concurrently" architecture decision above for the
 full mechanism (`execution.run_scenarios()` groups by resolved `tdm_ref`,
