@@ -6,7 +6,7 @@ from tdmruns.exceptions import ScenarioSeedError
 
 
 def _write_run(repo_root, run_set_id, scenario_id, run_id, status, scenario_folder):
-    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+    run_dir = repo_root / "runs" / run_set_id / scenario_id
     metadata = md.build(
         schema_version=1,
         run_set_id=run_set_id,

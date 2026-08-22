@@ -28,8 +28,11 @@ class ExecutionError(tdmrunsError):
 
 
 class OutputCollectionError(tdmrunsError):
-    """Raised when a selected output file exceeds the configured size limit,
-    or an output selection pattern matches nothing and is marked as required."""
+    """Raised when curating a selected output fails outright -- a filename
+    collision, a missing declared column/tab/field, or Voyager not being
+    configured for a matrix/network entry -- or when an output selection
+    pattern matches nothing and is marked as required. An oversized curated
+    file does *not* raise this; see outputs.py's "committed" handling."""
 
 
 class PrepScriptError(tdmrunsError):

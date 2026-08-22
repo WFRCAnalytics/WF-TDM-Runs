@@ -46,12 +46,15 @@ Sits around the existing TDM (never modifies it). For each scenario run:
 3. Loads a baseline Control Center file from the TDM's `Scenarios/_default/`
    library, layers run_set overrides then scenario overrides on top (resolving
    any `input_files` relative paths to absolute), fills in orchestrator-computed
-   identity/path fields, writes `_ControlCenter.yaml` into a fresh run folder
+   identity/path fields, writes `_ControlCenter.block` into a fresh run folder
 4. Invokes the TDM's fixed batch entry point with the control file path and
    scenario folder path as arguments
-5. Inventories all outputs, copies only the glob-selected subset (hard 100
-   MB/file ceiling) into the repo
-6. Writes `run_metadata.json` — the source of truth for reporting
+5. Inventories all outputs, copies only the glob-selected subset (over the
+   configured size ceiling stays local, uncommitted, gitignored — see
+   "Curated outputs..." below) into the repo, replacing whatever the
+   scenario's previous attempt left there
+6. Writes a permanent per-attempt metadata record — the source of truth for
+   reporting
 
 ### What it doesn't touch
 
@@ -64,15 +67,17 @@ or the `Scenarios/` gitignored working folder convention.
   taking exactly two arguments: a Control Center file path and a scenario folder
   path. That calling convention is captured in `config/framework.yaml`
   `execution:` — not hardcoded.
-- The `_ControlCenter.yaml` the orchestrator **writes** is plain YAML. The
-  baseline `.block` files it **reads** from the defaults library were assumed
-  to also be plain YAML with a `.block` extension — confirmed true for the
-  mock TDM, but **not true for the real TDM** (see "What's currently mocked
-  vs. real" below): the real `1ControlCenter - BY_2019.block` is Cube
-  Voyager's native indented `KEY = value` block format with `;` comments, not
-  YAML. `controlcenter.py`'s `load_baseline()` calls `yaml.safe_load()` on it
-  directly and fails. This is the current top blocker for running anything
-  through the CLI against the real TDM.
+- The baseline `.block` files the orchestrator **reads** from the defaults
+  library were originally assumed to be plain YAML with a `.block`
+  extension — confirmed true for the early mock TDM, but **not true for the
+  real TDM**: the real `1ControlCenter - BY_2019.block` is Cube Voyager's
+  native indented `KEY = value` block format with `;` comments, not YAML.
+  This was a real blocker for a while (`controlcenter.py`'s `load_baseline()`
+  originally called `yaml.safe_load()` on it directly and failed) — resolved
+  in commit `bc56130`; `controlcenter.py` now parses and writes the real
+  block format on both sides (`_ControlCenter.block`, not `.yaml` — see
+  "What's currently mocked vs. real" below for the confirmed-working
+  end-to-end evidence).
 - Input file selection (e.g. `WFRC_SEFile`) and sensitivity knobs (e.g.
   `HOT_Toll_Min`) are both just keys in the same flat YAML file. There is
   exactly one override mechanism, not two.
@@ -113,9 +118,11 @@ wf-tdm-runs/
 │                                    once runs/ curated outputs are purged
 ├── runs/                         ← committed metadata + curated outputs only, whether
 │   │                                gathered by a CLI-driven run or import-manual-run(-set)
-│   └── <run_set_id>/<scenario_id>/<run_id>/
-│       ├── run_metadata.json     ← execution_mode: "cli" or "manual"
-│       └── outputs/
+│   └── <run_set_id>/<scenario_id>/
+│       ├── run_info/             ← one <run_id>.json per attempt, forever, never
+│       │                            deleted -- execution_mode: "cli" or "manual"
+│       └── outputs/              ← only the LATEST attempt's curated files, flat;
+│                                    wiped and replaced on every attempt
 ├── reports/                      ← Quarto website
 │   ├── _quarto.yml
 │   ├── index.qmd                 ← auto-discovers CLI-run run sets from runs/;
@@ -211,8 +218,9 @@ before rendering anything.
 (Cube Voyager invoked directly, outside `run-scenario`) when a real CLI-driven
 run isn't possible yet (see the `.block`-format blocker below) or isn't
 desired. It applies the scenario's `outputs.include` selection and size
-ceiling exactly like a real run would, curates into `runs/<run_set>/<scenario>/
-<run_id>/outputs/`, and records `run_metadata.json` with `execution_mode:
+ceiling exactly like a real run would, replacing whatever was in
+`runs/<run_set>/<scenario>/outputs/`, and records the attempt permanently at
+`runs/<run_set>/<scenario>/run_info/<run_id>.json` with `execution_mode:
 "manual"`. `--scenario-folder` defaults to the scenario's declared
 `manual_scenario_folder` (relative to the TDM submodule root) when omitted,
 falling back further to the `scenario_folder_template` convention
@@ -231,13 +239,16 @@ folder's mtime) was tried and dropped as unnecessary complexity.
 
 ### Retiring a run set
 
-`runs/` bloats as run_sets accumulate curated outputs — non-motorized-2023
-alone was 491 MB across 13 scenarios, almost all of it in per-scenario
-`*_ZoneSummary_TripsByMode.csv` files (~39 MB each) that the reports filter
-down to a handful of columns/rows at render time. Once a run_set is done and
-won't be re-run, most of that is redundant with what its reports actually
-display. "If we need the data, we run the models again" is the accepted
-tradeoff — `purge-run-set-outputs` deletes real, currently-committed files.
+Since curated outputs are always latest-attempt-only now (see "Curated
+outputs..." below), `runs/` no longer accumulates a full copy per retry —
+but a scenario's outputs still change if it's ever re-run *after* a run set
+is considered "done," which would silently change a report's numbers with
+no record of what it used to say. That's what retirement guards against now
+— freezing report data, not primarily reclaiming disk space (though
+`purge-run-set-outputs` still does that too, for whatever the run set's
+scenarios currently hold). "If we need the data, we run the models again"
+is the accepted tradeoff — `purge-run-set-outputs` deletes real,
+currently-committed files.
 
 Two steps, deliberately separate (the first is safe and repeatable; the
 second is the irreversible-ish one):
@@ -252,12 +263,18 @@ second is the irreversible-ish one):
    below) to confirm they still match before ever purging.
 2. **`tdmruns purge-run-set-outputs --run-set <id>`** — refuses unless
    `run_sets/<id>/snapshot/` already exists and is populated. Deletes every
-   `runs/<id>/**/outputs/` directory's contents and marks each run's
-   `run_metadata.json` with `outputs.retired: true` / `outputs.retired_at`.
-   The metadata JSON itself (TDM ref, overrides, checksums) is never deleted
-   — it's the permanent, tiny audit trail of what once existed, even after
-   the bytes are gone. `scripts/validate_run_metadata.py` skips the on-disk
-   checksum check for runs marked retired.
+   `runs/<id>/*/outputs/` directory's contents and marks each scenario's
+   **latest** attempt (`runs/<id>/<scenario>/run_info/<latest_run_id>.json`)
+   with `outputs.retired: true` / `outputs.retired_at`. Older, already-
+   superseded attempts under `run_info/` never get this flag — their
+   `curated[]` paths were already gone before retirement touched anything
+   (see "Curated outputs..." below), so there's nothing for retirement to
+   mark there. No metadata document is ever deleted — every attempt's record
+   (TDM ref, overrides, checksums) stays forever as the permanent, tiny
+   audit trail of what once existed, even after the bytes are gone.
+   `scripts/validate_run_metadata.py` only ever checksums a scenario's
+   latest `run_info/` record in the first place, and skips even that one
+   when it's marked retired.
 
 Reports don't get an "if retired" branch of their own — that's centralized
 once in each run_set's own loader module, which checks
@@ -317,33 +334,40 @@ model is touched.
   the bat file fails loudly if that's unset or points at a nonexistent path.
   Because of this, `build_command()` (`src/tdmruns/execution.py`) now
   resolves `execution.entry_point` against `repo_root`, not `tdm_path`.
-  **Still unconfirmed end-to-end** — blocked on the next bullet, since the
-  driver script's hardcoded `READ FILE = '0GeneralParameters.block'` /
-  `'1ControlCenter.block'` won't find anything in the scenario folder until
-  that's fixed.
+  **Confirmed end-to-end** — see the next bullet.
 - `control_center_defaults_dir` in `config/framework.yaml` is `Scenarios/_default`
   (**singular**, not `_defaults` as earlier drafts of this doc said) — verified
   against the real submodule, which has `tdm/Scenarios/_default/`.
-- **Blocker (still open):** `tdmruns validate-config` fails against the real
-  TDM — `1ControlCenter - BY_2019.block` in the real defaults library is Cube
-  Voyager's native block format, not YAML (see the constraints note above).
-  `cli.py`/`controlcenter.py` haven't been updated for this yet, so no real
-  scenario has been run through `run-scenario`/`run-set`. Relatedly,
-  `controlcenter.write_block_file()` currently writes plain YAML to
-  `_ControlCenter.yaml`, but the driver script expects Cube block syntax in a
-  file literally named `1ControlCenter.block` (plus a `0GeneralParameters.block`
-  neither this function nor anything else currently stages into the scenario
-  folder) — fixing the read side (`load_baseline()`) without also fixing the
-  write side won't be enough to actually run Cube. Until it's fixed, new run
-  sets are executed manually (Cube Voyager invoked directly) and their
-  outputs gathered with `tdmruns import-manual-run(-set)` (see CLI commands
-  above) — a first-class, supported path now, not a one-off workaround. See
-  `non-motorized-2023` below for the current example.
+- **Resolved: Control Center block-format parsing/writing.** `controlcenter.py`
+  reads and writes Cube Voyager's real native `KEY = value` / `;`-comment
+  block format (not YAML) — `write_block_file()` writes `_ControlCenter.block`
+  by substituting overridden lines into a full copy of the baseline template,
+  preserving everything else byte-for-byte (see "Config layer order" above).
+  This was fixed in commit `bc56130` ("Write real Cube .block Control Center
+  files instead of YAML") — an earlier draft of this doc described this as a
+  live, unfixed blocker for some time after that; it wasn't. Real proof it
+  works end-to-end: `bring-work-trips-closer-to-home`'s recorded run history
+  (`runs/bring-work-trips-closer-to-home/*/run_info/`) shows one real
+  `execution_mode: "cli"` attempt per scenario that rendered a real
+  `_ControlCenter.block`, invoked `bin/RunModel.bat`, ran Cube Voyager for
+  hours, and produced a full 1000+-file inventory with curated outputs.
+  Those specific attempts are recorded `status: "failed"` — not because
+  anything about Control Center rendering or execution failed, but because
+  they predate the "decide status from the model's own log, not the exit
+  code alone" fix (see that architecture decision below) and got
+  misclassified by Voyager's own unreliable exit code. Rather than re-running
+  through the CLI once that fix landed, the already-completed raw folders
+  were curated via `import-manual-run` instead (a pragmatic call, not a
+  structural need) — which is why every *subsequent* attempt for these
+  scenarios shows `execution_mode: "manual"`. `non-motorized-2023` predates
+  this fix entirely and was always run manually by design (see below); that
+  one's `manual_scenario_folder` convention has no bearing on whether CLI
+  execution itself works.
 - The test suite's fixtures still assume the old mock TDM layout (they try to
   copy a `RunModel_stub.py` that no longer exists in the now-real submodule),
   so `pytest tests/` currently shows ~19 errors in `test_config.py` /
-  `test_integration.py` / `test_prep.py` — pre-existing, unrelated to the
-  block-file blocker above, and not something recent work introduced.
+  `test_integration.py` / `test_prep.py` — pre-existing, unrelated to Control
+  Center rendering, and not something recent work introduced.
 - Quarto reporting (`reports/`) renders successfully locally (`quarto render
   reports` / `quarto preview reports`) as of this session. GitHub Actions
   (`publish-report.yml`) installs `geopandas`/`plotly` and registers a
@@ -381,11 +405,42 @@ model is touched.
   cross-group-isolation/failure-isolation, all fully mocked — no real
   submodule or Cube Voyager involved) — not yet exercised end-to-end against
   a real concurrent multi-scenario `run-set` invocation.
-- **One override mechanism** — `_ControlCenter.yaml` keys are all just keys,
+- **One override mechanism** — `_ControlCenter.block` keys are all just keys,
   whether they select input files or tune model parameters. `input_files` in
   scenario YAML is syntactic sugar for file-path overrides with automatic path
   resolution; it merges into the same single override dict.
-- **Driver script is staged every run, default or custom — a second, narrow
+- **`general_parameter_overrides` is a second, separate override mechanism,
+  for a file Control Center overrides can't reach** — ported from
+  `WF-TDM-Calibration`'s `tdmcalib`. `tdm/1_Inputs/0_GlobalData/
+  GeneralParameters.block` (`config/framework.yaml`'s
+  `general_parameters_path`) is a single file shared by *every* scenario's
+  working folder — unlike the Control Center, which is templated fresh per
+  run, there's no per-scenario copy of it to substitute lines into, and
+  copying the whole ~1200-line file would mean either editing inside `tdm/`
+  (forbidden) or a per-scenario copy that's immediately stale the moment the
+  TDM team updates the shared original. `run_set.yaml`/`scenario.yaml` may
+  declare `general_parameter_overrides` (scenario overrides run_set, same
+  precedence as `overrides`, merged via
+  `config.resolved_general_parameter_overrides()` — recorded as one merged
+  dict in metadata, not layer-by-layer like Control Center's
+  `run_set_overrides`/`scenario_overrides` split, since there's no per-layer
+  file to attribute a key to). Validated the same way as Control Center keys
+  (`cc.validate_overrides()` against `general_parameters.load_baseline()`'s
+  real parse of the shared file — an unknown key is a hard failure before
+  execution). If non-empty, `execution.py` writes only the overridden key/
+  value pairs to a small per-run file
+  (`general_parameters.OVERRIDE_FILENAME`,
+  `_GeneralParametersOverrides.block`, in the scenario folder — never a copy
+  of the real file), and `driver_script.stage()` inserts one extra
+  `READ FILE = '_GeneralParametersOverrides.block'` line into the *staged
+  copy* of the driver script, immediately after its own
+  `READ FILE = '...GeneralParameters.block'` line — Cube Voyager's own
+  last-assignment-wins semantics then apply the override with the real file
+  never touched or copied. No run_set currently declares this (added ahead
+  of need, not because one does yet) — not yet exercised end-to-end against
+  real Cube Voyager, only via `tests/test_general_parameters.py`/
+  `tests/test_driver_script.py`'s unit coverage of each piece.
+- **Driver script is staged every run, default or custom — a third, narrow
   mechanism deliberately separate from overrides** — every run stages a
   driver script into its scenario folder: the TDM's own default
   (`config/framework.yaml`'s `default_driver_script`, currently
@@ -404,11 +459,11 @@ model is touched.
   it's not folded into `overrides`/`validate_overrides()` — see
   `docs/architecture/0007-custom-driver-script.md`. `bin/RunModel.bat` now
   exists and does glob for whatever driver script it finds staged in the
-  scenario folder it's given (see "What's currently mocked vs. real" above);
-  still unconfirmed end-to-end since it depends on the Control Center
-  block-format blocker being fixed first.
+  scenario folder it's given (see "What's currently mocked vs. real" above)
+  — confirmed end-to-end via `bring-work-trips-closer-to-home`'s recorded
+  run history.
 - **`start_from_copy` seeds a scenario's raw folder from a prior scenario's
-  run — a third, narrow mechanism, orthogonal to overrides and driver
+  run — a fourth, narrow mechanism, orthogonal to overrides and driver
   scripts** — a scenario may declare `start_from_copy: <scenario_id>`
   (naming a sibling scenario in the same run set) to have its entire raw
   scenario folder copied from that scenario's most recent *successful*
@@ -426,9 +481,8 @@ model is touched.
   tripping the size limit) even though an earlier attempt had succeeded.
   This mechanism only copies files; it never makes Cube Voyager skip a step
   — that's the analyst's own `driver_script` logic to write. Wired into
-  `run-scenario`/`run-set` only (no standalone command), so it depends on
-  the same block-format blocker as everything else routed through Cube, plus
-  the source scenario needing a successful run first. Because the raw
+  `run-scenario`/`run-set` only (no standalone command); the source scenario
+  needs a successful run on record first. Because the raw
   scenario folder is reused across every run attempt for a given
   `scenario_id` (`scenario_folder_template` has no `run_id` component), a
   scenario declaring `start_from_copy` re-copies the source's entire folder
@@ -442,16 +496,30 @@ model is touched.
   `input_prep.ipynb` notebook at its root that generates input files (e.g.
   SE CSVs) into its `inputs/` folder. The framework does not run prep;
   analysts run it once before executing the run_set.
-- **Curated outputs with a hard size ceiling** — raw outputs stay gitignored.
-  Only a declared, glob-selected, size-checked subset enters the repo.
-  Checksums are computed only for that curated subset (at copy time), not for
-  every file the model produced — the full inventory (for the aggregate
-  count/byte-total in metadata) is stat()-only, since scenario folders
-  routinely hold thousands of files and tens of GB and nothing ever read the
-  per-file checksum for anything not selected (see `docs/architecture/0003-output-management.md`'s update note).
-- **Success/failure is decided from the model's own completion log, not
-  Voyager's process exit code, when that log is available** — reverses an
-  earlier deliberate choice. `src/tdmruns/model_log.py` parses
+- **Curated outputs with a size ceiling that degrades gracefully, not a hard
+  failure** — raw outputs stay gitignored. Only a declared, glob-selected
+  subset gets copied into `runs/<run_set>/<scenario>/outputs/` (only the
+  latest attempt's files — see the "Only the latest attempt's curated
+  outputs..." bullet below), and every copied file gets a checksum (at copy
+  time) — the full inventory (for
+  the aggregate count/byte-total in metadata) is stat()-only, since scenario
+  folders routinely hold thousands of files and tens of GB and nothing ever
+  read the per-file checksum for anything not selected (see
+  `docs/architecture/0003-output-management.md`'s update note). Ported from
+  `WF-TDM-Calibration`'s `tdmcalib`: a selected file that turns out to exceed
+  `outputs.max_file_size_mb` once actually written no longer fails curation
+  (and with it, marks an otherwise-successful model run `"failed"` in
+  `run_metadata.json`) — it's kept on disk with `"committed": false` in its
+  manifest entry, and `outputs/.gitignore` is regenerated on every curation
+  run to list exactly the currently-oversized files (see
+  `src/tdmruns/outputs.py`'s `_write_outputs_gitignore()`). The file is still
+  usable locally (e.g. rendering a report on the machine that curated it);
+  it's just never committed. `scripts/validate_run_metadata.py` skips the
+  on-disk checksum check for `"committed": false` entries the same way it
+  already does for retired runs, since a fresh checkout won't have the file.
+- **Success/failure is decided from the model's own completion log, never
+  from Voyager's process exit code alone** — reverses an earlier deliberate
+  choice. `src/tdmruns/model_log.py` parses
   `<scenario_folder>\_Log\_RunTime.txt`, written by the model scripts
   themselves via `_TimeStamp_ModelSuccess.block` / `_TimeStamp_ModelCrashed.block`
   at `:ENDMODEL` / `:ONERROR` in the Hail Mary driver script. Real recorded
@@ -462,30 +530,76 @@ model is touched.
   what the model itself reported it did. (The driver script also never calls
   `Exit` after `:ONERROR`, so the reverse — a crash that still exits 0 — is
   equally possible, not just the direction seen so far.) `execution.py`'s
-  `decide_status()` now prefers the log when a recognizable
-  "TOTAL MODEL RUN TIME" entry is found for the current attempt (the file is
-  `APPEND=T` and reused across every CLI-driven retry of a given
-  `scenario_id`, so only the text since the *previous* such entry — or file
-  start — is read as this attempt's), and falls back to the exit code alone
-  when no entry exists yet (e.g. Cube never started). `run_metadata.json`'s
+  `decide_status()` prefers the log when a recognizable "TOTAL MODEL RUN
+  TIME" entry is found for the current attempt (the file is `APPEND=T` and
+  reused across every CLI-driven retry of a given `scenario_id`, so only the
+  text up to and including the *last* such entry is read as this attempt's),
+  and now (ported from `tdmcalib`) treats a missing or *unresolved* log
+  result as `"failed"` rather than falling back to a clean exit code — a run
+  is never called `"success"` without the model's own confirmation.
+  `model_log.py`'s `read_model_log()` also gained a correctness fix ported
+  from `tdmcalib`: since the driver script never calls `Exit` after
+  `:ONERROR`, a caught crash can log a crash+total block and keep running
+  into a *later* step, which can crash again and append another block — so
+  the last "TOTAL MODEL RUN TIME" entry isn't reliably a once-per-run final
+  marker. `read_model_log()` now returns `None` (unresolved, so
+  `decide_status()` records the run as failed pending confirmation) whenever
+  anything is logged *after* that last block, rather than trusting a
+  possibly-superseded checkpoint. It also prefers a trailing `"MODEL RUN
+  SUCCESSFUL"` line (written only via `:ENDMODEL`, on newer TDM pins) as
+  conclusive proof of a real finish when present, regardless of how many
+  earlier crash+retry checkpoints preceded it. `run_metadata.json`'s
   `execution.status_source` records which signal won
   (`"model_log"`/`"exit_code"`), and `execution.model_log` carries the parsed
   outcome, crashed step (if any), and the model's own Beg/End/Run-Time
   strings — also the source for run-duration/crash-point detail in reports.
   `execution.model_log.exit_code_mismatch` is `true` whenever the two
   signals disagreed, so a run can still be audited even though the log won.
+  On a failed run, `src/tdmruns/prn_log.py` (also ported from `tdmcalib`)
+  folds Voyager's own `F(NNN): <description>` fatal-error lines from the
+  most recently written `*.PRN` file in the scenario folder into the error
+  message, alongside `model_log.py`'s crashed step name — see
+  `execution.py`'s `_append_prn_errors()`.
 - **Manual execution is a first-class path, not just a workaround** —
   `import-manual-run(-set)` curates outputs for a scenario run outside the
   CLI the same way `run-scenario` does after a real execution (same
   select/size-check/copy sequence), flattening curated files into
-  `outputs/` (no preserved subfolder structure) and tagging
-  `run_metadata.json` with `execution_mode: "manual"`. It never touches the
-  TDM submodule. It always creates a new run rather than trying to detect
-  whether the raw folder changed since the last import (an mtime-based
-  staleness check was tried and deliberately removed as unneeded complexity
-  — every invocation is already a deliberate human action).
-- **Flat JSON metadata as source of truth** — one `run_metadata.json` per run,
-  committed, schema-versioned. No database. Quarto reads these directly.
+  `outputs/` (no preserved subfolder structure) and tagging that attempt's
+  `run_info/<run_id>.json` with `execution_mode: "manual"`. It never
+  touches the TDM submodule. It always creates a new attempt rather than
+  trying to detect whether the raw folder changed since the last import
+  (an mtime-based staleness check was tried and deliberately removed as
+  unneeded complexity — every invocation is already a deliberate human
+  action).
+- **Only the latest attempt's curated outputs are ever kept on disk per
+  scenario — permanent per-attempt metadata is a separate, unbounded
+  history** — ported from `WF-TDM-Calibration`'s `tdmcalib`. Before this,
+  every attempt (including every failed retry) kept its own full
+  `runs/<run_set>/<scenario>/<run_id>/outputs/` copy forever, so a scenario
+  under active iteration accumulated one copy per retry — real, not
+  theoretical: `bring-work-trips-closer-to-home` alone reached 3.7 GB across
+  2–5 attempts per scenario before this change, most of it superseded
+  output nobody was reading. `execution.py`'s `run_scenario()` and
+  `import_manual_run()` now call `_reset_run_outputs()` immediately before
+  curating — wiping everything under `runs/<run_set>/<scenario>/` except
+  `run_info/` — so `outputs/` always holds exactly the current attempt's
+  files, win or lose. `run_info/<run_id>.json`, by contrast, is never
+  touched by this reset: `metadata.write()` adds one file there per attempt
+  and nothing ever deletes them, so the full history (every override set,
+  every TDM ref, every checksum manifest — even for output files long since
+  overwritten) survives regardless of how many times a scenario is re-run.
+  `metadata.list_runs()` surfaces only each scenario's latest attempt (what
+  reports and `tdmruns status` want); `metadata.list_attempts()` surfaces
+  the full newest-first history for one scenario (what
+  `latest_successful_run()` — used by `start_from_copy` seeding — and
+  `reports/report_data.py`'s run-history table want). This narrows what the
+  snapshot/purge retirement mechanism above is *for* — it no longer exists
+  primarily to reclaim disk space (there's much less to reclaim now, by
+  construction) but still matters to freeze report numbers before a
+  "finished" run set's scenarios might ever be re-run again.
+- **Flat JSON metadata as source of truth** — one metadata document per
+  attempt (`runs/<run_set>/<scenario>/run_info/<run_id>.json`), committed,
+  schema-versioned. No database. Quarto reads these directly.
 - **CI scoped to validation and reporting** — never model execution.
 - **Future capabilities** (parallel runs, scheduled reruns, cross-version
   comparison, dashboards) are all deferred but attach cleanly to existing
@@ -590,9 +704,12 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
   path. `input_files:` itself is untouched as a mechanism (schema + `config.py`
   still support it) for any run set that wants the absolute-path version; only
   non-motorized-2023 has stopped using it, for now.
-- **Not run through `run-scenario`/`run-set`.** The block-file-parsing
-  blocker above means these scenarios were run manually (Cube Voyager
-  invoked directly, outside the framework). Each scenario YAML declares a
+- **Not run through `run-scenario`/`run-set`.** This run set predates the
+  Control Center block-format fix (see "What's currently mocked vs. real"
+  above), so these scenarios were run manually (Cube Voyager invoked
+  directly, outside the framework) — not a limitation that still applies to
+  new run sets today, just how this one was actually done. Each scenario
+  YAML declares a
   `manual_scenario_folder` (e.g. `Scenarios/non-motorized-2023/
   BY_2019_SensitivityTest_01`, relative to the TDM submodule root) pointing
   at that raw, gitignored output. `run_set.yaml` and `S10.yaml`/`S11.yaml`'s
@@ -602,8 +719,11 @@ folded into the repo; the old `non-motorized-2026` run_set/report were deleted.
 - **Outputs gathered via `tdmruns import-manual-run-set --run-set
   non-motorized-2023`**, which curates each scenario's raw, unfiltered
   `outputs.include`-matched files into `runs/non-motorized-2023/S01`–`S13/
-  <run_id>/outputs/` and writes `run_metadata.json` with `execution_mode:
-  "manual"`. There used to be a separate, pre-filtered backfill under
+  outputs/` and writes a permanent per-attempt record to `run_info/` with
+  `execution_mode: "manual"`. This run set is already retired (see
+  "Retiring a run set"), so its `outputs/` is empty now regardless — its
+  numbers live in `run_sets/non-motorized-2023/snapshot/` instead. There
+  used to be a separate, pre-filtered backfill under
   `run_sets/non-motorized-2023/data/outputs/` (and a one-off script to
   produce it) — both were deleted once the reports were pointed at `runs/`
   directly; `runs/` is now the only copy of curated output for this run set.
@@ -641,73 +761,44 @@ Example run set for toll sensitivity testing. Scenarios defined, no runs execute
 
 In rough priority order:
 
-**1. Fix `controlcenter.py`'s Control Center handling for the real TDM's `.block` format — both directions.**
-`load_baseline()` (`src/tdmruns/controlcenter.py:23`) calls `yaml.safe_load()`
-directly on the baseline file, which works for the mock TDM but not the real
-one — the real `1ControlCenter - BY_2019.block` is Cube Voyager's native
-indented `KEY = value` / `;`-comment block format. This blocks
-`tdmruns validate-config` and any real CLI-driven run. Separately,
-`write_block_file()` writes plain YAML to a file named `_ControlCenter.yaml`,
-but the driver script (`READ FILE = '0GeneralParameters.block'` /
-`'1ControlCenter.block'`, both relative to the scenario folder) expects Cube
-block syntax under the literal name `1ControlCenter.block`, plus a
-`0GeneralParameters.block` that nothing currently stages into the scenario
-folder at all (it's presumably an unmodified copy from `Scenarios/_default/`,
-but that needs confirming). Fixing only the read side isn't enough to
-actually run Cube end-to-end via `bin/RunModel.bat` (see "What's currently
-mocked vs. real" above) — both sides need to agree on the real format before
-a real scenario can run through `run-scenario`/`run-set`. Until it's fixed,
-run sets have to be executed manually outside the framework and their outputs
-gathered with `tdmruns import-manual-run(-set)`, the way `non-motorized-2023`
-is (declaring `manual_scenario_folder` per scenario).
-
-**2. Fix the test suite's fixtures.**
+**1. Fix the test suite's fixtures.**
 `tests/` fixtures still assume the old mock TDM layout (copying a
 `RunModel_stub.py` that no longer exists now that `tdm/` points at the real
 repo) — ~19 errors in `test_config.py` / `test_integration.py` / `test_prep.py`.
 Pre-existing, not caused by recent work, but blocks using `pytest` as a
 signal until updated.
 
-**3. Once #1 is fixed, run `tdmruns validate-config --run-set non-motorized-2023`**
+**2. Run `tdmruns validate-config --run-set non-motorized-2023`**
 against the real submodule to confirm S01–S13's override keys are valid, then
 consider re-running the scenarios through `run-scenario`/`run-set` so this run
 set no longer depends on `manual_scenario_folder`/`import-manual-run-set` —
 though that path is now solid enough (flattened, checksummed, schema-validated)
 that switching isn't urgent on its own.
 
-**4. Verify GitHub Actions actually deploys.**
+**3. Verify GitHub Actions actually deploys.**
 `publish-report.yml` was updated this session to install `geopandas`/`plotly`
 and register a `july2025` Jupyter kernel matching what the report `.qmd` files
 declare — confirmed to render locally via `quarto render reports`, but not yet
 confirmed against a real GitHub Pages deploy. Watch the first push's Actions
 run for kernel/package issues that don't show up locally.
 
-**5. `validate-config.yml` / `validate-run-metadata.yml` workflows** are
+**4. `validate-config.yml` / `validate-run-metadata.yml` workflows** are
 written but still unconfirmed against the real (possibly private) TDM repo —
 if private, they'll need a deploy key or PAT to check out the submodule.
 
-**6. Exercise `bin/RunModel.bat` end-to-end once #1 is fixed.**
-`bin/RunModel.bat` now exists (lives in the framework repo, not `tdm/` — see
-"What's currently mocked vs. real" above): it globs the scenario folder for
-whatever driver script `src/tdmruns/driver_script.py` staged there (default
-`_HailMary_1Subfolder.s` or a run_set's custom one, see ADR 0007), `pushd`s
-into the scenario folder so the driver script's relative
-`..\..\..\2_ModelScripts\...` paths resolve, and invokes Cube Voyager via
-the `VOYAGER_EXE` env var (sourced from `config/local.yaml`'s `Voyager_EXE`
-by `execution.invoke()`). None of this has been run against real Cube
-Voyager yet — it can't produce a working run until #1's block-format fix
-lands, since the driver script's `READ FILE = '1ControlCenter.block'` /
-`'0GeneralParameters.block'` won't find anything until then. Once #1 is
-fixed, verify: the bat file actually locates and runs the staged driver
-script, and `VOYAGER_EXE` resolves correctly on a real workstation.
-Success/failure now prefers the model's own `_Log\_RunTime.txt` completion
-report over Voyager's process exit code (`%ERRORLEVEL%` right after
-`start /w`, propagated by `RunModel.bat` and read by `execution.invoke()`) —
-see the "Success/failure is decided from the model's own completion log"
-architecture decision above. Falls back to the exit code alone when no
-recognizable log entry exists yet.
+**5. `bin/RunModel.bat` end-to-end is confirmed working** (see "What's
+currently mocked vs. real" above) — `bring-work-trips-closer-to-home`'s
+recorded history shows it locating and running the staged driver script,
+Cube Voyager executing for hours, and `VOYAGER_EXE` resolving correctly on a
+real workstation. What's *not* yet confirmed: a CLI-driven run that also
+comes back `status: "success"` end-to-end on the first try — every recorded
+`execution_mode: "cli"` attempt so far predates the "decide status from the
+model's own log" fix and got misclassified as failed by Voyager's exit code
+alone (see above). Worth a fresh `run-scenario` invocation against an
+already-seeded scenario to confirm the fix actually produces a clean
+`"success"` now, rather than inferring it from older records.
 
-**7. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
+**6. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
 `Closer00` (`Closer01`/`Closer02`/`Closer03` all declare `start_from_copy:
 Closer00`) has recorded successful runs now that `RunModel.bat` works
 end-to-end, so the copy source resolves. Fixed a real bug in
@@ -726,7 +817,7 @@ folder re-copied on further retries. Covered by new unit tests in
 `tests/test_scenario_seed.py`; still not exercised end-to-end via a live
 `run-scenario` invocation against the real TDM.
 
-**8. Concurrent `run-set` execution (`max_parallel_runs`) is wired up but
+**7. Concurrent `run-set` execution (`max_parallel_runs`) is wired up but
 not yet exercised end-to-end.** See the "In-place submodule checkout... but
 same-ref scenarios now run concurrently" architecture decision above for the
 full mechanism (`execution.run_scenarios()` groups by resolved `tdm_ref`,

@@ -32,6 +32,11 @@
       "description": "Control Center key/value overrides specific to this scenario, applied on top of the run set's shared overrides.",
       "additionalProperties": true
     },
+    "general_parameter_overrides": {
+      "type": "object",
+      "description": "GeneralParameters.block key/value overrides specific to this scenario, applied on top of the run set's shared general_parameter_overrides -- see run_set.schema.json's own description and src/tdmruns/general_parameters.py for why this is a separate mechanism from overrides above.",
+      "additionalProperties": true
+    },
     "variables": {
       "type": "object",
       "description": "Documentation-only scenario parameters (e.g. a custom driver/step script's inputs) that are not Control Center keys and are not applied by the framework -- unlike overrides, which are validated against the baseline and rendered into _ControlCenter.yaml, these are not read by anything yet. Record here what a custom driver_script's companion step script is meant to consume once it reads them itself.",

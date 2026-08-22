@@ -79,3 +79,66 @@ def test_stage_raises_when_declared_script_missing(tmp_path):
         ds.stage(
             run_set_dir, tdm_path, defaults_dir, default_filename, {}, scenario, scenario_folder
         )
+
+
+# ---------------------------------------------------------------------------
+# general_parameter_overrides -- inserts an extra READ FILE line
+# ---------------------------------------------------------------------------
+
+_GP_READ_LINE = "    READ FILE = '..\\..\\..\\1_Inputs\\0_GlobalData\\GeneralParameters.block'"
+
+
+def test_stage_without_overrides_copies_byte_for_byte(tmp_path):
+    tdm_path, defaults_dir, default_filename = _make_defaults(tmp_path, content=f"{_GP_READ_LINE}\n")
+    scenario_folder = tmp_path / "scenario"
+    scenario_folder.mkdir()
+
+    ds.stage(tmp_path / "run_set", tdm_path, defaults_dir, default_filename, {}, {}, scenario_folder)
+
+    staged = (scenario_folder / default_filename).read_text()
+    assert staged == f"{_GP_READ_LINE}\n"
+    assert "GeneralParametersOverrides" not in staged
+
+
+def test_stage_with_overrides_inserts_read_file_line_after_general_parameters(tmp_path):
+    content = f"start\n{_GP_READ_LINE}\nend\n"
+    tdm_path, defaults_dir, default_filename = _make_defaults(tmp_path, content=content)
+    scenario_folder = tmp_path / "scenario"
+    scenario_folder.mkdir()
+
+    ds.stage(
+        tmp_path / "run_set", tdm_path, defaults_dir, default_filename, {}, {}, scenario_folder,
+        general_parameter_overrides={"ZoneMsgRate": 100},
+    )
+
+    lines = (scenario_folder / default_filename).read_text().splitlines()
+    gp_line_index = lines.index(_GP_READ_LINE)
+    assert lines[gp_line_index + 1] == "    READ FILE = '_GeneralParametersOverrides.block'"
+    assert lines[0] == "start"
+    assert lines[-1] == "end"
+
+
+def test_stage_with_empty_overrides_dict_does_not_insert(tmp_path):
+    content = f"{_GP_READ_LINE}\n"
+    tdm_path, defaults_dir, default_filename = _make_defaults(tmp_path, content=content)
+    scenario_folder = tmp_path / "scenario"
+    scenario_folder.mkdir()
+
+    ds.stage(
+        tmp_path / "run_set", tdm_path, defaults_dir, default_filename, {}, {}, scenario_folder,
+        general_parameter_overrides={},
+    )
+
+    assert "GeneralParametersOverrides" not in (scenario_folder / default_filename).read_text()
+
+
+def test_stage_with_overrides_raises_when_no_general_parameters_read_line(tmp_path):
+    tdm_path, defaults_dir, default_filename = _make_defaults(tmp_path, content="no gp read here\n")
+    scenario_folder = tmp_path / "scenario"
+    scenario_folder.mkdir()
+
+    with pytest.raises(DriverScriptError, match="GeneralParameters.block"):
+        ds.stage(
+            tmp_path / "run_set", tdm_path, defaults_dir, default_filename, {}, {}, scenario_folder,
+            general_parameter_overrides={"ZoneMsgRate": 100},
+        )

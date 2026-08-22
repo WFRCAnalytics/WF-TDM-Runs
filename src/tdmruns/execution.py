@@ -8,6 +8,7 @@ curation, and metadata together into one auditable attempt.
 import os
 import platform
 import secrets
+import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -17,10 +18,12 @@ from pathlib import Path
 from tdmruns import config as cfg
 from tdmruns import controlcenter as cc
 from tdmruns import driver_script as ds
+from tdmruns import general_parameters as gp
 from tdmruns import metadata as md
 from tdmruns import model_log as mlog
 from tdmruns import outputs as out
 from tdmruns import prep
+from tdmruns import prn_log
 from tdmruns import scenario_seed as seed
 from tdmruns import submodule as sub
 from tdmruns.exceptions import ExecutionError
@@ -102,23 +105,28 @@ def invoke(command: list, cwd: Path, log_path: Path, timeout_seconds: int, env: 
 def decide_status(
     exit_code: int, model_log_result: dict | None, log_path: Path, scenario_folder: Path
 ) -> tuple:
-    r"""Decides run status/error from Voyager's exit code and, when available,
-    the model's own _Log\_RunTime.txt completion report -- preferring the
-    latter, since real recorded runs have shown it can disagree with the exit
-    code (a clean "TOTAL MODEL RUN TIME" entry with a non-zero exit code, and
-    vice versa -- the driver script never calls Exit after :ONERROR). Falls
-    back to the exit code alone when no recognizable log entry exists yet
-    (e.g. Cube never started, or was killed before writing anything).
+    r"""Decides run status/error from the model's own _Log\_RunTime.txt
+    completion report -- the only check trusted here. Voyager's own process
+    exit code is not reliable on its own: real recorded runs have shown it
+    can disagree with the exit code (a clean "TOTAL MODEL RUN TIME" entry
+    with a non-zero exit code, and vice versa -- the driver script never
+    calls Exit after :ONERROR). A missing or unresolved model-log result
+    (see model_log.py -- e.g. Cube never started, was killed before writing
+    anything, or its last logged entry was superseded by further step
+    activity) is therefore treated as failed rather than falling back to the
+    exit code: a run is never called "success" without the model's own
+    confirmation. exit_code is still folded into the error text for
+    diagnostics.
 
     Returns (status, error, status_source, model_log_result) -- the last one
     is the input dict with exit_code_mismatch filled in (or None, unchanged).
     """
     if model_log_result is None:
-        status = "success" if exit_code == 0 else "failed"
+        status = "failed"
         error = (
-            None
-            if exit_code == 0
-            else f"TDM batch entry point exited with code {exit_code}. See {log_path}."
+            f"No resolved model completion report in "
+            f"{scenario_folder / '_Log' / '_RunTime.txt'} (see {log_path}). "
+            f"Voyager exit code: {exit_code}."
         )
         return status, error, "exit_code", None
 
@@ -134,6 +142,37 @@ def decide_status(
         error = None
     model_log_result["exit_code_mismatch"] = (status == "success") != (exit_code == 0)
     return status, error, "model_log", model_log_result
+
+
+def _append_prn_errors(error: str, scenario_folder: Path) -> str:
+    """Folds Voyager's own F(NNN): fatal-error lines from the most recent
+    *.PRN file into a failed run's error message, alongside decide_status's
+    step-level summary -- see prn_log.py for why that PRN is the right one
+    and how a real Voyager error line is told apart from an F(x) function
+    reference inside PILOT script code. No-ops (returns error unchanged) if
+    there's no PRN file or none of its lines match, e.g. a hang/timeout that
+    never got as far as Voyager reporting anything."""
+    prn_path, fatal_lines = prn_log.latest_fatal_errors(scenario_folder)
+    if not fatal_lines:
+        return error
+    return f"{error}\n\nVoyager errors ({prn_path.name}):\n" + "\n".join(fatal_lines)
+
+
+def _reset_run_outputs(run_dir: Path):
+    """Clears everything under run_dir except run_info/ (see metadata.py) --
+    curated outputs are wiped and rebuilt fresh on every attempt (only the
+    latest is ever kept on disk, so retry cruft doesn't accumulate in runs/
+    the way per-run_id output copies used to), but run_info/'s per-attempt
+    metadata history is permanent and must survive this reset."""
+    if not run_dir.exists():
+        return
+    for child in run_dir.iterdir():
+        if child.name == "run_info":
+            continue
+        if child.is_dir():
+            shutil.rmtree(child)
+        else:
+            child.unlink()
 
 
 def run_scenario(
@@ -177,6 +216,7 @@ def run_scenario(
     run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(
         run_set, scenario, rs_dir
     )
+    general_parameter_overrides = cfg.resolved_general_parameter_overrides(run_set, scenario)
     output_spec = cfg.resolved_output_spec(framework, run_set, scenario)
 
     run_id = generate_run_id()
@@ -208,6 +248,16 @@ def run_scenario(
     cc_local_layer = {k: v for k, v in local_layer.items() if k != "Voyager_EXE"}
     cc.validate_overrides(baseline, cc_local_layer, "config/local.yaml")
 
+    # --- validate General Parameter overrides against the real, shared
+    # GeneralParameters.block (hard failure on unknown keys, same as
+    # Control Center overrides above) -- see general_parameters.py ---
+    if general_parameter_overrides:
+        gp_baseline = gp.load_baseline(tdm_path, framework["general_parameters_path"])
+        cc.validate_overrides(
+            gp_baseline, general_parameter_overrides,
+            f"run set '{run_set_id}'/scenario '{scenario_id}'.general_parameter_overrides",
+        )
+
     # --- prep scripts (hard failure stops this scenario before execution) ---
     prep.run_prep_scripts(run_set, scenario, rs_dir, scenario_id)
 
@@ -231,6 +281,12 @@ def run_scenario(
     control_center_path = folder / "_ControlCenter.block"
     cc.write_block_file(baseline_path, rendered, control_center_path)
 
+    # --- write the General Parameter override file, if declared (see
+    # general_parameters.py) -- driver_script.stage() below inserts the
+    # extra READ FILE line that picks this up ---
+    if general_parameter_overrides:
+        gp.write_override_file(general_parameter_overrides, folder / gp.OVERRIDE_FILENAME)
+
     # --- stage the driver script: declared custom one, or the TDM's default ---
     driver_script_path = ds.stage(
         rs_dir,
@@ -240,6 +296,7 @@ def run_scenario(
         run_set,
         scenario,
         folder,
+        general_parameter_overrides=general_parameter_overrides,
     )
 
     # --- execute ---
@@ -256,10 +313,18 @@ def run_scenario(
     status, error, status_source, model_log_result = decide_status(
         exit_code, model_log_result, log_path, folder
     )
+    if status == "failed":
+        error = _append_prn_errors(error, folder)
 
     # --- inventory + curate outputs (best effort even on failure) ---
     full_inventory = out.inventory(folder)
-    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+    run_dir = repo_root / "runs" / run_set_id / scenario_id
+    # Only the latest attempt's outputs are ever kept on disk for a
+    # scenario -- wipe whatever a previous attempt left (everything but
+    # run_info/'s permanent history) before this attempt's own curate()
+    # recreates it, so a narrowed outputs.include or a failed re-run can't
+    # leave stale files behind.
+    _reset_run_outputs(run_dir)
     status, error, curated = out.curate(
         folder, full_inventory, output_spec, run_dir, status, error, repo_root,
         voyager_exe=local_layer.get("Voyager_EXE"),
@@ -277,6 +342,7 @@ def run_scenario(
         baseline_file=baseline_filename,
         run_set_overrides=run_set_overrides,
         scenario_overrides=scenario_overrides,
+        general_parameter_overrides=general_parameter_overrides,
         rendered_path=str(control_center_path),
         driver_script=driver_script_path,
         seeded_from=seeded_from,
@@ -342,6 +408,7 @@ def import_manual_run(
     run_set_overrides, scenario_overrides = cfg.merged_control_center_overrides(
         run_set, scenario, rs_dir
     )
+    general_parameter_overrides = cfg.resolved_general_parameter_overrides(run_set, scenario)
     output_spec = cfg.resolved_output_spec(framework, run_set, scenario)
 
     run_id = generate_run_id()
@@ -351,7 +418,9 @@ def import_manual_run(
 
     local_layer = framework.get("_local", {})
     full_inventory = out.inventory(scenario_folder)
-    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+    run_dir = repo_root / "runs" / run_set_id / scenario_id
+    # Same "latest attempt only" wipe as run_scenario() -- see its comment.
+    _reset_run_outputs(run_dir)
     status, error, curated = out.curate(
         scenario_folder, full_inventory, output_spec, run_dir, "success", None, repo_root,
         voyager_exe=local_layer.get("Voyager_EXE"),
@@ -369,6 +438,7 @@ def import_manual_run(
         baseline_file=baseline_filename,
         run_set_overrides=run_set_overrides,
         scenario_overrides=scenario_overrides,
+        general_parameter_overrides=general_parameter_overrides,
         scenario_folder=str(scenario_folder),
         inventory_count=len(full_inventory),
         inventory_total_bytes=sum(e["size_bytes"] for e in full_inventory),

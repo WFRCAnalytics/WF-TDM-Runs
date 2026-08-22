@@ -67,7 +67,7 @@ def test_snapshot_run_set_raises_when_script_leaves_dir_empty(tmp_path):
 
 
 def _write_run(repo_root, run_set_id, scenario_id, run_id, with_outputs=True, retired=False):
-    run_dir = repo_root / "runs" / run_set_id / scenario_id / run_id
+    run_dir = repo_root / "runs" / run_set_id / scenario_id
     outputs_dir = run_dir / "outputs"
     outputs_dir.mkdir(parents=True)
     files = []
@@ -119,7 +119,7 @@ def test_purge_outputs_deletes_files_and_marks_retired(tmp_path):
     assert summary == {"runs_purged": 1, "files_removed": 2, "bytes_freed": 150}
     assert not (run_dir / "outputs").exists()
 
-    data = json.loads((run_dir / "run_metadata.json").read_text())
+    data = json.loads((run_dir / "run_info" / "20260101-000000-aaaa.json").read_text())
     assert data["outputs"]["retired"] is True
     assert data["outputs"]["retired_at"]
     assert data["outputs"]["curated"][0]["relative_path"] == "a.csv"  # manifest survives

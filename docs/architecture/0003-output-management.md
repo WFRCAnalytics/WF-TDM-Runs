@@ -46,3 +46,41 @@ discarded for anything not selected. The full inventory is now stat()-only
 (path + size, no file contents read); `copy_selected()` computes the sha256
 only for the files actually selected and copied into the repo, since those
 are the only checksums metadata ever keeps.
+
+## Update: an oversized file degrades gracefully instead of failing the run
+
+The original decision above ("fails the run loudly rather than being
+silently skipped") was reversed, porting the fix from the sibling
+`WF-TDM-Calibration` repo's `tdmcalib` (see its `outputs.py`). In practice
+this meant a genuinely successful model run -- every step completed, every
+output produced -- was recorded as `status: "failed"` in `run_metadata.json`
+purely because one curated output crossed the size ceiling (e.g. a
+corrupted/oversized skim), which conflated "the model failed" with "an
+output happened to be big" and required a manual re-curation once the
+`outputs.include` pattern or the file itself was fixed.
+
+A selected file that exceeds `outputs.max_file_size_mb` once actually
+written is now kept on disk (not deleted) with `"committed": false` in its
+`curated[]` manifest entry, and `outputs/.gitignore` is regenerated on every
+curation run to list exactly the currently-oversized files -- so the file
+never reaches git, but is still usable locally (e.g. a report rendered on
+the machine that curated it can still read it). CI's `check_file_sizes.py`
+backstop is unaffected, since a gitignored file is never tracked in the
+first place. `scripts/validate_run_metadata.py` skips the on-disk checksum
+check for `"committed": false` entries, the same way it already skips it for
+retired runs, since a fresh checkout won't have the file.
+
+Genuine curation failures -- a filename collision, a declared column/tab/
+field that doesn't exist in the source file, or Voyager not being configured
+for a matrix/network entry -- still raise and still fail the run; only the
+"file turned out to be too big" case changed.
+
+## Update: curated outputs move to `outputs/`, one level up from `{run_id}/`
+
+The `runs/{run_set}/{scenario}/{run_id}/outputs/` path in this ADR's
+original Decision is no longer current -- curated outputs now live at
+`runs/{run_set}/{scenario}/outputs/` (no `{run_id}` level), holding only the
+latest attempt's files; per-attempt metadata moved to its own permanent
+`run_info/{run_id}.json`. See `docs/architecture/0004-run-metadata-storage.md`'s
+own update note for the full rationale -- this ADR's actual subject (the
+selection/checksumming/size-ceiling mechanics above) is otherwise unchanged.

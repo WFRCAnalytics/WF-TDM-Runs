@@ -52,3 +52,17 @@ def test_write_and_reload_block_file_roundtrip(tmp_path):
     cc.write_block_file(rendered, out_path)
     reloaded = yaml.safe_load(out_path.read_text())
     assert reloaded == rendered
+
+
+def test_render_assignment_lines_formats_key_value_pairs():
+    lines = cc.render_assignment_lines({"ZoneMsgRate": 100, "UsedZones": "3629"})
+    assert lines == ["    ZoneMsgRate = 100", "    UsedZones = '3629'"]
+
+
+def test_render_assignment_lines_respects_custom_indent():
+    lines = cc.render_assignment_lines({"A": 1}, indent="  ")
+    assert lines == ["  A = 1"]
+
+
+def test_render_assignment_lines_empty_dict():
+    assert cc.render_assignment_lines({}) == []

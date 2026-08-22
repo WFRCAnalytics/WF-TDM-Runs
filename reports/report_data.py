@@ -112,8 +112,23 @@ def scenario_count(run_set_id: str) -> int:
     return len(list(scenarios_dir.glob("*.yaml")))
 
 
+def _latest_run_info_path(scenario_dir: Path) -> Path:
+    """The most recent attempt's metadata file under scenario_dir/run_info/
+    (run_id is timestamp-prefixed, so the lexicographically-greatest
+    filename is the latest), or None if there's no run_info/ yet. Does not
+    import tdmruns.metadata -- this module deliberately duplicates that
+    package's directory-walking logic rather than depending on it, since
+    reports/ is published by GitHub Actions without the tdmruns package
+    installed (see publish-report.yml)."""
+    run_info_dir = scenario_dir / "run_info"
+    if not run_info_dir.is_dir():
+        return None
+    candidates = sorted(run_info_dir.glob("*.json"))
+    return candidates[-1] if candidates else None
+
+
 def latest_run_per_scenario(run_set_id: str) -> list:
-    """One row per scenario: its most recent run, newest-first by run_id."""
+    """One row per scenario: its most recent run."""
     run_set_runs_dir = REPO_ROOT / "runs" / run_set_id
     if not run_set_runs_dir.is_dir():
         return []
@@ -121,13 +136,10 @@ def latest_run_per_scenario(run_set_id: str) -> list:
     for scenario_dir in sorted(run_set_runs_dir.iterdir()):
         if not scenario_dir.is_dir():
             continue
-        run_dirs = sorted(
-            (d for d in scenario_dir.iterdir() if (d / "run_metadata.json").is_file()),
-            key=lambda d: d.name, reverse=True,
-        )
-        if not run_dirs:
+        latest_path = _latest_run_info_path(scenario_dir)
+        if latest_path is None:
             continue
-        with open(run_dirs[0] / "run_metadata.json") as f:
+        with open(latest_path) as f:
             rows.append(json.load(f))
     return rows
 
@@ -157,18 +169,15 @@ def is_retired(run_set_id: str) -> bool:
 def _all_attempts(run_set_id: str, scenario_id: str) -> list:
     """Every recorded run for one scenario, newest-first by run_id -- unlike
     latest_run_per_scenario(), which keeps only the newest per scenario,
-    this is every attempt so the detail view can show each one's own
-    date/time rather than just the latest."""
-    scenario_dir = REPO_ROOT / "runs" / run_set_id / scenario_id
-    if not scenario_dir.is_dir():
+    this is every attempt (from run_info/, which keeps one permanently per
+    attempt regardless of outcome) so the detail view can show each one's
+    own date/time rather than just the latest."""
+    run_info_dir = REPO_ROOT / "runs" / run_set_id / scenario_id / "run_info"
+    if not run_info_dir.is_dir():
         return []
-    run_dirs = sorted(
-        (d for d in scenario_dir.iterdir() if (d / "run_metadata.json").is_file()),
-        key=lambda d: d.name, reverse=True,
-    )
     attempts = []
-    for d in run_dirs:
-        with open(d / "run_metadata.json") as f:
+    for p in sorted(run_info_dir.glob("*.json"), reverse=True):
+        with open(p) as f:
             attempts.append(json.load(f))
     return attempts
 
