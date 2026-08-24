@@ -35,6 +35,15 @@ if byline:
     display(Markdown(f"*{byline}*"))
 ```
 
+## Background
+
+Grant Farnsworth, UDOT's Region Two Traffic Operations Engineer, requested
+this analysis on behalf of their region team, who were discussing how to
+prioritize improvements across different east/west road segments: a
+select-link analysis on 9000 South, 10600 South, 11400 South, and 12600
+South, at points roughly midway between Bangerter Highway and Redwood Road,
+with a turnaround of about a month.
+
 ## Overview
 
 At UDOT's request, this run set performs a select link analysis on the
@@ -49,13 +58,9 @@ how much volume passes through it.
 This run uses the **WF-TDM v10x-C70** model with a **2027 roadway network**
 and **2026 socioeconomic (SE) data**.
 
-## Picking a corridor
-
-The explorer's **Select Link Group** dropdown is what switches between the
-four crossings (9000 S, 10400 S, 11400 S, 12600 S) — select one, or "All
-Groups (Total)" to see combined volume across all four.
-
-![](select-link-group.png)
+There isn't currently an indicator on the map showing the specific segment
+selected for the analysis — it will be the segment with the highest volume
+on each roadway.
 
 ## Explore the results
 
@@ -74,3 +79,11 @@ are published as a standalone interactive tool rather than reproduced here:
 That tool lets you filter by direction and by select-link group, and to
 browse the underlying corridor and travel-shed detail interactively rather
 than through a static report.
+
+## Picking a corridor
+
+Once you're in the explorer, the **Select Link Group** dropdown is what
+switches between the four crossings (9000 S, 10400 S, 11400 S, 12600 S) —
+select one, or "All Groups (Total)" to see combined volume across all four.
+
+![](select-link-group.png)
