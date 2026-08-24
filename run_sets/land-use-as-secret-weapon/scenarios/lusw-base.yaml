@@ -1,0 +1,13 @@
+scenario_id: lusw-base # land use as secret weapon scenario 00
+description: "lusw-base - Baseline 2040 SE - 2042 Network"
+
+overrides: # the base SE forecast is for 2040, but the network and transit year is 2042
+  # se file override for this scenario 
+  WFRC_SEFile: '..\..\..\run_sets\land-use-as-secret-weapon\inputs\SE_2040_Base.csv'
+  MAG_SEFile: '..\..\..\run_sets\land-use-as-secret-weapon\inputs\SE_2040_Base.csv'
+  # highway lane (LN) and functional type (FT) field overrides for this scenario, relative to the MasterPrefix network
+  # for lusw-base, the LN and FT fields are the same as the MasterPrefix network, so no changes are needed, but just to show how to do it, the LN and FT fields are defined here for this scenario
+  LNfield: 'LN23_42'
+  FTfield: 'FT23_42'
+  # transit line file folder path, if you update the transit, you need to create a new transit line file folder for this scenario related, and then define the path here for this scenario
+  Mlin: '..\..\..\run_sets\land-use-as-secret-weapon\inputs\Transit_Lin_2042\'
