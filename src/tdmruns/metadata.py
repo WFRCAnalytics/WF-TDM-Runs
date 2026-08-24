@@ -46,9 +46,12 @@ def build(
     general_parameter_overrides: dict = None,
     rendered_path: str = None,
     driver_script: str = None,
+    start_at_label: str = None,
+    start_at_override: bool = False,
     seeded_from: dict = None,
     scenario_folder: str = None,
     command: list = None,
+    voyager_exe: str = None,
     exit_code: int = None,
     log_path: str = None,
     status_source: str = None,
@@ -74,10 +77,15 @@ def build(
         control_center["rendered_path"] = rendered_path
     if driver_script is not None:
         control_center["driver_script"] = driver_script
+    if start_at_label is not None:
+        control_center["start_at_label"] = start_at_label
+        control_center["start_at_override"] = start_at_override
 
     execution = {}
     if command is not None:
         execution["command"] = command
+    if voyager_exe is not None:
+        execution["voyager_exe"] = voyager_exe
     if exit_code is not None:
         execution["exit_code"] = exit_code
     if log_path is not None:

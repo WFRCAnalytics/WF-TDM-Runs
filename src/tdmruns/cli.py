@@ -111,11 +111,24 @@ def sync_tdm_cmd(run_set_id, scenario_id):
 @click.option("--run-set", "run_set_id", required=True)
 @click.option("--scenario", "scenario_id", required=True)
 @click.option("--force", is_flag=True, help="Run even if a successful run already exists.")
-def run_scenario_cmd(run_set_id, scenario_id, force):
+@click.option(
+    "--start-at",
+    "start_at_label",
+    default=None,
+    help=(
+        "Override the scenario's own start_at_label for this attempt only, to resume "
+        "a crashed run from its driver script's RESUME POINT -- for a deliberately "
+        "partial run (e.g. paired with start_from_copy), declare start_at_label in "
+        "the scenario YAML instead."
+    ),
+)
+def run_scenario_cmd(run_set_id, scenario_id, force, start_at_label):
     """Run a single scenario end to end."""
     repo_root = find_repo_root()
     try:
-        result = ex.run_scenario(repo_root, run_set_id, scenario_id, force=force)
+        result = ex.run_scenario(
+            repo_root, run_set_id, scenario_id, force=force, start_at_label=start_at_label
+        )
     except tdmrunsError as e:
         click.echo(f"[FAIL] {run_set_id}/{scenario_id}: {e}", err=True)
         sys.exit(1)

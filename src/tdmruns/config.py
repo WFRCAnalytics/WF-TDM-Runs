@@ -103,6 +103,30 @@ def resolved_baseline_filename(run_set: dict, scenario: dict) -> str:
     return scenario.get("baseline_control_center") or run_set["baseline_control_center"]
 
 
+def resolved_start_at_label(scenario: dict) -> str | None:
+    """STEPn/STEPn_nn label to resume this scenario's driver script from, or
+    None for a normal full run -- see driver_script.py. Scenario-only (no
+    run_set-level fallback, unlike driver_script/voyager_exe): which step a
+    crashed attempt should resume from is inherently specific to that one
+    scenario's own run history, not something a whole run_set would
+    meaningfully share."""
+    return scenario.get("start_at_label")
+
+
+def resolved_voyager_exe(framework: dict, run_set: dict, scenario: dict) -> str | None:
+    """Absolute path to the Cube Voyager executable to invoke for this
+    scenario: scenario-level voyager_exe wins, then the run set's, then
+    config/local.yaml's machine-wide Voyager_EXE default. A run set/scenario
+    only needs to declare this when its TDM version requires a different
+    Cube Voyager install than the machine default -- e.g. a network binary
+    format the machine's default install can't read."""
+    return (
+        scenario.get("voyager_exe")
+        or run_set.get("voyager_exe")
+        or framework.get("_local", {}).get("Voyager_EXE")
+    )
+
+
 def resolved_driver_script(run_set: dict, scenario: dict) -> str | None:
     """Path (relative to the run_set directory) to a custom _HailMary.s
     driver script, or None if neither the scenario nor the run set declares

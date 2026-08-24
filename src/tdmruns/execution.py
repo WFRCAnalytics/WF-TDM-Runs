@@ -181,6 +181,7 @@ def run_scenario(
     scenario_id: str,
     force: bool = False,
     version_state: "sub.TdmVersionState | None" = None,
+    start_at_label: str = None,
 ) -> dict:
     """
     Executes one full attempt of a scenario: resolve version, render
@@ -199,10 +200,24 @@ def run_scenario(
     scenario's own resolved_tdm_ref(); passing a version_state for the wrong
     ref would silently run this scenario against the wrong TDM version, so
     that's checked explicitly rather than trusted.
+
+    start_at_label, if given, overrides the scenario's own declared
+    start_at_label for this attempt only -- the CLI's `--start-at` (see
+    cli.py). This is the sanctioned way to resume a crashed attempt from its
+    driver script's RESUME POINT (see driver_script.py): the override is
+    attempt-scoped and never written back to the scenario's committed YAML,
+    unlike editing start_at_label there directly, which would silently carry
+    over to the next run copied from that file (see scenario.schema.json's
+    start_at_label description for when a YAML-level value is still the
+    right call -- a deliberately partial run, e.g. paired with
+    start_from_copy, not an ad hoc resume).
     """
     framework = cfg.load_framework_config(repo_root)
     run_set = cfg.load_run_set(repo_root, run_set_id)
     scenario = cfg.load_scenario(repo_root, run_set_id, scenario_id)
+    declared_start_at_label = cfg.resolved_start_at_label(scenario)
+    start_at_override = start_at_label is not None
+    effective_start_at_label = start_at_label if start_at_override else declared_start_at_label
 
     if not force:
         existing = md.latest_run(repo_root, run_set_id, scenario_id)
@@ -247,6 +262,7 @@ def run_scenario(
     # what gets validated/rendered into the block file.
     cc_local_layer = {k: v for k, v in local_layer.items() if k != "Voyager_EXE"}
     cc.validate_overrides(baseline, cc_local_layer, "config/local.yaml")
+    voyager_exe = cfg.resolved_voyager_exe(framework, run_set, scenario)
 
     # --- validate General Parameter overrides against the real, shared
     # GeneralParameters.block (hard failure on unknown keys, same as
@@ -297,6 +313,7 @@ def run_scenario(
         scenario,
         folder,
         general_parameter_overrides=general_parameter_overrides,
+        start_at_label=effective_start_at_label,
     )
 
     # --- execute ---
@@ -307,7 +324,7 @@ def run_scenario(
         cwd=tdm_path,
         log_path=log_path,
         timeout_seconds=framework["execution"]["timeout_seconds"],
-        env={"VOYAGER_EXE": local_layer.get("Voyager_EXE", "")},
+        env={"VOYAGER_EXE": voyager_exe or ""},
     )
     model_log_result = mlog.read_model_log(folder)
     status, error, status_source, model_log_result = decide_status(
@@ -327,7 +344,7 @@ def run_scenario(
     _reset_run_outputs(run_dir)
     status, error, curated = out.curate(
         folder, full_inventory, output_spec, run_dir, status, error, repo_root,
-        voyager_exe=local_layer.get("Voyager_EXE"),
+        voyager_exe=voyager_exe,
     )
 
     run_metadata = md.build(
@@ -345,9 +362,12 @@ def run_scenario(
         general_parameter_overrides=general_parameter_overrides,
         rendered_path=str(control_center_path),
         driver_script=driver_script_path,
+        start_at_label=effective_start_at_label,
+        start_at_override=start_at_override,
         seeded_from=seeded_from,
         scenario_folder=str(folder),
         command=command,
+        voyager_exe=voyager_exe,
         exit_code=exit_code,
         log_path=str(log_path),
         status_source=status_source,
@@ -416,14 +436,14 @@ def import_manual_run(
     fw_commit = md.framework_commit(repo_root)
     version_state = sub.current_state(tdm_path, requested_ref)
 
-    local_layer = framework.get("_local", {})
+    voyager_exe = cfg.resolved_voyager_exe(framework, run_set, scenario)
     full_inventory = out.inventory(scenario_folder)
     run_dir = repo_root / "runs" / run_set_id / scenario_id
     # Same "latest attempt only" wipe as run_scenario() -- see its comment.
     _reset_run_outputs(run_dir)
     status, error, curated = out.curate(
         scenario_folder, full_inventory, output_spec, run_dir, "success", None, repo_root,
-        voyager_exe=local_layer.get("Voyager_EXE"),
+        voyager_exe=voyager_exe,
     )
 
     run_metadata = md.build(
@@ -440,6 +460,7 @@ def import_manual_run(
         scenario_overrides=scenario_overrides,
         general_parameter_overrides=general_parameter_overrides,
         scenario_folder=str(scenario_folder),
+        voyager_exe=voyager_exe,
         inventory_count=len(full_inventory),
         inventory_total_bytes=sum(e["size_bytes"] for e in full_inventory),
         curated=curated,

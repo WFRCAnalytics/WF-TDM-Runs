@@ -45,6 +45,10 @@
       "type": "string",
       "description": "Path to a custom driver script (a _HailMary_1Subfolder.s variant), relative to the run_set directory, unless a scenario overrides it. When declared, this one file is staged (copied, keeping its own filename) into the per-run scenario folder before execution, in place of the framework's default (config/framework.yaml's default_driver_script, from the TDM's Scenarios/_default/). Companion/modified step scripts are NOT auto-staged and stay in place, referenced from this file by a relative path back to their own location. Must reference default TDM step scripts as '..\\..\\..\\2_ModelScripts\\...' (three levels up, matching the per-run scenario folder's depth)."
     },
+    "voyager_exe": {
+      "type": "string",
+      "description": "Absolute path to the Cube Voyager executable this run set's scenarios should invoke, overriding config/local.yaml's machine-wide Voyager_EXE, unless a scenario overrides it further. Only needed when this run set's tdm_ref requires a different Cube Voyager install than the machine default -- e.g. a network binary format an older install can't read."
+    },
     "prep_script": {
       "type": "string",
       "description": "Path to a Python prep script, relative to the run_set directory. Run once per scenario before model execution. Receives --run-set-dir and --scenario-id as arguments."

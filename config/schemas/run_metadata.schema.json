@@ -48,6 +48,14 @@
         "driver_script": {
           "type": "string",
           "description": "Source path of the driver script staged into the scenario folder for this run -- relative to the run_set directory if a custom driver_script was declared, or relative to the TDM submodule root (e.g. 'Scenarios/_default/_HailMary_1Subfolder.s') if the framework's default was used. Absent only for execution_mode 'manual', where no staging occurred."
+        },
+        "start_at_label": {
+          "type": "string",
+          "description": "STEPn/STEPn_nn label this attempt's driver script was resumed from (its RESUME POINT GOTO target was rewritten to this value), if the scenario declared start_at_label and/or `run-scenario --start-at` was passed. Absent for a normal full run."
+        },
+        "start_at_override": {
+          "type": "boolean",
+          "description": "True if start_at_label came from `run-scenario --start-at` for this one attempt, overriding (or supplying, if absent) the scenario's own declared start_at_label. False if it came from the scenario YAML itself. Present only alongside start_at_label."
         }
       }
     },
@@ -63,6 +71,10 @@
       "type": "object",
       "properties": {
         "command": { "type": "array", "items": { "type": "string" } },
+        "voyager_exe": {
+          "type": ["string", "null"],
+          "description": "Absolute path to the Cube Voyager executable used for this attempt -- resolved from the scenario's/run set's voyager_exe override, or config/local.yaml's machine-wide Voyager_EXE default if neither declares one. Recorded for reproducibility, since a TDM version can require a specific Cube Voyager install."
+        },
         "exit_code": { "type": ["integer", "null"] },
         "log_path": { "type": ["string", "null"] },
         "status_source": {
