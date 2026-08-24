@@ -1,0 +1,102 @@
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <title>vizTool</title>
+
+        <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+        <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/1.8.0/calcite.css" />
+        <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script src="https://js.arcgis.com/4.27/"></script>
+        <script type="module" src="https://js.arcgis.com/calcite-components/1.8.0/calcite.esm.js"></script>
+        <link rel="stylesheet" href="app/styles.css">
+
+        <script src="app/app.js"></script>
+        <script src="app/model-entity.js"></script>
+        <script src="app/menu-item.js"></script>
+
+        <script src="app/layouts/attribute.js"></script>
+        <script src="app/layouts/aggregator.js"></script>
+        <script src="app/layouts/divider.js"></script>
+        <script src="app/layouts/filter.js"></script>
+        <script src="app/layouts/renderer-collection.js"></script>
+        <script src="app/layouts/vizmap.js"></script>
+        <script src="app/layouts/vizsidebar.js"></script>
+        <script src="app/layouts/viztrends.js"></script>
+
+        <script src="app/scenarios/attribute-filter-data.js"></script>
+        <script src="app/scenarios/scenario.js"></script>
+        <script src="app/scenarios/scenario-trends.js"></script>
+        
+        <script src="app/widgets/wijcheckboxes.js"></script>
+        <script src="app/widgets/wijradio.js"></script>
+        <script src="app/widgets/wijcombobox.js"></script>
+        <script src="app/widgets/wijselect.js"></script>
+    
+    </head>
+    <body>
+        <calcite-shell class="calcite-mode-light">
+            <calcite-navigation slot="header" id="menu" style="display:none;">
+                <calcite-navigation-logo slot="logo"></calcite-navigation-logo>
+                <calcite-menu slot="content-start"></calcite-menu>
+                <calcite-navigation slot="navigation-secondary">
+                    <calcite-menu slot="content-start"></calcite-menu>
+                </calcite-navigation>
+            </calcite-navigation>
+            <!-- Progress container centered -->
+            <div id="load-screen" style="display:none;">
+                <div id="progress-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+                    <div><h1>Welcome to the vizTool!</h1></div>
+                    <table>
+                        <tr>
+                            <td align="right">
+                                <label for="progress-geo">Loading Geo Data:</label>
+                            </td>
+                            <td>
+                                <progress id="progress-geo" value="0" max="100"></progress>
+                                <span id="progress-text-geo">0%</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="right">
+                                <label for="progress">Loading Scenario Data:</label>
+                            </td>
+                            <td>
+                                <progress id="progress" value="0" max="100"></progress>
+                                <span id="progress-text">0%</span>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </div>    
+            </div>
+            <div id="main"></div>
+        </calcite-shell>
+        <!-- Modal Structure-->
+        <div id="infoModal" class="modal">
+            <div id="info-modal-content" class="modal-content" style="display:none;"></div>
+        </div>
+        <script>
+            // Simple script to show the modal
+            document.addEventListener('DOMContentLoaded', function() {
+                var modal = document.getElementById('infoModal');
+                var okButton = document.getElementById('okButton');
+                
+                // Show the modal
+                modal.style.display = 'block';
+                // Check if okButton exists before setting onclick
+
+                if (okButton) {
+                    okButton.onclick = function() {
+                        modal.style.display = 'none';
+                    };
+                } else {
+                    console.warn('okButton not found in the DOM.');
+                }
+            });
+        </script>
+    </body>
+</html>

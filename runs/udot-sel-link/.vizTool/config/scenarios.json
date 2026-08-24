@@ -1,0 +1,110 @@
+{
+    "$schema": "./schema/scenario-schema.json",
+    "initial_select": [
+        {
+            "modVersion": "v10x",
+            "scnGroup": "sel-link-00",
+            "scnYear": 2027
+        }
+    ],
+    "initial_select_compare": [
+        {
+            "modVersion": "v10x",
+            "scnGroup": "sel-link-00",
+            "scnYear": 2027
+        }
+    ],
+    "models": [
+        {
+            "modVersion": "v10x",
+            "geojsons": {
+                "taz": "WFv1000_TAZ.geojson",
+                "distSml": "WFv1000_TAZ__DSML.geojson",
+                "distMed": "WFv1000_TAZ__DMED.geojson",
+                "distLrg": "WFv1000_TAZ__DLRG.geojson",
+                "distSup": "WFv1000_TAZ__DSUP.geojson",
+                "subarea": "WFv1000_TAZ__SAID.geojson",
+                "planarea": "WFv1000_TAZ__PLAN.geojson",
+                "city": "WFv1000_TAZ__CITY.geojson",
+                "citygroup": "WFv1000_TAZ__CTGP.geojson",
+                "segment": "Master_Segs_withFactors_20251229_Direction.geojson",
+                "stop": "Master_Segs_withFactors_20251229_Direction__STOP.geojson",
+                "corrWFRCHIGHWAY": "Master_Segs_withFactors_20251229_Direction__CORR_WFRCHIGHWAY.geojson",
+                "corrWFRCTRANSIT": "Master_Segs_withFactors_20251229_Direction__CORR_WFRCTRANSIT.geojson",
+                "corrMAGHIGHWAY": "Master_Segs_withFactors_20251229_Direction__CORR_MAGHIGHWAY.geojson",
+                "corrMAGTRANSIT": "Master_Segs_withFactors_20251229_Direction__CORR_MAGTRANSIT.geojson",
+                "corrFREIGHT": "Master_Segs_withFactors_20251229_Direction__CORR_FREIGHT.geojson"
+            },
+            "keys": {
+                "taz": {
+                    "distSml": "WFv1000_TAZ__DSML_KEY.json",
+                    "distMed": "WFv1000_TAZ__DMED_KEY.json",
+                    "distLrg": "WFv1000_TAZ__DLRG_KEY.json",
+                    "distSup": "WFv1000_TAZ__DSUP_KEY.json",
+                    "subarea": "WFv1000_TAZ__SAID_KEY.json",
+                    "planarea": "WFv1000_TAZ__PLAN_KEY.json",
+                    "city": "WFv1000_TAZ__CITY_KEY.json",
+                    "citygroup": "WFv1000_TAZ__CTGP_KEY.json"
+                },
+                "distSml": {
+                    "distMed": "WFv1000_TAZ__DSML__DMED_KEY.json",
+                    "distLrg": "WFv1000_TAZ__DSML__DLRG_KEY.json",
+                    "distSup": "WFv1000_TAZ__DSML__DSUP_KEY.json",
+                    "subarea": "WFv1000_TAZ__DSML__SAID_KEY.json",
+                    "planarea": "WFv1000_TAZ__DSML__PLAN_KEY.json"
+                },
+                "segment": {
+                    "taz": "Master_Segs_withFactors_20251229_Direction__TAZ_KEY.json",
+                    "distSml": "Master_Segs_withFactors_20251229_Direction__DSML_KEY.json",
+                    "distMed": "Master_Segs_withFactors_20251229_Direction__DMED_KEY.json",
+                    "distLrg": "Master_Segs_withFactors_20251229_Direction__DLRG_KEY.json",
+                    "distSup": "Master_Segs_withFactors_20251229_Direction__DSUP_KEY.json",
+                    "city": "Master_Segs_withFactors_20251229_Direction__CITY_KEY.json",
+                    "subarea": "Master_Segs_withFactors_20251229_Direction__SAID_KEY.json",
+                    "planarea": "Master_Segs_withFactors_20251229_Direction__PLAN_KEY.json",
+                    "citygroup": "Master_Segs_withFactors_20251229_Direction__CTGP_KEY.json",
+                    "corrWFRCHIGHWAY": "Master_Segs_withFactors_20251229_Direction__CORR_WFRCHIGHWAY_KEY.json",
+                    "corrWFRCTRANSIT": "Master_Segs_withFactors_20251229_Direction__CORR_WFRCTRANSIT_KEY.json",
+                    "corrMAGHIGHWAY": "Master_Segs_withFactors_20251229_Direction__CORR_MAGHIGHWAY_KEY.json",
+                    "corrMAGTRANSIT": "Master_Segs_withFactors_20251229_Direction__CORR_MAGTRANSIT_KEY.json",
+                    "corrFREIGHT": "Master_Segs_withFactors_20251229_Direction__CORR_FREIGHT_KEY.json"
+                },
+                "stop": {
+                    "taz": "Master_Segs_withFactors_20251229_Direction__STOP__TAZ_KEY.json",
+                    "distSml": "Master_Segs_withFactors_20251229_Direction__STOP__DSML_KEY.json",
+                    "distMed": "Master_Segs_withFactors_20251229_Direction__STOP__DMED_KEY.json",
+                    "distLrg": "Master_Segs_withFactors_20251229_Direction__STOP__DLRG_KEY.json",
+                    "distSup": "Master_Segs_withFactors_20251229_Direction__STOP__DSUP_KEY.json",
+                    "city": "Master_Segs_withFactors_20251229_Direction__STOP__CITY_KEY.json",
+                    "subarea": "Master_Segs_withFactors_20251229_Direction__STOP__SAID_KEY.json",
+                    "planarea": "Master_Segs_withFactors_20251229_Direction__STOP__PLAN_KEY.json",
+                    "citygroup": "Master_Segs_withFactors_20251229_Direction__STOP__CTGP_KEY.json",
+                    "corrWFRCHIGHWAY": "Master_Segs_withFactors_20251229_Direction__STOP__CORR_WFRCHIGHWAY_KEY.json",
+                    "corrWFRCTRANSIT": "Master_Segs_withFactors_20251229_Direction__STOP__CORR_WFRCTRANSIT_KEY.json",
+                    "corrMAGHIGHWAY": "Master_Segs_withFactors_20251229_Direction__STOP__CORR_MAGHIGHWAY_KEY.json",
+                    "corrMAGTRANSIT": "Master_Segs_withFactors_20251229_Direction__STOP__CORR_MAGTRANSIT_KEY.json",
+                    "corrFREIGHT": "Master_Segs_withFactors_20251229_Direction__STOP__CORR_FREIGHT_KEY.json"
+                }
+            }
+        }
+    ],
+    "trends": [
+        {
+            "scnTrendCode": "sel-link-00",
+            "alias": "sel-link-00",
+            "displayByDefault": true
+        }
+    ],
+    "scenarios": [
+        {
+            "modVersion": "v10x",
+            "scnGroup": "sel-link-00",
+            "scnYear": 2027,
+            "scnCode": "v10x__sel-link-00__2027",
+            "alias": "sel-link-00 2027",
+            "scnTrendCodes": [
+                "sel-link-00"
+            ]
+        }
+    ]
+}

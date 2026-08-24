@@ -1,0 +1,111 @@
+{
+    "TAZID": {
+        "agTitleText"     : "TAZ",
+        "agGeoJsonKey"    : "taz",
+        "agCodeLabelField": "TAZID"
+    },
+    "CITY_NAME": {
+        "agTitleText"      : "City Area",
+        "agGeoJsonKey"     : "city",
+        "agCodeLabelField" : "CITY_NAME",
+        "baseAgCode"       : "TAZID",
+        "subAgCode"        : "DISTSUPER",
+        "subAgSelected"    : "All",
+        "subAgDisplayName" : "List Cities for"
+    },
+    "CITYGRP": {
+        "agTitleText"      : "City Group",
+        "agGeoJsonKey"     : "citygroup",
+        "agCodeLabelField" : "CITYGRP",
+        "baseAgCode"       : "TAZID"
+    },
+    "DISTSML": {
+        "agTitleText"      : "Small District",
+        "agGeoJsonKey"     : "distSml",
+        "agCodeLabelField" : "DSML_NAME",
+        "baseAgCode"       : "TAZID",
+        "subAgCode"        : "DISTSUPER",
+        "subAgSelected"    : "All",
+        "subAgDisplayName" : "List Small Districts for"
+    },
+    "DISTMED": {
+        "agTitleText"      : "Medium District",
+        "agGeoJsonKey"     : "distMed",
+        "agCodeLabelField" : "DMED_NAME",
+        "baseAgCode"       : "TAZID",
+        "subAgCode"        : "DISTSUPER",
+        "subAgSelected"    : "All",
+        "subAgDisplayName" : "List Medium Districts for"
+    },
+    "DISTLRG": {
+        "agTitleText"      : "Large District",
+        "agGeoJsonKey"     : "distLrg",
+        "agCodeLabelField" : "DLRG_NAME",
+        "baseAgCode"       : "TAZID",
+        "subAgCode"        : "DISTSUPER",
+        "subAgSelected"    : "All",
+        "subAgDisplayName" : "List Large Districts for"
+    },
+    "DISTSUPER" : {
+        "agTitleText"       : "Super District",
+        "agDefaultSelected" : ["5"],
+        "agGeoJsonKey"      : "distSup",
+        "agCodeLabelField"  : "DSUP_NAME",
+        "baseAgCode"        : "TAZID"
+    },
+    "PLANAREA": {
+        "agTitleText"      : "Plan Area",
+        "agDefaultSelected" : ["WFRC","MAG"],
+        "agGeoJsonKey"     : "planarea",
+        "agCodeLabelField" : "PLANAREA",
+        "baseAgCode"       : "TAZID"
+    },
+    "EFA": {
+        "agTitleText"          : "Equity Focus Areas",
+        "agDefaultSelected"    : ["EFA"],
+        "agCodeLabelField"     : "EFA",
+        "agOptions": [
+            {"value":"EFA" , "label":"EFA"    },
+            {"value":""    , "label":"Non-EFA"}
+        ]
+    },
+    "SUBAREAID": {
+        "agTitleText"          : "Subarea",
+        "agDefaultSelected"    : ["1"],
+        "agGeoJsonKey"         : "subarea",
+        "agCodeLabelField"     : "SUBAREAID",
+        "agOptions": [
+            {"value":"1" , "label":"Wasatch Front Model Area"}
+        ]
+    },
+    "WFRCHIGHWAY_ID": {
+        "agTitleText"      : "WFRC Highway Projects",
+        "agGeoJsonKey"     : "corrWFRCHIGHWAY",
+        "agCodeLabelField" : "WFRCHIGHWAY_NAME",
+        "baseAgCode"       : "SEGID"
+    },
+    "WFRCTRANSIT_ID": {
+        "agTitleText"      : "WFRC Transit Projects",
+        "agGeoJsonKey"     : "corrWFRCTRANSIT",
+        "agCodeLabelField" : "WFRCTRANSIT_NAME",
+        "baseAgCode"       : "SEGID"
+    },
+    "MAGHIGHWAY_ID": {
+        "agTitleText"      : "MAG Highway Projects",
+        "agGeoJsonKey"     : "corrMAGHIGHWAY",
+        "agCodeLabelField" : "MAGHIGHWAY_NAME",
+        "baseAgCode"       : "SEGID"
+    },
+    "MAGTRANSIT_ID": {
+        "agTitleText"      : "MAG Transit Projects",
+        "agGeoJsonKey"     : "corrMAGTRANSIT",
+        "agCodeLabelField" : "MAGTRANSIT_NAME",
+        "baseAgCode"       : "SEGID"
+    },
+    "FREIGHT_ID": {
+        "agTitleText"      : "Freight Corridors",
+        "agGeoJsonKey"     : "corrFREIGHT",
+        "agCodeLabelField" : "FREIGHT_NAME",
+        "baseAgCode"       : "SEGID"
+    }
+}
