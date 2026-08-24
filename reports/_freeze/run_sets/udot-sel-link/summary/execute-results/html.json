@@ -1,0 +1,12 @@
+{
+  "hash": "2f0ffb6c2579f18a5c207461449d558b",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"UDOT Select Link Analysis\"\nsubtitle: \"9000 South, 10600 South, 11400 South, and 12600 South\"\nformat:\n  html:\n    toc: false\n    embed-resources: true\nexecute:\n  echo: false\n  warning: false\n  message: false\njupyter: july2025\n---\n\n\n\n**[← All run sets](../../index.qmd)**\n\n*Prepared by Bill Hereth · last updated 2026-08-24*\n\n\n## Overview\n\nAt UDOT's request, this run set performs a select link analysis on the\nWasatch Front Regional Travel Demand Model, isolating the trips that travel\nthrough four corridor crossings: **9000 South, 10600 South, 11400 South, and\n12600 South**. A select link analysis traces every trip in the model that\nuses a chosen link, showing where those trips come from and where they're\nheaded — which is what makes it useful for understanding how traffic on a\nspecific segment relates to the surrounding travel pattern, rather than just\nhow much volume passes through it.\n\n## Explore the results\n\nThe full interactive results — mapped trip origins and destinations,\nsegment volumes, and corridor-level detail for each of the four crossings —\nare published as a standalone interactive tool rather than reproduced here:\n\n<p style=\"text-align:center; margin: 2em 0;\">\n  <a href=\"https://wfrc.utah.gov/apps/9000-12600-South-Select-Link/\"\n     style=\"display:inline-block; padding: 0.75em 1.5em; background:#1B3A5C;\n            color:#fff; border-radius:4px; text-decoration:none; font-weight:bold;\">\n    Open the Select Link Explorer &rarr;\n  </a>\n</p>\n\nThat tool lets you filter by direction and by select-link group, and to\nbrowse the underlying corridor and travel-shed detail interactively rather\nthan through a static report.\n\n",
+    "supporting": [
+      "summary_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

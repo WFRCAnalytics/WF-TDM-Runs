@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "run_set_id": "udot-sel-link",
+  "scenario_id": "sel-link-00",
+  "run_id": "20260822-032336-fdc3",
+  "status": "failed",
+  "execution_mode": "cli",
+  "started_at": "2026-08-22T03:23:36.109752+00:00",
+  "finished_at": "2026-08-22T03:31:44.785045+00:00",
+  "framework_commit": "2b9c04f5e1809c1bb8da548cb709f2135c1d1940",
+  "tdm": {
+    "requested_ref": "app/udot-sel-link",
+    "resolved_commit": "0048eac6ab37e634bd2e4c9b3665d8e1be194328",
+    "resolved_tag": "app/udot-sel-link",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - OY_2027.block",
+    "run_set_overrides": {},
+    "scenario_overrides": {
+      "UserName": "Bill Hereth",
+      "UserCompany": "WFRC",
+      "RunDescription": "UDOT Select Link Analysis for 9000 S, 10600 S, 11400 S, 12600 S",
+      "runId": "_",
+      "Run_vizTool": 1,
+      "vizToolDir": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\.vizTool",
+      "MasterPrefix": "..\\..\\..\\run_sets\\udot-sel-link\\inputs\\WFv1000_MasterNet_20250821"
+    },
+    "rendered_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\_ControlCenter.block",
+    "driver_script": "Scenarios/_default/__HailMary_1Subfolder.s"
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "M:\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\_ControlCenter.block",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00"
+    ],
+    "voyager_exe": "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe",
+    "exit_code": 1,
+    "log_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\logs\\orchestrator_invocation.log",
+    "status_source": "model_log",
+    "model_log": {
+      "outcome": "crashed",
+      "crashed_step": "?         0         ?         ?",
+      "started_at": "2026-08-21,  21:23:44",
+      "finished_at": "2026-08-21,  21:31:45",
+      "run_time": "000:08:00",
+      "exit_code_mismatch": false
+    }
+  },
+  "outputs": {
+    "inventory_count": 99,
+    "inventory_total_bytes": 39472277,
+    "curated": []
+  },
+  "error": "Model crashed during ?         0         ?         ? (see M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\_Log\\_RunTime.txt). Voyager exit code: 1. No files under M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00 matched outputs.include [{'datafile': '5_AssignHwy/4_Summaries/*Summary_SEGID.csv', 'columns': ['SEGID', 'DISTANCE', 'DIRECTION', 'FUNCGROUP', 'SUBAREAID', 'CO_FIPS', 'LANES', 'LANEMILES', 'FTCLASS', 'CAP1HL', 'AM_Vol', 'MD_Vol', 'PM_Vol', 'EV_Vol', 'DY_Vol', 'FF_Spd', 'AM_Spd', 'MD_Spd', 'PM_Spd', 'EV_Spd', 'DY_Spd', 'FF_Tme', 'AM_Tme', 'MD_Tme', 'PM_Tme', 'EV_Tme', 'AM_CAP', 'MD_CAP', 'PM_CAP', 'EV_CAP', 'DY_CAP', 'AM_VC', 'MD_VC', 'PM_VC', 'EV_VC', 'MAX_VC', 'AM_VMT', 'MD_VMT', 'PM_VMT', 'EV_VMT', 'DY_VMT', 'AM_VMT_PC', 'MD_VMT_PC', 'PM_VMT_PC', 'EV_VMT_PC', 'DY_VMT_PC', 'AM_VMT_LT', 'MD_VMT_LT', 'PM_VMT_LT', 'EV_VMT_LT', 'DY_VMT_LT', 'AM_VMT_MD', 'MD_VMT_MD', 'PM_VMT_MD', 'EV_VMT_MD', 'DY_VMT_MD', 'AM_VMT_HV', 'MD_VMT_HV', 'PM_VMT_HV', 'EV_VMT_HV', 'DY_VMT_HV', 'FF_VHT', 'AM_VHT', 'MD_VHT', 'PM_VHT', 'EV_VHT', 'DY_VHT', 'AM_VHD', 'MD_VHD', 'PM_VHD', 'EV_VHD', 'DY_VHD']}, {'datafile': '5_AssignHwy/4_Summaries/*Summary_SEGID_SelectLink.csv', 'columns': ['SEGID', 'DISTANCE', 'DIRECTION', 'DY_VOL_GR1', 'DY_VOL_GR2', 'DY_VOL_GR3', 'DY_VOL_GR4']}]."
+}

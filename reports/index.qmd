@@ -76,6 +76,18 @@ for rs_id in run_set_ids:
         ))
         continue
 
+    if rs_id == "udot-sel-link":
+        display(Markdown(
+            f"## udot-sel-link\n\n{byline_md}"
+            "Select link analysis for UDOT covering four corridor crossings — "
+            "9000 South, 10600 South, 11400 South, and 12600 South. Full "
+            "interactive results are published separately (see the summary "
+            "page below), not through the generic run-metadata table.\n\n"
+            "- [Summary view](run_sets/udot-sel-link/summary.html)\n"
+            "- [Select Link Explorer (external)](https://wfrc.utah.gov/apps/9000-12600-South-Select-Link/)\n"
+        ))
+        continue
+
     if rd.has_custom_report_pages(rs_id):
         # A run set with its own hand-written pages that isn't one of the
         # special cases above -- link to its custom directory rather than

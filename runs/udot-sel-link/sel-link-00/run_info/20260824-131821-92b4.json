@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "run_set_id": "udot-sel-link",
+  "scenario_id": "sel-link-00",
+  "run_id": "20260824-131821-92b4",
+  "status": "failed",
+  "execution_mode": "cli",
+  "started_at": "2026-08-24T13:18:21.055131+00:00",
+  "finished_at": "2026-08-24T16:55:43.610804+00:00",
+  "framework_commit": "2b9c04f5e1809c1bb8da548cb709f2135c1d1940",
+  "tdm": {
+    "requested_ref": "app/udot-sel-link",
+    "resolved_commit": "c5f9cf32bff611ccd747856f40a6dbf78de3f46f",
+    "resolved_tag": "app/udot-sel-link",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - OY_2027.block",
+    "run_set_overrides": {},
+    "scenario_overrides": {
+      "UserName": "Bill Hereth",
+      "UserCompany": "WFRC",
+      "RunDescription": "UDOT Select Link Analysis for 9000 S, 10600 S, 11400 S, 12600 S",
+      "runId": "_",
+      "Run_vizTool": 1,
+      "vizToolDir": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\.vizTool",
+      "MasterPrefix": "..\\..\\..\\run_sets\\udot-sel-link\\inputs\\WFv1000_MasterNet_20250821",
+      "Use_SelLinkGrp": 1
+    },
+    "rendered_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\_ControlCenter.block",
+    "driver_script": "Scenarios/_default/__HailMary_1Subfolder_resumable.s",
+    "start_at_label": "STEP5_02",
+    "start_at_override": true
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "M:\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\_ControlCenter.block",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00"
+    ],
+    "voyager_exe": "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe",
+    "exit_code": 1,
+    "log_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\logs\\orchestrator_invocation.log",
+    "status_source": "model_log",
+    "model_log": {
+      "outcome": "crashed",
+      "crashed_step": "?         ?",
+      "started_at": "2026-08-24,  07:18:25",
+      "finished_at": "2026-08-24,  10:55:43",
+      "run_time": "003:37:18",
+      "exit_code_mismatch": false
+    }
+  },
+  "outputs": {
+    "inventory_count": 3081,
+    "inventory_total_bytes": 40341368548,
+    "curated": []
+  },
+  "error": "Model crashed during ?         ? (see M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\udot-sel-link\\sel-link-00\\_Log\\_RunTime.txt). Voyager exit code: 1. Output curation failed: columns ['DISTANCE'] not found in _Summary_SEGID_SelectLink.csv (available: ['SEGID', 'DIRECTION', 'DIRECTION_NAME', 'DY_VOL_GR1', 'DY_VOL_GR2', 'DY_VOL_GR3', 'DY_VOL_GR4', 'DY_VOL_TOTAL'])"
+}

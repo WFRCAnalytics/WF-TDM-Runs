@@ -1,0 +1,17 @@
+scenario_id: sel-link-00
+description: "UDOT Select Link Analysis for 9000 S, 10600 S, 11400 S, 12600 S"
+
+# Resumable variant (from the TDM's own Scenarios/_default/ library, selected
+# by bare filename -- see driver_script.py) so a crashed attempt can pick up
+# with `run-scenario --start-at <label>` instead of re-running from scratch.
+driver_script: __HailMary_1Subfolder_resumable.s
+
+overrides:
+  UserName: "Bill Hereth"
+  UserCompany: "WFRC"
+  RunDescription: "UDOT Select Link Analysis for 9000 S, 10600 S, 11400 S, 12600 S"
+  runId: "_"
+  Run_vizTool: 1 # speed it up a bit
+  vizToolDir: 'M:\GitHub\WF-TDM-Runs\runs\udot-sel-link\.vizTool'
+  MasterPrefix: '..\..\..\run_sets\udot-sel-link\inputs\WFv1000_MasterNet_20250821'  # do not include the .net
+  Use_SelLinkGrp: 1
