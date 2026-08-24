@@ -78,7 +78,7 @@
             "attributeInfoTextHtml": "<b>Select Link Volume</b> is the daily volume of trips whose path uses at least one link tagged with the chosen select-link group. Use the <b>Select Link Group</b> filter to switch between groups 1-4 or view all groups combined.",
             "attributeSelected": "aSLVol",
             "attributes": ["aSLVol"],
-            "filters" : ["fDirNameSL","fSelectLinkGroup"]
+            "filters" : ["fDirName4pAll","fSelectLinkGroup","fTod4pDy"]
           }
         },
         { "submenuText": "Transit Segments",

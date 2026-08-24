@@ -46,6 +46,17 @@ headed — which is what makes it useful for understanding how traffic on a
 specific segment relates to the surrounding travel pattern, rather than just
 how much volume passes through it.
 
+This run uses the **WF-TDM v10x-C70** model with a **2027 roadway network**
+and **2026 socioeconomic (SE) data**.
+
+## Picking a corridor
+
+The explorer's **Select Link Group** dropdown is what switches between the
+four crossings (9000 S, 10400 S, 11400 S, 12600 S) — select one, or "All
+Groups (Total)" to see combined volume across all four.
+
+![](select-link-group.png)
+
 ## Explore the results
 
 The full interactive results — mapped trip origins and destinations,

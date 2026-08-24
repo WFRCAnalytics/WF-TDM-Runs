@@ -627,19 +627,6 @@
             {"value":"NonCol", "label":"Non-College"}
         ]
     },
-    "fDirNameSL": {
-        "alias"    : "Cardinal Travel Direction on Segment",
-        "fWidget"  : "select",
-        "fSelected": "Total",
-        "fOptions" : [
-            {"value":"NB"   , "label":"Northbound" },
-            {"value":"SB"   , "label":"Southbound" },
-            {"value":"EB"   , "label":"Eastbound"  },
-            {"value":"WB"   , "label":"Westbound"  },
-            {"value":"Total", "label":"Both Directions"}
-        ],
-        "subTotals": ["Total"]
-    },
     "fSelectLinkGroup": {
         "alias"    : "Select Link Group",
         "fWidget"  : "select",
