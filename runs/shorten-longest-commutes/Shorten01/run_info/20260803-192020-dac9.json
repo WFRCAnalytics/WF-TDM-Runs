@@ -261,7 +261,9 @@
         "sha256": "7354591639e908d58dde06c8fe739853c53c59972360b7c28c31cf7c0723225d",
         "repo_path": "runs/shorten-longest-commutes/Shorten01/outputs/Skm_PM.omx"
       }
-    ]
+    ],
+    "retired": true,
+    "retired_at": "2026-08-30T15:11:35.296773+00:00"
   },
   "error": null,
   "seeded_from": {

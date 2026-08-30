@@ -241,7 +241,9 @@
         "sha256": "d79cafd18e8c6ec6661b119ff38ee06d21de981fc715f9c65274c34420f3dff2",
         "repo_path": "runs/bring-work-trips-closer-to-home/Closer00/outputs/Skm_PM.omx"
       }
-    ]
+    ],
+    "retired": true,
+    "retired_at": "2026-08-30T15:11:18.004019+00:00"
   },
   "error": null
 }

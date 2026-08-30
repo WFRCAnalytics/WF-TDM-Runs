@@ -1,0 +1,3563 @@
+TAZID,CO_FIPS,CO_NAME,TOTHH
+1,3,Box Elder,0.0
+2,3,Box Elder,15.0
+3,3,Box Elder,24.0
+4,3,Box Elder,1.0
+5,3,Box Elder,62.0
+6,3,Box Elder,3.0
+7,3,Box Elder,38.0
+8,3,Box Elder,49.0
+9,3,Box Elder,15.0
+10,3,Box Elder,22.0
+11,3,Box Elder,8.0
+12,3,Box Elder,17.0
+13,3,Box Elder,0.0
+14,3,Box Elder,0.0
+15,3,Box Elder,1.0
+16,3,Box Elder,1.0
+17,3,Box Elder,3.0
+18,3,Box Elder,0.0
+19,3,Box Elder,238.0
+20,3,Box Elder,161.0
+21,3,Box Elder,0.0
+22,3,Box Elder,2.0
+23,3,Box Elder,3.0
+24,3,Box Elder,140.0
+25,3,Box Elder,319.0
+26,3,Box Elder,215.0
+27,3,Box Elder,0.0
+28,3,Box Elder,1.0
+29,3,Box Elder,246.0
+30,3,Box Elder,307.0
+31,3,Box Elder,232.0
+32,3,Box Elder,119.0
+33,3,Box Elder,172.0
+34,3,Box Elder,212.0
+35,3,Box Elder,297.0
+36,3,Box Elder,83.0
+37,3,Box Elder,0.0
+38,3,Box Elder,0.0
+39,3,Box Elder,63.0
+40,3,Box Elder,309.0
+41,3,Box Elder,114.0
+42,3,Box Elder,69.0
+43,3,Box Elder,204.0
+44,3,Box Elder,105.0
+45,3,Box Elder,95.0
+46,3,Box Elder,0.0
+47,3,Box Elder,2.0
+48,3,Box Elder,9.0
+49,3,Box Elder,0.0
+50,3,Box Elder,3.0
+51,3,Box Elder,6.0
+52,3,Box Elder,53.0
+53,3,Box Elder,255.0
+54,3,Box Elder,148.0
+55,3,Box Elder,173.0
+56,3,Box Elder,41.0
+57,3,Box Elder,54.0
+58,3,Box Elder,0.0
+59,3,Box Elder,0.0
+60,3,Box Elder,0.0
+61,3,Box Elder,272.0
+62,3,Box Elder,214.0
+63,3,Box Elder,20.0
+64,3,Box Elder,234.0
+65,3,Box Elder,290.0
+66,3,Box Elder,145.0
+67,3,Box Elder,144.0
+68,3,Box Elder,180.0
+69,3,Box Elder,31.0
+70,3,Box Elder,109.0
+71,3,Box Elder,0.0
+72,3,Box Elder,97.0
+73,3,Box Elder,3.0
+74,3,Box Elder,0.0
+75,3,Box Elder,139.0
+76,3,Box Elder,92.0
+77,3,Box Elder,82.0
+78,3,Box Elder,446.0
+79,3,Box Elder,43.0
+80,3,Box Elder,170.0
+81,3,Box Elder,25.0
+82,3,Box Elder,357.0
+83,3,Box Elder,0.0
+84,3,Box Elder,0.0
+85,3,Box Elder,44.0
+86,3,Box Elder,1.0
+87,3,Box Elder,0.0
+88,3,Box Elder,3.0
+89,3,Box Elder,71.0
+90,3,Box Elder,57.0
+91,3,Box Elder,215.0
+92,3,Box Elder,224.0
+93,3,Box Elder,0.0
+94,3,Box Elder,23.0
+95,3,Box Elder,264.0
+96,3,Box Elder,262.0
+97,3,Box Elder,0.0
+98,3,Box Elder,0.0
+99,3,Box Elder,0.0
+100,3,Box Elder,22.0
+101,3,Box Elder,479.0
+102,3,Box Elder,0.0
+103,3,Box Elder,238.0
+104,3,Box Elder,71.0
+105,3,Box Elder,29.0
+106,3,Box Elder,8.0
+107,3,Box Elder,0.0
+108,3,Box Elder,10.0
+109,3,Box Elder,0.0
+110,3,Box Elder,2.0
+111,3,Box Elder,0.0
+112,3,Box Elder,0.0
+113,3,Box Elder,27.0
+114,3,Box Elder,35.0
+115,3,Box Elder,0.0
+116,3,Box Elder,0.0
+117,3,Box Elder,22.0
+118,3,Box Elder,5.0
+119,3,Box Elder,0.0
+120,3,Box Elder,25.0
+121,3,Box Elder,51.0
+122,3,Box Elder,16.0
+123,3,Box Elder,0.0
+124,3,Box Elder,77.0
+125,3,Box Elder,68.0
+126,3,Box Elder,198.0
+127,3,Box Elder,23.0
+128,3,Box Elder,91.0
+129,3,Box Elder,75.0
+130,3,Box Elder,51.0
+131,3,Box Elder,123.0
+132,3,Box Elder,36.0
+133,3,Box Elder,190.0
+134,3,Box Elder,2.0
+135,3,Box Elder,7.0
+136,3,Box Elder,169.0
+137,3,Box Elder,5.0
+138,3,Box Elder,166.0
+139,3,Box Elder,45.0
+140,3,Box Elder,3.0
+141,3,Box Elder,0.0
+142,3,Box Elder,0.0
+143,3,Box Elder,62.0
+144,3,Box Elder,0.0
+145,3,Box Elder,16.0
+146,3,Box Elder,0.0
+147,3,Box Elder,0.0
+148,3,Box Elder,0.0
+149,3,Box Elder,0.0
+150,3,Box Elder,496.0
+151,3,Box Elder,36.0
+152,3,Box Elder,3.0
+153,3,Box Elder,0.0
+154,57,Weber,0.0
+155,57,Weber,15.0
+156,57,Weber,6.0
+157,57,Weber,65.0
+158,57,Weber,112.0
+159,57,Weber,0.0
+160,57,Weber,3.0
+161,57,Weber,29.0
+162,57,Weber,74.0
+163,57,Weber,8.0
+164,57,Weber,1.0
+165,57,Weber,0.0
+166,57,Weber,31.0
+167,57,Weber,14.0
+168,57,Weber,50.0
+169,57,Weber,20.0
+170,57,Weber,27.0
+171,57,Weber,67.0
+172,57,Weber,85.0
+173,57,Weber,88.0
+174,57,Weber,111.0
+175,57,Weber,500.0
+176,57,Weber,23.0
+177,57,Weber,31.0
+178,57,Weber,76.0
+179,57,Weber,6.0
+180,57,Weber,29.0
+181,57,Weber,39.0
+182,57,Weber,43.0
+183,57,Weber,20.0
+184,57,Weber,91.0
+185,57,Weber,45.0
+186,57,Weber,9.0
+187,57,Weber,14.0
+188,57,Weber,3.0
+189,57,Weber,65.0
+190,57,Weber,69.0
+191,57,Weber,140.0
+192,57,Weber,3.0
+193,57,Weber,203.0
+194,57,Weber,0.0
+195,57,Weber,72.0
+196,57,Weber,92.0
+197,57,Weber,141.0
+198,57,Weber,25.0
+199,57,Weber,49.0
+200,57,Weber,162.0
+201,57,Weber,27.0
+202,57,Weber,45.0
+203,57,Weber,80.0
+204,57,Weber,102.0
+205,57,Weber,245.0
+206,57,Weber,107.0
+207,57,Weber,24.0
+208,57,Weber,79.0
+209,57,Weber,93.0
+210,57,Weber,18.0
+211,57,Weber,26.0
+212,57,Weber,124.0
+213,57,Weber,252.0
+214,57,Weber,350.0
+215,57,Weber,136.0
+216,57,Weber,80.0
+217,57,Weber,145.0
+218,57,Weber,254.0
+219,57,Weber,129.0
+220,57,Weber,162.0
+221,57,Weber,408.0
+222,57,Weber,123.0
+223,57,Weber,93.0
+224,57,Weber,682.0
+225,57,Weber,28.0
+226,57,Weber,364.0
+227,57,Weber,147.0
+228,57,Weber,310.0
+229,57,Weber,153.0
+230,57,Weber,19.0
+231,57,Weber,9.0
+232,57,Weber,102.0
+233,57,Weber,62.0
+234,57,Weber,156.0
+235,57,Weber,542.0
+236,57,Weber,263.0
+237,57,Weber,33.0
+238,57,Weber,680.0
+239,57,Weber,9.0
+240,57,Weber,21.0
+241,57,Weber,15.0
+242,57,Weber,7.0
+243,57,Weber,133.0
+244,57,Weber,0.0
+245,57,Weber,272.0
+246,57,Weber,41.0
+247,57,Weber,477.0
+248,57,Weber,108.0
+249,57,Weber,303.0
+250,57,Weber,276.0
+251,57,Weber,91.0
+252,57,Weber,75.0
+253,57,Weber,520.0
+254,57,Weber,336.0
+255,57,Weber,239.0
+256,57,Weber,80.0
+257,57,Weber,377.0
+258,57,Weber,1.0
+259,57,Weber,138.0
+260,57,Weber,0.0
+261,57,Weber,85.0
+262,57,Weber,76.0
+263,57,Weber,363.0
+264,57,Weber,745.0
+265,57,Weber,356.0
+266,57,Weber,213.0
+267,57,Weber,290.0
+268,57,Weber,152.0
+269,57,Weber,133.0
+270,57,Weber,81.0
+271,57,Weber,368.0
+272,57,Weber,209.0
+273,57,Weber,308.0
+274,57,Weber,615.0
+275,57,Weber,18.0
+276,57,Weber,929.0
+277,57,Weber,18.0
+278,57,Weber,494.0
+279,57,Weber,106.0
+280,57,Weber,147.0
+281,57,Weber,325.0
+282,57,Weber,588.0
+283,57,Weber,465.0
+284,57,Weber,374.0
+285,57,Weber,48.0
+286,57,Weber,205.0
+287,57,Weber,129.0
+288,57,Weber,983.0
+289,57,Weber,46.0
+290,57,Weber,119.0
+291,57,Weber,430.0
+292,57,Weber,127.0
+293,57,Weber,407.0
+294,57,Weber,191.0
+295,57,Weber,8.0
+296,57,Weber,11.0
+297,57,Weber,44.0
+298,57,Weber,29.0
+299,57,Weber,20.0
+300,57,Weber,5.0
+301,57,Weber,12.0
+302,57,Weber,81.0
+303,57,Weber,57.0
+304,57,Weber,74.0
+305,57,Weber,2.0
+306,57,Weber,27.0
+307,57,Weber,92.0
+308,57,Weber,61.0
+309,57,Weber,185.0
+310,57,Weber,0.0
+311,57,Weber,24.0
+312,57,Weber,414.0
+313,57,Weber,713.0
+314,57,Weber,601.0
+315,57,Weber,0.0
+316,57,Weber,1187.0
+317,57,Weber,519.0
+318,57,Weber,117.0
+319,57,Weber,0.0
+320,57,Weber,631.0
+321,57,Weber,515.0
+322,57,Weber,333.0
+323,57,Weber,367.0
+324,57,Weber,396.0
+325,57,Weber,479.0
+326,57,Weber,0.0
+327,57,Weber,512.0
+328,57,Weber,328.0
+329,57,Weber,880.0
+330,57,Weber,440.0
+331,57,Weber,315.0
+332,57,Weber,394.0
+333,57,Weber,642.0
+334,57,Weber,314.0
+335,57,Weber,465.0
+336,57,Weber,214.0
+337,57,Weber,328.0
+338,57,Weber,660.0
+339,57,Weber,1.0
+340,57,Weber,403.0
+341,57,Weber,84.0
+342,57,Weber,234.0
+343,57,Weber,147.0
+344,57,Weber,370.0
+345,57,Weber,234.0
+346,57,Weber,407.0
+347,57,Weber,707.0
+348,57,Weber,202.0
+349,57,Weber,204.0
+350,57,Weber,259.0
+351,57,Weber,4.0
+352,57,Weber,42.0
+353,57,Weber,118.0
+354,57,Weber,2.0
+355,57,Weber,25.0
+356,57,Weber,267.0
+357,57,Weber,50.0
+358,57,Weber,106.0
+359,57,Weber,110.0
+360,57,Weber,387.0
+361,57,Weber,161.0
+362,57,Weber,307.0
+363,57,Weber,255.0
+364,57,Weber,1.0
+365,57,Weber,0.0
+366,57,Weber,69.0
+367,57,Weber,0.0
+368,57,Weber,91.0
+369,57,Weber,3.0
+370,57,Weber,52.0
+371,57,Weber,5.0
+372,57,Weber,292.0
+373,57,Weber,168.0
+374,57,Weber,140.0
+375,57,Weber,182.0
+376,57,Weber,127.0
+377,57,Weber,711.0
+378,57,Weber,319.0
+379,57,Weber,697.0
+380,57,Weber,462.0
+381,57,Weber,388.0
+382,57,Weber,157.0
+383,57,Weber,0.0
+384,57,Weber,6.0
+385,57,Weber,8.0
+386,57,Weber,6.0
+387,57,Weber,298.0
+388,57,Weber,0.0
+389,57,Weber,123.0
+390,57,Weber,121.0
+391,57,Weber,76.0
+392,57,Weber,3.0
+393,57,Weber,183.0
+394,57,Weber,11.0
+395,57,Weber,171.0
+396,57,Weber,413.0
+397,57,Weber,562.0
+398,57,Weber,718.0
+399,57,Weber,546.0
+400,57,Weber,488.0
+401,57,Weber,322.0
+402,57,Weber,357.0
+403,57,Weber,224.0
+404,57,Weber,187.0
+405,57,Weber,10.0
+406,57,Weber,2.0
+407,57,Weber,0.0
+408,57,Weber,0.0
+409,57,Weber,20.0
+410,57,Weber,88.0
+411,57,Weber,314.0
+412,57,Weber,96.0
+413,57,Weber,165.0
+414,57,Weber,68.0
+415,57,Weber,415.0
+416,57,Weber,425.0
+417,57,Weber,360.0
+418,57,Weber,411.0
+419,57,Weber,521.0
+420,57,Weber,149.0
+421,57,Weber,108.0
+422,57,Weber,0.0
+423,57,Weber,37.0
+424,57,Weber,0.0
+425,57,Weber,142.0
+426,57,Weber,179.0
+427,57,Weber,75.0
+428,57,Weber,58.0
+429,57,Weber,120.0
+430,57,Weber,384.0
+431,57,Weber,241.0
+432,57,Weber,786.0
+433,57,Weber,377.0
+434,57,Weber,10.0
+435,57,Weber,77.0
+436,57,Weber,483.0
+437,57,Weber,230.0
+438,57,Weber,188.0
+439,57,Weber,271.0
+440,57,Weber,172.0
+441,57,Weber,261.0
+442,57,Weber,260.0
+443,57,Weber,432.0
+444,57,Weber,460.0
+445,57,Weber,183.0
+446,57,Weber,239.0
+447,57,Weber,419.0
+448,57,Weber,699.0
+449,57,Weber,276.0
+450,57,Weber,256.0
+451,57,Weber,2.0
+452,57,Weber,70.0
+453,57,Weber,360.0
+454,57,Weber,178.0
+455,57,Weber,539.0
+456,57,Weber,153.0
+457,57,Weber,146.0
+458,57,Weber,184.0
+459,57,Weber,474.0
+460,57,Weber,365.0
+461,57,Weber,283.0
+462,57,Weber,309.0
+463,57,Weber,91.0
+464,57,Weber,428.0
+465,57,Weber,785.0
+466,57,Weber,331.0
+467,57,Weber,718.0
+468,57,Weber,261.0
+469,57,Weber,315.0
+470,57,Weber,217.0
+471,57,Weber,148.0
+472,57,Weber,306.0
+473,57,Weber,351.0
+474,57,Weber,146.0
+475,57,Weber,281.0
+476,57,Weber,45.0
+477,57,Weber,110.0
+478,57,Weber,29.0
+479,57,Weber,112.0
+480,57,Weber,127.0
+481,57,Weber,94.0
+482,57,Weber,60.0
+483,57,Weber,111.0
+484,57,Weber,218.0
+485,57,Weber,239.0
+486,57,Weber,81.0
+487,57,Weber,111.0
+488,57,Weber,99.0
+489,57,Weber,167.0
+490,57,Weber,105.0
+491,57,Weber,79.0
+492,57,Weber,165.0
+493,57,Weber,82.0
+494,57,Weber,69.0
+495,57,Weber,56.0
+496,57,Weber,443.0
+497,57,Weber,640.0
+498,57,Weber,725.0
+499,57,Weber,502.0
+500,57,Weber,688.0
+501,57,Weber,363.0
+502,57,Weber,434.0
+503,57,Weber,679.0
+504,57,Weber,482.0
+505,57,Weber,702.0
+506,57,Weber,625.0
+507,57,Weber,90.0
+508,57,Weber,410.0
+509,57,Weber,420.0
+510,57,Weber,477.0
+511,57,Weber,394.0
+512,57,Weber,400.0
+513,57,Weber,566.0
+514,57,Weber,208.0
+515,57,Weber,306.0
+516,57,Weber,413.0
+517,57,Weber,605.0
+518,57,Weber,219.0
+519,57,Weber,66.0
+520,57,Weber,680.0
+521,57,Weber,434.0
+522,57,Weber,318.0
+523,57,Weber,611.0
+524,57,Weber,478.0
+525,57,Weber,339.0
+526,57,Weber,368.0
+527,57,Weber,0.0
+528,57,Weber,348.0
+529,57,Weber,309.0
+530,57,Weber,663.0
+531,57,Weber,308.0
+532,57,Weber,0.0
+533,57,Weber,123.0
+534,57,Weber,3.0
+535,57,Weber,303.0
+536,57,Weber,184.0
+537,57,Weber,623.0
+538,57,Weber,520.0
+539,57,Weber,225.0
+540,57,Weber,0.0
+541,57,Weber,0.0
+542,57,Weber,329.0
+543,57,Weber,851.0
+544,57,Weber,527.0
+545,57,Weber,393.0
+546,57,Weber,439.0
+547,57,Weber,426.0
+548,57,Weber,361.0
+549,57,Weber,2.0
+550,57,Weber,108.0
+551,57,Weber,357.0
+552,57,Weber,106.0
+553,57,Weber,36.0
+554,57,Weber,268.0
+555,57,Weber,133.0
+556,57,Weber,313.0
+557,57,Weber,326.0
+558,57,Weber,158.0
+559,57,Weber,0.0
+560,57,Weber,459.0
+561,57,Weber,552.0
+562,57,Weber,151.0
+563,57,Weber,494.0
+564,57,Weber,366.0
+565,57,Weber,288.0
+566,57,Weber,366.0
+567,57,Weber,167.0
+568,57,Weber,946.0
+569,57,Weber,207.0
+570,57,Weber,1180.0
+571,57,Weber,378.0
+572,57,Weber,914.0
+573,57,Weber,300.0
+574,57,Weber,98.0
+575,57,Weber,309.0
+576,57,Weber,9.0
+577,57,Weber,1.0
+578,57,Weber,4.0
+579,57,Weber,34.0
+580,57,Weber,2.0
+581,57,Weber,8.0
+582,11,Davis,106.0
+583,11,Davis,431.0
+584,11,Davis,41.0
+585,11,Davis,34.0
+586,11,Davis,95.0
+587,11,Davis,144.0
+588,11,Davis,184.0
+589,11,Davis,98.0
+590,11,Davis,147.0
+591,11,Davis,193.0
+592,11,Davis,161.0
+593,11,Davis,206.0
+594,11,Davis,311.0
+595,11,Davis,525.0
+596,11,Davis,400.0
+597,11,Davis,238.0
+598,11,Davis,669.0
+599,11,Davis,551.0
+600,11,Davis,346.0
+601,11,Davis,398.0
+602,11,Davis,495.0
+603,11,Davis,377.0
+604,11,Davis,444.0
+605,11,Davis,66.0
+606,11,Davis,324.0
+607,11,Davis,307.0
+608,11,Davis,256.0
+609,11,Davis,900.0
+610,11,Davis,185.0
+611,11,Davis,376.0
+612,11,Davis,467.0
+613,11,Davis,174.0
+614,11,Davis,862.0
+615,11,Davis,180.0
+616,11,Davis,396.0
+617,11,Davis,503.0
+618,11,Davis,399.0
+619,11,Davis,1.0
+620,11,Davis,365.0
+621,11,Davis,551.0
+622,11,Davis,512.0
+623,11,Davis,0.0
+624,11,Davis,539.0
+625,11,Davis,509.0
+626,11,Davis,0.0
+627,11,Davis,389.0
+628,11,Davis,0.0
+629,11,Davis,0.0
+630,11,Davis,0.0
+631,11,Davis,0.0
+632,11,Davis,393.0
+633,11,Davis,0.0
+634,11,Davis,46.0
+635,11,Davis,253.0
+636,11,Davis,500.0
+637,11,Davis,584.0
+638,11,Davis,682.0
+639,11,Davis,4.0
+640,11,Davis,0.0
+641,11,Davis,62.0
+642,11,Davis,438.0
+643,11,Davis,622.0
+644,11,Davis,440.0
+645,11,Davis,778.0
+646,11,Davis,867.0
+647,11,Davis,0.0
+648,11,Davis,539.0
+649,11,Davis,227.0
+650,11,Davis,392.0
+651,11,Davis,0.0
+652,11,Davis,36.0
+653,11,Davis,803.0
+654,11,Davis,591.0
+655,11,Davis,694.0
+656,11,Davis,410.0
+657,11,Davis,0.0
+658,11,Davis,608.0
+659,11,Davis,245.0
+660,11,Davis,372.0
+661,11,Davis,1116.0
+662,11,Davis,921.0
+663,11,Davis,175.0
+664,11,Davis,1033.0
+665,11,Davis,837.0
+666,11,Davis,1151.0
+667,11,Davis,562.0
+668,11,Davis,90.0
+669,11,Davis,195.0
+670,11,Davis,912.0
+671,11,Davis,348.0
+672,11,Davis,374.0
+673,11,Davis,339.0
+674,11,Davis,394.0
+675,11,Davis,761.0
+676,11,Davis,5.0
+677,11,Davis,476.0
+678,11,Davis,360.0
+679,11,Davis,675.0
+680,11,Davis,1317.0
+681,11,Davis,722.0
+682,11,Davis,686.0
+683,11,Davis,1435.0
+684,11,Davis,755.0
+685,11,Davis,406.0
+686,11,Davis,407.0
+687,11,Davis,586.0
+688,11,Davis,511.0
+689,11,Davis,0.0
+690,11,Davis,630.0
+691,11,Davis,521.0
+692,11,Davis,616.0
+693,11,Davis,1364.0
+694,11,Davis,598.0
+695,11,Davis,30.0
+696,11,Davis,557.0
+697,11,Davis,668.0
+698,11,Davis,952.0
+699,11,Davis,389.0
+700,11,Davis,570.0
+701,11,Davis,772.0
+702,11,Davis,996.0
+703,11,Davis,1012.0
+704,11,Davis,1118.0
+705,11,Davis,1703.0
+706,11,Davis,113.0
+707,11,Davis,987.0
+708,11,Davis,1106.0
+709,11,Davis,168.0
+710,11,Davis,539.0
+711,11,Davis,29.0
+712,11,Davis,101.0
+713,11,Davis,806.0
+714,11,Davis,938.0
+715,11,Davis,395.0
+716,11,Davis,222.0
+717,11,Davis,335.0
+718,11,Davis,256.0
+719,11,Davis,0.0
+720,11,Davis,540.0
+721,11,Davis,579.0
+722,11,Davis,193.0
+723,11,Davis,1284.0
+724,11,Davis,1433.0
+725,11,Davis,212.0
+726,11,Davis,191.0
+727,11,Davis,42.0
+728,11,Davis,256.0
+729,11,Davis,351.0
+730,11,Davis,918.0
+731,11,Davis,219.0
+732,11,Davis,286.0
+733,11,Davis,141.0
+734,11,Davis,274.0
+735,11,Davis,431.0
+736,11,Davis,267.0
+737,11,Davis,709.0
+738,11,Davis,165.0
+739,11,Davis,1526.0
+740,11,Davis,2.0
+741,11,Davis,175.0
+742,11,Davis,353.0
+743,11,Davis,668.0
+744,11,Davis,932.0
+745,11,Davis,160.0
+746,11,Davis,138.0
+747,11,Davis,810.0
+748,11,Davis,432.0
+749,11,Davis,213.0
+750,11,Davis,469.0
+751,11,Davis,15.0
+752,11,Davis,58.0
+753,11,Davis,1.0
+754,11,Davis,460.0
+755,11,Davis,511.0
+756,11,Davis,454.0
+757,11,Davis,697.0
+758,11,Davis,703.0
+759,11,Davis,276.0
+760,11,Davis,605.0
+761,11,Davis,321.0
+762,11,Davis,399.0
+763,11,Davis,401.0
+764,11,Davis,1201.0
+765,11,Davis,338.0
+766,11,Davis,189.0
+767,11,Davis,246.0
+768,11,Davis,539.0
+769,11,Davis,602.0
+770,11,Davis,658.0
+771,11,Davis,542.0
+772,11,Davis,291.0
+773,11,Davis,455.0
+774,11,Davis,255.0
+775,11,Davis,2002.0
+776,11,Davis,891.0
+777,11,Davis,593.0
+778,11,Davis,829.0
+779,11,Davis,270.0
+780,11,Davis,335.0
+781,11,Davis,10.0
+782,11,Davis,293.0
+783,11,Davis,7.0
+784,11,Davis,337.0
+785,11,Davis,680.0
+786,11,Davis,325.0
+787,11,Davis,336.0
+788,11,Davis,229.0
+789,11,Davis,498.0
+790,11,Davis,350.0
+791,11,Davis,0.0
+792,11,Davis,40.0
+793,11,Davis,616.0
+794,11,Davis,0.0
+795,11,Davis,376.0
+796,11,Davis,307.0
+797,11,Davis,442.0
+798,11,Davis,409.0
+799,11,Davis,506.0
+800,11,Davis,0.0
+801,11,Davis,0.0
+802,11,Davis,257.0
+803,11,Davis,600.0
+804,11,Davis,263.0
+805,11,Davis,738.0
+806,11,Davis,410.0
+807,11,Davis,65.0
+808,11,Davis,613.0
+809,11,Davis,296.0
+810,11,Davis,316.0
+811,11,Davis,445.0
+812,11,Davis,297.0
+813,11,Davis,28.0
+814,11,Davis,231.0
+815,11,Davis,439.0
+816,11,Davis,2.0
+817,11,Davis,92.0
+818,11,Davis,393.0
+819,11,Davis,495.0
+820,11,Davis,10.0
+821,11,Davis,77.0
+822,11,Davis,73.0
+823,11,Davis,106.0
+824,11,Davis,0.0
+825,11,Davis,784.0
+826,11,Davis,809.0
+827,11,Davis,626.0
+828,11,Davis,717.0
+829,11,Davis,378.0
+830,11,Davis,761.0
+831,11,Davis,404.0
+832,11,Davis,624.0
+833,11,Davis,392.0
+834,11,Davis,353.0
+835,11,Davis,567.0
+836,11,Davis,261.0
+837,11,Davis,349.0
+838,11,Davis,523.0
+839,11,Davis,315.0
+840,11,Davis,473.0
+841,11,Davis,368.0
+842,11,Davis,506.0
+843,11,Davis,168.0
+844,11,Davis,481.0
+845,11,Davis,234.0
+846,11,Davis,426.0
+847,11,Davis,554.0
+848,11,Davis,957.0
+849,11,Davis,182.0
+850,11,Davis,355.0
+851,11,Davis,208.0
+852,11,Davis,518.0
+853,11,Davis,363.0
+854,11,Davis,313.0
+855,11,Davis,367.0
+856,11,Davis,521.0
+857,11,Davis,694.0
+858,11,Davis,430.0
+859,11,Davis,0.0
+860,11,Davis,97.0
+861,11,Davis,14.0
+862,11,Davis,294.0
+863,11,Davis,250.0
+864,11,Davis,375.0
+865,11,Davis,194.0
+866,11,Davis,601.0
+867,11,Davis,3.0
+868,11,Davis,820.0
+869,11,Davis,12.0
+870,11,Davis,324.0
+871,11,Davis,332.0
+872,11,Davis,109.0
+873,11,Davis,319.0
+874,11,Davis,1184.0
+875,11,Davis,0.0
+876,11,Davis,1498.0
+877,11,Davis,0.0
+878,11,Davis,0.0
+879,11,Davis,138.0
+880,11,Davis,449.0
+881,11,Davis,0.0
+882,11,Davis,0.0
+883,11,Davis,627.0
+884,11,Davis,603.0
+885,11,Davis,232.0
+886,11,Davis,401.0
+887,11,Davis,336.0
+888,11,Davis,0.0
+889,11,Davis,0.0
+890,11,Davis,0.0
+891,11,Davis,575.0
+892,11,Davis,684.0
+893,11,Davis,0.0
+894,11,Davis,1051.0
+895,11,Davis,283.0
+896,11,Davis,294.0
+897,11,Davis,0.0
+898,11,Davis,0.0
+899,11,Davis,0.0
+900,11,Davis,0.0
+901,11,Davis,0.0
+902,11,Davis,0.0
+903,11,Davis,7.0
+904,11,Davis,15.0
+905,11,Davis,1.0
+906,35,Salt Lake,0.0
+907,35,Salt Lake,0.0
+908,35,Salt Lake,0.0
+909,35,Salt Lake,0.0
+910,35,Salt Lake,0.0
+911,35,Salt Lake,0.0
+912,35,Salt Lake,0.0
+913,35,Salt Lake,0.0
+914,35,Salt Lake,0.0
+915,35,Salt Lake,0.0
+916,35,Salt Lake,0.0
+917,35,Salt Lake,0.0
+918,35,Salt Lake,0.0
+919,35,Salt Lake,0.0
+920,35,Salt Lake,0.0
+921,35,Salt Lake,0.0
+922,35,Salt Lake,0.0
+923,35,Salt Lake,0.0
+924,35,Salt Lake,0.0
+925,35,Salt Lake,0.0
+926,35,Salt Lake,329.0
+927,35,Salt Lake,0.0
+928,35,Salt Lake,0.0
+929,35,Salt Lake,0.0
+930,35,Salt Lake,0.0
+931,35,Salt Lake,68.0
+932,35,Salt Lake,0.0
+933,35,Salt Lake,1122.0
+934,35,Salt Lake,170.0
+935,35,Salt Lake,0.0
+936,35,Salt Lake,80.0
+937,35,Salt Lake,0.0
+938,35,Salt Lake,51.0
+939,35,Salt Lake,54.0
+940,35,Salt Lake,0.0
+941,35,Salt Lake,237.0
+942,35,Salt Lake,0.0
+943,35,Salt Lake,0.0
+944,35,Salt Lake,0.0
+945,35,Salt Lake,0.0
+946,35,Salt Lake,0.0
+947,35,Salt Lake,0.0
+948,35,Salt Lake,6.0
+949,35,Salt Lake,38.0
+950,35,Salt Lake,0.0
+951,35,Salt Lake,1362.0
+952,35,Salt Lake,148.0
+953,35,Salt Lake,0.0
+954,35,Salt Lake,0.0
+955,35,Salt Lake,0.0
+956,35,Salt Lake,0.0
+957,35,Salt Lake,0.0
+958,35,Salt Lake,0.0
+959,35,Salt Lake,0.0
+960,35,Salt Lake,652.0
+961,35,Salt Lake,720.0
+962,35,Salt Lake,481.0
+963,35,Salt Lake,28.0
+964,35,Salt Lake,549.0
+965,35,Salt Lake,0.0
+966,35,Salt Lake,203.0
+967,35,Salt Lake,332.0
+968,35,Salt Lake,456.0
+969,35,Salt Lake,367.0
+970,35,Salt Lake,654.0
+971,35,Salt Lake,537.0
+972,35,Salt Lake,241.0
+973,35,Salt Lake,699.0
+974,35,Salt Lake,899.0
+975,35,Salt Lake,0.0
+976,35,Salt Lake,0.0
+977,35,Salt Lake,0.0
+978,35,Salt Lake,0.0
+979,35,Salt Lake,0.0
+980,35,Salt Lake,698.0
+981,35,Salt Lake,506.0
+982,35,Salt Lake,278.0
+983,35,Salt Lake,248.0
+984,35,Salt Lake,1773.0
+985,35,Salt Lake,726.0
+986,35,Salt Lake,410.0
+987,35,Salt Lake,516.0
+988,35,Salt Lake,510.0
+989,35,Salt Lake,419.0
+990,35,Salt Lake,506.0
+991,35,Salt Lake,425.0
+992,35,Salt Lake,1216.0
+993,35,Salt Lake,447.0
+994,35,Salt Lake,367.0
+995,35,Salt Lake,1126.0
+996,35,Salt Lake,706.0
+997,35,Salt Lake,527.0
+998,35,Salt Lake,535.0
+999,35,Salt Lake,0.0
+1000,35,Salt Lake,289.0
+1001,35,Salt Lake,529.0
+1002,35,Salt Lake,467.0
+1003,35,Salt Lake,645.0
+1004,35,Salt Lake,422.0
+1005,35,Salt Lake,45.0
+1006,35,Salt Lake,441.0
+1007,35,Salt Lake,0.0
+1008,35,Salt Lake,0.0
+1009,35,Salt Lake,0.0
+1010,35,Salt Lake,0.0
+1011,35,Salt Lake,24.0
+1012,35,Salt Lake,0.0
+1013,35,Salt Lake,0.0
+1014,35,Salt Lake,0.0
+1015,35,Salt Lake,0.0
+1016,35,Salt Lake,1255.0
+1017,35,Salt Lake,0.0
+1018,35,Salt Lake,86.0
+1019,35,Salt Lake,147.0
+1020,35,Salt Lake,216.0
+1021,35,Salt Lake,502.0
+1022,35,Salt Lake,636.0
+1023,35,Salt Lake,0.0
+1024,35,Salt Lake,58.0
+1025,35,Salt Lake,617.0
+1026,35,Salt Lake,1287.0
+1027,35,Salt Lake,421.0
+1028,35,Salt Lake,0.0
+1029,35,Salt Lake,0.0
+1030,35,Salt Lake,0.0
+1031,35,Salt Lake,375.0
+1032,35,Salt Lake,0.0
+1033,35,Salt Lake,51.0
+1034,35,Salt Lake,458.0
+1035,35,Salt Lake,0.0
+1036,35,Salt Lake,139.0
+1037,35,Salt Lake,129.0
+1038,35,Salt Lake,855.0
+1039,35,Salt Lake,617.0
+1040,35,Salt Lake,0.0
+1041,35,Salt Lake,584.0
+1042,35,Salt Lake,351.0
+1043,35,Salt Lake,622.0
+1044,35,Salt Lake,371.0
+1045,35,Salt Lake,672.0
+1046,35,Salt Lake,489.0
+1047,35,Salt Lake,499.0
+1048,35,Salt Lake,516.0
+1049,35,Salt Lake,396.0
+1050,35,Salt Lake,432.0
+1051,35,Salt Lake,607.0
+1052,35,Salt Lake,0.0
+1053,35,Salt Lake,0.0
+1054,35,Salt Lake,0.0
+1055,35,Salt Lake,0.0
+1056,35,Salt Lake,0.0
+1057,35,Salt Lake,0.0
+1058,35,Salt Lake,0.0
+1059,35,Salt Lake,4.0
+1060,35,Salt Lake,443.0
+1061,35,Salt Lake,420.0
+1062,35,Salt Lake,247.0
+1063,35,Salt Lake,239.0
+1064,35,Salt Lake,277.0
+1065,35,Salt Lake,515.0
+1066,35,Salt Lake,669.0
+1067,35,Salt Lake,159.0
+1068,35,Salt Lake,0.0
+1069,35,Salt Lake,477.0
+1070,35,Salt Lake,331.0
+1071,35,Salt Lake,246.0
+1072,35,Salt Lake,316.0
+1073,35,Salt Lake,473.0
+1074,35,Salt Lake,109.0
+1075,35,Salt Lake,117.0
+1076,35,Salt Lake,47.0
+1077,35,Salt Lake,349.0
+1078,35,Salt Lake,35.0
+1079,35,Salt Lake,78.0
+1080,35,Salt Lake,0.0
+1081,35,Salt Lake,24.0
+1082,35,Salt Lake,117.0
+1083,35,Salt Lake,256.0
+1084,35,Salt Lake,454.0
+1085,35,Salt Lake,187.0
+1086,35,Salt Lake,368.0
+1087,35,Salt Lake,203.0
+1088,35,Salt Lake,316.0
+1089,35,Salt Lake,405.0
+1090,35,Salt Lake,574.0
+1091,35,Salt Lake,655.0
+1092,35,Salt Lake,335.0
+1093,35,Salt Lake,215.0
+1094,35,Salt Lake,652.0
+1095,35,Salt Lake,192.0
+1096,35,Salt Lake,343.0
+1097,35,Salt Lake,529.0
+1098,35,Salt Lake,613.0
+1099,35,Salt Lake,611.0
+1100,35,Salt Lake,466.0
+1101,35,Salt Lake,291.0
+1102,35,Salt Lake,372.0
+1103,35,Salt Lake,0.0
+1104,35,Salt Lake,0.0
+1105,35,Salt Lake,0.0
+1106,35,Salt Lake,0.0
+1107,35,Salt Lake,0.0
+1108,35,Salt Lake,707.0
+1109,35,Salt Lake,340.0
+1110,35,Salt Lake,241.0
+1111,35,Salt Lake,253.0
+1112,35,Salt Lake,121.0
+1113,35,Salt Lake,89.0
+1114,35,Salt Lake,487.0
+1115,35,Salt Lake,166.0
+1116,35,Salt Lake,239.0
+1117,35,Salt Lake,32.0
+1118,35,Salt Lake,449.0
+1119,35,Salt Lake,0.0
+1120,35,Salt Lake,116.0
+1121,35,Salt Lake,276.0
+1122,35,Salt Lake,568.0
+1123,35,Salt Lake,0.0
+1124,35,Salt Lake,263.0
+1125,35,Salt Lake,193.0
+1126,35,Salt Lake,108.0
+1127,35,Salt Lake,221.0
+1128,35,Salt Lake,447.0
+1129,35,Salt Lake,42.0
+1130,35,Salt Lake,265.0
+1131,35,Salt Lake,54.0
+1132,35,Salt Lake,402.0
+1133,35,Salt Lake,0.0
+1134,35,Salt Lake,0.0
+1135,35,Salt Lake,0.0
+1136,35,Salt Lake,446.0
+1137,35,Salt Lake,437.0
+1138,35,Salt Lake,0.0
+1139,35,Salt Lake,0.0
+1140,35,Salt Lake,204.0
+1141,35,Salt Lake,0.0
+1142,35,Salt Lake,0.0
+1143,35,Salt Lake,0.0
+1144,35,Salt Lake,180.0
+1145,35,Salt Lake,216.0
+1146,35,Salt Lake,382.0
+1147,35,Salt Lake,0.0
+1148,35,Salt Lake,470.0
+1149,35,Salt Lake,92.0
+1150,35,Salt Lake,367.0
+1151,35,Salt Lake,463.0
+1152,35,Salt Lake,285.0
+1153,35,Salt Lake,427.0
+1154,35,Salt Lake,185.0
+1155,35,Salt Lake,326.0
+1156,35,Salt Lake,531.0
+1157,35,Salt Lake,230.0
+1158,35,Salt Lake,62.0
+1159,35,Salt Lake,628.0
+1160,35,Salt Lake,561.0
+1161,35,Salt Lake,487.0
+1162,35,Salt Lake,437.0
+1163,35,Salt Lake,626.0
+1164,35,Salt Lake,428.0
+1165,35,Salt Lake,396.0
+1166,35,Salt Lake,198.0
+1167,35,Salt Lake,0.0
+1168,35,Salt Lake,617.0
+1169,35,Salt Lake,0.0
+1170,35,Salt Lake,0.0
+1171,35,Salt Lake,0.0
+1172,35,Salt Lake,0.0
+1173,35,Salt Lake,0.0
+1174,35,Salt Lake,0.0
+1175,35,Salt Lake,0.0
+1176,35,Salt Lake,0.0
+1177,35,Salt Lake,83.0
+1178,35,Salt Lake,465.0
+1179,35,Salt Lake,401.0
+1180,35,Salt Lake,512.0
+1181,35,Salt Lake,173.0
+1182,35,Salt Lake,67.0
+1183,35,Salt Lake,129.0
+1184,35,Salt Lake,93.0
+1185,35,Salt Lake,0.0
+1186,35,Salt Lake,92.0
+1187,35,Salt Lake,15.0
+1188,35,Salt Lake,295.0
+1189,35,Salt Lake,192.0
+1190,35,Salt Lake,754.0
+1191,35,Salt Lake,313.0
+1192,35,Salt Lake,259.0
+1193,35,Salt Lake,237.0
+1194,35,Salt Lake,670.0
+1195,35,Salt Lake,675.0
+1196,35,Salt Lake,0.0
+1197,35,Salt Lake,675.0
+1198,35,Salt Lake,607.0
+1199,35,Salt Lake,228.0
+1200,35,Salt Lake,328.0
+1201,35,Salt Lake,307.0
+1202,35,Salt Lake,143.0
+1203,35,Salt Lake,510.0
+1204,35,Salt Lake,583.0
+1205,35,Salt Lake,212.0
+1206,35,Salt Lake,928.0
+1207,35,Salt Lake,0.0
+1208,35,Salt Lake,0.0
+1209,35,Salt Lake,0.0
+1210,35,Salt Lake,0.0
+1211,35,Salt Lake,0.0
+1212,35,Salt Lake,0.0
+1213,35,Salt Lake,0.0
+1214,35,Salt Lake,0.0
+1215,35,Salt Lake,0.0
+1216,35,Salt Lake,65.0
+1217,35,Salt Lake,277.0
+1218,35,Salt Lake,286.0
+1219,35,Salt Lake,344.0
+1220,35,Salt Lake,276.0
+1221,35,Salt Lake,57.0
+1222,35,Salt Lake,27.0
+1223,35,Salt Lake,216.0
+1224,35,Salt Lake,0.0
+1225,35,Salt Lake,0.0
+1226,35,Salt Lake,219.0
+1227,35,Salt Lake,499.0
+1228,35,Salt Lake,484.0
+1229,35,Salt Lake,319.0
+1230,35,Salt Lake,197.0
+1231,35,Salt Lake,579.0
+1232,35,Salt Lake,725.0
+1233,35,Salt Lake,579.0
+1234,35,Salt Lake,586.0
+1235,35,Salt Lake,668.0
+1236,35,Salt Lake,565.0
+1237,35,Salt Lake,189.0
+1238,35,Salt Lake,607.0
+1239,35,Salt Lake,213.0
+1240,35,Salt Lake,467.0
+1241,35,Salt Lake,330.0
+1242,35,Salt Lake,396.0
+1243,35,Salt Lake,445.0
+1244,35,Salt Lake,302.0
+1245,35,Salt Lake,505.0
+1246,35,Salt Lake,0.0
+1247,35,Salt Lake,0.0
+1248,35,Salt Lake,0.0
+1249,35,Salt Lake,52.0
+1250,35,Salt Lake,0.0
+1251,35,Salt Lake,0.0
+1252,35,Salt Lake,0.0
+1253,35,Salt Lake,82.0
+1254,35,Salt Lake,378.0
+1255,35,Salt Lake,472.0
+1256,35,Salt Lake,432.0
+1257,35,Salt Lake,117.0
+1258,35,Salt Lake,1001.0
+1259,35,Salt Lake,724.0
+1260,35,Salt Lake,765.0
+1261,35,Salt Lake,632.0
+1262,35,Salt Lake,464.0
+1263,35,Salt Lake,245.0
+1264,35,Salt Lake,484.0
+1265,35,Salt Lake,511.0
+1266,35,Salt Lake,484.0
+1267,35,Salt Lake,464.0
+1268,35,Salt Lake,638.0
+1269,35,Salt Lake,509.0
+1270,35,Salt Lake,434.0
+1271,35,Salt Lake,305.0
+1272,35,Salt Lake,304.0
+1273,35,Salt Lake,1246.0
+1274,35,Salt Lake,295.0
+1275,35,Salt Lake,151.0
+1276,35,Salt Lake,663.0
+1277,35,Salt Lake,0.0
+1278,35,Salt Lake,504.0
+1279,35,Salt Lake,293.0
+1280,35,Salt Lake,763.0
+1281,35,Salt Lake,526.0
+1282,35,Salt Lake,353.0
+1283,35,Salt Lake,275.0
+1284,35,Salt Lake,542.0
+1285,35,Salt Lake,207.0
+1286,35,Salt Lake,529.0
+1287,35,Salt Lake,166.0
+1288,35,Salt Lake,299.0
+1289,35,Salt Lake,179.0
+1290,35,Salt Lake,762.0
+1291,35,Salt Lake,429.0
+1292,35,Salt Lake,362.0
+1293,35,Salt Lake,279.0
+1294,35,Salt Lake,0.0
+1295,35,Salt Lake,180.0
+1296,35,Salt Lake,395.0
+1297,35,Salt Lake,545.0
+1298,35,Salt Lake,736.0
+1299,35,Salt Lake,348.0
+1300,35,Salt Lake,171.0
+1301,35,Salt Lake,609.0
+1302,35,Salt Lake,3.0
+1303,35,Salt Lake,381.0
+1304,35,Salt Lake,285.0
+1305,35,Salt Lake,1.0
+1306,35,Salt Lake,1307.0
+1307,35,Salt Lake,414.0
+1308,35,Salt Lake,646.0
+1309,35,Salt Lake,965.0
+1310,35,Salt Lake,1002.0
+1311,35,Salt Lake,771.0
+1312,35,Salt Lake,1047.0
+1313,35,Salt Lake,961.0
+1314,35,Salt Lake,661.0
+1315,35,Salt Lake,481.0
+1316,35,Salt Lake,1009.0
+1317,35,Salt Lake,82.0
+1318,35,Salt Lake,328.0
+1319,35,Salt Lake,0.0
+1320,35,Salt Lake,487.0
+1321,35,Salt Lake,0.0
+1322,35,Salt Lake,0.0
+1323,35,Salt Lake,0.0
+1324,35,Salt Lake,0.0
+1325,35,Salt Lake,0.0
+1326,35,Salt Lake,0.0
+1327,35,Salt Lake,338.0
+1328,35,Salt Lake,0.0
+1329,35,Salt Lake,0.0
+1330,35,Salt Lake,0.0
+1331,35,Salt Lake,817.0
+1332,35,Salt Lake,48.0
+1333,35,Salt Lake,12.0
+1334,35,Salt Lake,285.0
+1335,35,Salt Lake,22.0
+1336,35,Salt Lake,1.0
+1337,35,Salt Lake,0.0
+1338,35,Salt Lake,500.0
+1339,35,Salt Lake,246.0
+1340,35,Salt Lake,358.0
+1341,35,Salt Lake,196.0
+1342,35,Salt Lake,948.0
+1343,35,Salt Lake,0.0
+1344,35,Salt Lake,0.0
+1345,35,Salt Lake,267.0
+1346,35,Salt Lake,0.0
+1347,35,Salt Lake,623.0
+1348,35,Salt Lake,599.0
+1349,35,Salt Lake,346.0
+1350,35,Salt Lake,924.0
+1351,35,Salt Lake,305.0
+1352,35,Salt Lake,193.0
+1353,35,Salt Lake,230.0
+1354,35,Salt Lake,1052.0
+1355,35,Salt Lake,602.0
+1356,35,Salt Lake,1.0
+1357,35,Salt Lake,221.0
+1358,35,Salt Lake,527.0
+1359,35,Salt Lake,348.0
+1360,35,Salt Lake,405.0
+1361,35,Salt Lake,293.0
+1362,35,Salt Lake,313.0
+1363,35,Salt Lake,651.0
+1364,35,Salt Lake,718.0
+1365,35,Salt Lake,160.0
+1366,35,Salt Lake,673.0
+1367,35,Salt Lake,548.0
+1368,35,Salt Lake,350.0
+1369,35,Salt Lake,25.0
+1370,35,Salt Lake,431.0
+1371,35,Salt Lake,572.0
+1372,35,Salt Lake,799.0
+1373,35,Salt Lake,982.0
+1374,35,Salt Lake,143.0
+1375,35,Salt Lake,237.0
+1376,35,Salt Lake,814.0
+1377,35,Salt Lake,969.0
+1378,35,Salt Lake,481.0
+1379,35,Salt Lake,435.0
+1380,35,Salt Lake,221.0
+1381,35,Salt Lake,83.0
+1382,35,Salt Lake,679.0
+1383,35,Salt Lake,936.0
+1384,35,Salt Lake,94.0
+1385,35,Salt Lake,578.0
+1386,35,Salt Lake,508.0
+1387,35,Salt Lake,684.0
+1388,35,Salt Lake,879.0
+1389,35,Salt Lake,1184.0
+1390,35,Salt Lake,495.0
+1391,35,Salt Lake,515.0
+1392,35,Salt Lake,239.0
+1393,35,Salt Lake,261.0
+1394,35,Salt Lake,430.0
+1395,35,Salt Lake,417.0
+1396,35,Salt Lake,317.0
+1397,35,Salt Lake,366.0
+1398,35,Salt Lake,122.0
+1399,35,Salt Lake,2594.0
+1400,35,Salt Lake,798.0
+1401,35,Salt Lake,0.0
+1402,35,Salt Lake,1.0
+1403,35,Salt Lake,0.0
+1404,35,Salt Lake,208.0
+1405,35,Salt Lake,534.0
+1406,35,Salt Lake,271.0
+1407,35,Salt Lake,380.0
+1408,35,Salt Lake,488.0
+1409,35,Salt Lake,532.0
+1410,35,Salt Lake,365.0
+1411,35,Salt Lake,350.0
+1412,35,Salt Lake,242.0
+1413,35,Salt Lake,534.0
+1414,35,Salt Lake,539.0
+1415,35,Salt Lake,629.0
+1416,35,Salt Lake,886.0
+1417,35,Salt Lake,369.0
+1418,35,Salt Lake,484.0
+1419,35,Salt Lake,593.0
+1420,35,Salt Lake,436.0
+1421,35,Salt Lake,112.0
+1422,35,Salt Lake,504.0
+1423,35,Salt Lake,637.0
+1424,35,Salt Lake,0.0
+1425,35,Salt Lake,0.0
+1426,35,Salt Lake,308.0
+1427,35,Salt Lake,0.0
+1428,35,Salt Lake,0.0
+1429,35,Salt Lake,0.0
+1430,35,Salt Lake,4.0
+1431,35,Salt Lake,2.0
+1432,35,Salt Lake,0.0
+1433,35,Salt Lake,794.0
+1434,35,Salt Lake,557.0
+1435,35,Salt Lake,125.0
+1436,35,Salt Lake,622.0
+1437,35,Salt Lake,317.0
+1438,35,Salt Lake,687.0
+1439,35,Salt Lake,0.0
+1440,35,Salt Lake,0.0
+1441,35,Salt Lake,0.0
+1442,35,Salt Lake,0.0
+1443,35,Salt Lake,0.0
+1444,35,Salt Lake,180.0
+1445,35,Salt Lake,458.0
+1446,35,Salt Lake,239.0
+1447,35,Salt Lake,72.0
+1448,35,Salt Lake,0.0
+1449,35,Salt Lake,28.0
+1450,35,Salt Lake,0.0
+1451,35,Salt Lake,0.0
+1452,35,Salt Lake,23.0
+1453,35,Salt Lake,59.0
+1454,35,Salt Lake,184.0
+1455,35,Salt Lake,302.0
+1456,35,Salt Lake,2.0
+1457,35,Salt Lake,294.0
+1458,35,Salt Lake,559.0
+1459,35,Salt Lake,418.0
+1460,35,Salt Lake,475.0
+1461,35,Salt Lake,0.0
+1462,35,Salt Lake,0.0
+1463,35,Salt Lake,0.0
+1464,35,Salt Lake,203.0
+1465,35,Salt Lake,118.0
+1466,35,Salt Lake,90.0
+1467,35,Salt Lake,605.0
+1468,35,Salt Lake,552.0
+1469,35,Salt Lake,276.0
+1470,35,Salt Lake,0.0
+1471,35,Salt Lake,13.0
+1472,35,Salt Lake,78.0
+1473,35,Salt Lake,77.0
+1474,35,Salt Lake,150.0
+1475,35,Salt Lake,67.0
+1476,35,Salt Lake,459.0
+1477,35,Salt Lake,383.0
+1478,35,Salt Lake,499.0
+1479,35,Salt Lake,42.0
+1480,35,Salt Lake,0.0
+1481,35,Salt Lake,48.0
+1482,35,Salt Lake,94.0
+1483,35,Salt Lake,96.0
+1484,35,Salt Lake,61.0
+1485,35,Salt Lake,808.0
+1486,35,Salt Lake,781.0
+1487,35,Salt Lake,360.0
+1488,35,Salt Lake,1094.0
+1489,35,Salt Lake,320.0
+1490,35,Salt Lake,0.0
+1491,35,Salt Lake,5.0
+1492,35,Salt Lake,485.0
+1493,35,Salt Lake,290.0
+1494,35,Salt Lake,13.0
+1495,35,Salt Lake,436.0
+1496,35,Salt Lake,359.0
+1497,35,Salt Lake,257.0
+1498,35,Salt Lake,233.0
+1499,35,Salt Lake,419.0
+1500,35,Salt Lake,315.0
+1501,35,Salt Lake,480.0
+1502,35,Salt Lake,572.0
+1503,35,Salt Lake,452.0
+1504,35,Salt Lake,778.0
+1505,35,Salt Lake,320.0
+1506,35,Salt Lake,315.0
+1507,35,Salt Lake,368.0
+1508,35,Salt Lake,473.0
+1509,35,Salt Lake,390.0
+1510,35,Salt Lake,295.0
+1511,35,Salt Lake,374.0
+1512,35,Salt Lake,377.0
+1513,35,Salt Lake,532.0
+1514,35,Salt Lake,282.0
+1515,35,Salt Lake,381.0
+1516,35,Salt Lake,257.0
+1517,35,Salt Lake,229.0
+1518,35,Salt Lake,241.0
+1519,35,Salt Lake,462.0
+1520,35,Salt Lake,369.0
+1521,35,Salt Lake,699.0
+1522,35,Salt Lake,428.0
+1523,35,Salt Lake,424.0
+1524,35,Salt Lake,258.0
+1525,35,Salt Lake,581.0
+1526,35,Salt Lake,175.0
+1527,35,Salt Lake,225.0
+1528,35,Salt Lake,366.0
+1529,35,Salt Lake,397.0
+1530,35,Salt Lake,683.0
+1531,35,Salt Lake,920.0
+1532,35,Salt Lake,513.0
+1533,35,Salt Lake,0.0
+1534,35,Salt Lake,582.0
+1535,35,Salt Lake,538.0
+1536,35,Salt Lake,480.0
+1537,35,Salt Lake,518.0
+1538,35,Salt Lake,822.0
+1539,35,Salt Lake,671.0
+1540,35,Salt Lake,562.0
+1541,35,Salt Lake,484.0
+1542,35,Salt Lake,272.0
+1543,35,Salt Lake,302.0
+1544,35,Salt Lake,366.0
+1545,35,Salt Lake,232.0
+1546,35,Salt Lake,324.0
+1547,35,Salt Lake,268.0
+1548,35,Salt Lake,694.0
+1549,35,Salt Lake,1131.0
+1550,35,Salt Lake,110.0
+1551,35,Salt Lake,692.0
+1552,35,Salt Lake,653.0
+1553,35,Salt Lake,365.0
+1554,35,Salt Lake,648.0
+1555,35,Salt Lake,469.0
+1556,35,Salt Lake,252.0
+1557,35,Salt Lake,897.0
+1558,35,Salt Lake,241.0
+1559,35,Salt Lake,1008.0
+1560,35,Salt Lake,956.0
+1561,35,Salt Lake,417.0
+1562,35,Salt Lake,721.0
+1563,35,Salt Lake,897.0
+1564,35,Salt Lake,629.0
+1565,35,Salt Lake,654.0
+1566,35,Salt Lake,368.0
+1567,35,Salt Lake,486.0
+1568,35,Salt Lake,271.0
+1569,35,Salt Lake,349.0
+1570,35,Salt Lake,494.0
+1571,35,Salt Lake,833.0
+1572,35,Salt Lake,442.0
+1573,35,Salt Lake,280.0
+1574,35,Salt Lake,270.0
+1575,35,Salt Lake,381.0
+1576,35,Salt Lake,507.0
+1577,35,Salt Lake,1270.0
+1578,35,Salt Lake,596.0
+1579,35,Salt Lake,311.0
+1580,35,Salt Lake,155.0
+1581,35,Salt Lake,743.0
+1582,35,Salt Lake,816.0
+1583,35,Salt Lake,281.0
+1584,35,Salt Lake,206.0
+1585,35,Salt Lake,746.0
+1586,35,Salt Lake,272.0
+1587,35,Salt Lake,505.0
+1588,35,Salt Lake,467.0
+1589,35,Salt Lake,855.0
+1590,35,Salt Lake,474.0
+1591,35,Salt Lake,783.0
+1592,35,Salt Lake,369.0
+1593,35,Salt Lake,244.0
+1594,35,Salt Lake,86.0
+1595,35,Salt Lake,366.0
+1596,35,Salt Lake,332.0
+1597,35,Salt Lake,264.0
+1598,35,Salt Lake,510.0
+1599,35,Salt Lake,396.0
+1600,35,Salt Lake,876.0
+1601,35,Salt Lake,1027.0
+1602,35,Salt Lake,622.0
+1603,35,Salt Lake,297.0
+1604,35,Salt Lake,592.0
+1605,35,Salt Lake,766.0
+1606,35,Salt Lake,411.0
+1607,35,Salt Lake,124.0
+1608,35,Salt Lake,518.0
+1609,35,Salt Lake,634.0
+1610,35,Salt Lake,422.0
+1611,35,Salt Lake,565.0
+1612,35,Salt Lake,233.0
+1613,35,Salt Lake,479.0
+1614,35,Salt Lake,309.0
+1615,35,Salt Lake,7.0
+1616,35,Salt Lake,1.0
+1617,35,Salt Lake,271.0
+1618,35,Salt Lake,303.0
+1619,35,Salt Lake,1458.0
+1620,35,Salt Lake,334.0
+1621,35,Salt Lake,309.0
+1622,35,Salt Lake,290.0
+1623,35,Salt Lake,433.0
+1624,35,Salt Lake,253.0
+1625,35,Salt Lake,708.0
+1626,35,Salt Lake,768.0
+1627,35,Salt Lake,444.0
+1628,35,Salt Lake,337.0
+1629,35,Salt Lake,351.0
+1630,35,Salt Lake,929.0
+1631,35,Salt Lake,695.0
+1632,35,Salt Lake,348.0
+1633,35,Salt Lake,44.0
+1634,35,Salt Lake,0.0
+1635,35,Salt Lake,35.0
+1636,35,Salt Lake,218.0
+1637,35,Salt Lake,849.0
+1638,35,Salt Lake,322.0
+1639,35,Salt Lake,494.0
+1640,35,Salt Lake,521.0
+1641,35,Salt Lake,0.0
+1642,35,Salt Lake,5.0
+1643,35,Salt Lake,577.0
+1644,35,Salt Lake,609.0
+1645,35,Salt Lake,1092.0
+1646,35,Salt Lake,442.0
+1647,35,Salt Lake,443.0
+1648,35,Salt Lake,629.0
+1649,35,Salt Lake,208.0
+1650,35,Salt Lake,343.0
+1651,35,Salt Lake,415.0
+1652,35,Salt Lake,605.0
+1653,35,Salt Lake,705.0
+1654,35,Salt Lake,499.0
+1655,35,Salt Lake,11.0
+1656,35,Salt Lake,237.0
+1657,35,Salt Lake,12.0
+1658,35,Salt Lake,13.0
+1659,35,Salt Lake,783.0
+1660,35,Salt Lake,326.0
+1661,35,Salt Lake,801.0
+1662,35,Salt Lake,246.0
+1663,35,Salt Lake,352.0
+1664,35,Salt Lake,599.0
+1665,35,Salt Lake,779.0
+1666,35,Salt Lake,370.0
+1667,35,Salt Lake,245.0
+1668,35,Salt Lake,119.0
+1669,35,Salt Lake,788.0
+1670,35,Salt Lake,536.0
+1671,35,Salt Lake,386.0
+1672,35,Salt Lake,463.0
+1673,35,Salt Lake,500.0
+1674,35,Salt Lake,339.0
+1675,35,Salt Lake,331.0
+1676,35,Salt Lake,275.0
+1677,35,Salt Lake,443.0
+1678,35,Salt Lake,504.0
+1679,35,Salt Lake,209.0
+1680,35,Salt Lake,475.0
+1681,35,Salt Lake,576.0
+1682,35,Salt Lake,213.0
+1683,35,Salt Lake,476.0
+1684,35,Salt Lake,500.0
+1685,35,Salt Lake,729.0
+1686,35,Salt Lake,423.0
+1687,35,Salt Lake,350.0
+1688,35,Salt Lake,904.0
+1689,35,Salt Lake,946.0
+1690,35,Salt Lake,174.0
+1691,35,Salt Lake,181.0
+1692,35,Salt Lake,288.0
+1693,35,Salt Lake,334.0
+1694,35,Salt Lake,517.0
+1695,35,Salt Lake,293.0
+1696,35,Salt Lake,558.0
+1697,35,Salt Lake,265.0
+1698,35,Salt Lake,248.0
+1699,35,Salt Lake,101.0
+1700,35,Salt Lake,8.0
+1701,35,Salt Lake,1176.0
+1702,35,Salt Lake,0.0
+1703,35,Salt Lake,385.0
+1704,35,Salt Lake,610.0
+1705,35,Salt Lake,1691.0
+1706,35,Salt Lake,1283.0
+1707,35,Salt Lake,446.0
+1708,35,Salt Lake,409.0
+1709,35,Salt Lake,338.0
+1710,35,Salt Lake,344.0
+1711,35,Salt Lake,210.0
+1712,35,Salt Lake,823.0
+1713,35,Salt Lake,320.0
+1714,35,Salt Lake,728.0
+1715,35,Salt Lake,0.0
+1716,35,Salt Lake,198.0
+1717,35,Salt Lake,15.0
+1718,35,Salt Lake,465.0
+1719,35,Salt Lake,688.0
+1720,35,Salt Lake,536.0
+1721,35,Salt Lake,0.0
+1722,35,Salt Lake,720.0
+1723,35,Salt Lake,693.0
+1724,35,Salt Lake,741.0
+1725,35,Salt Lake,974.0
+1726,35,Salt Lake,1197.0
+1727,35,Salt Lake,740.0
+1728,35,Salt Lake,828.0
+1729,35,Salt Lake,790.0
+1730,35,Salt Lake,318.0
+1731,35,Salt Lake,841.0
+1732,35,Salt Lake,628.0
+1733,35,Salt Lake,485.0
+1734,35,Salt Lake,863.0
+1735,35,Salt Lake,508.0
+1736,35,Salt Lake,137.0
+1737,35,Salt Lake,1.0
+1738,35,Salt Lake,466.0
+1739,35,Salt Lake,684.0
+1740,35,Salt Lake,480.0
+1741,35,Salt Lake,714.0
+1742,35,Salt Lake,478.0
+1743,35,Salt Lake,98.0
+1744,35,Salt Lake,93.0
+1745,35,Salt Lake,149.0
+1746,35,Salt Lake,853.0
+1747,35,Salt Lake,512.0
+1748,35,Salt Lake,242.0
+1749,35,Salt Lake,763.0
+1750,35,Salt Lake,793.0
+1751,35,Salt Lake,671.0
+1752,35,Salt Lake,226.0
+1753,35,Salt Lake,387.0
+1754,35,Salt Lake,725.0
+1755,35,Salt Lake,20.0
+1756,35,Salt Lake,265.0
+1757,35,Salt Lake,0.0
+1758,35,Salt Lake,383.0
+1759,35,Salt Lake,5.0
+1760,35,Salt Lake,1332.0
+1761,35,Salt Lake,321.0
+1762,35,Salt Lake,56.0
+1763,35,Salt Lake,228.0
+1764,35,Salt Lake,478.0
+1765,35,Salt Lake,449.0
+1766,35,Salt Lake,401.0
+1767,35,Salt Lake,390.0
+1768,35,Salt Lake,419.0
+1769,35,Salt Lake,0.0
+1770,35,Salt Lake,0.0
+1771,35,Salt Lake,771.0
+1772,35,Salt Lake,314.0
+1773,35,Salt Lake,493.0
+1774,35,Salt Lake,152.0
+1775,35,Salt Lake,330.0
+1776,35,Salt Lake,9.0
+1777,35,Salt Lake,320.0
+1778,35,Salt Lake,184.0
+1779,35,Salt Lake,994.0
+1780,35,Salt Lake,547.0
+1781,35,Salt Lake,305.0
+1782,35,Salt Lake,9.0
+1783,35,Salt Lake,0.0
+1784,35,Salt Lake,0.0
+1785,35,Salt Lake,0.0
+1786,35,Salt Lake,3.0
+1787,35,Salt Lake,628.0
+1788,35,Salt Lake,557.0
+1789,35,Salt Lake,702.0
+1790,35,Salt Lake,0.0
+1791,35,Salt Lake,21.0
+1792,35,Salt Lake,959.0
+1793,35,Salt Lake,332.0
+1794,35,Salt Lake,572.0
+1795,35,Salt Lake,377.0
+1796,35,Salt Lake,720.0
+1797,35,Salt Lake,1084.0
+1798,35,Salt Lake,0.0
+1799,35,Salt Lake,608.0
+1800,35,Salt Lake,257.0
+1801,35,Salt Lake,953.0
+1802,35,Salt Lake,504.0
+1803,35,Salt Lake,510.0
+1804,35,Salt Lake,356.0
+1805,35,Salt Lake,212.0
+1806,35,Salt Lake,978.0
+1807,35,Salt Lake,386.0
+1808,35,Salt Lake,243.0
+1809,35,Salt Lake,1160.0
+1810,35,Salt Lake,281.0
+1811,35,Salt Lake,267.0
+1812,35,Salt Lake,210.0
+1813,35,Salt Lake,766.0
+1814,35,Salt Lake,408.0
+1815,35,Salt Lake,544.0
+1816,35,Salt Lake,456.0
+1817,35,Salt Lake,284.0
+1818,35,Salt Lake,208.0
+1819,35,Salt Lake,200.0
+1820,35,Salt Lake,347.0
+1821,35,Salt Lake,146.0
+1822,35,Salt Lake,326.0
+1823,35,Salt Lake,418.0
+1824,35,Salt Lake,871.0
+1825,35,Salt Lake,1167.0
+1826,35,Salt Lake,3.0
+1827,35,Salt Lake,427.0
+1828,35,Salt Lake,1640.0
+1829,35,Salt Lake,642.0
+1830,35,Salt Lake,1.0
+1831,35,Salt Lake,1150.0
+1832,35,Salt Lake,5.0
+1833,35,Salt Lake,555.0
+1834,35,Salt Lake,757.0
+1835,35,Salt Lake,675.0
+1836,35,Salt Lake,768.0
+1837,35,Salt Lake,387.0
+1838,35,Salt Lake,187.0
+1839,35,Salt Lake,127.0
+1840,35,Salt Lake,706.0
+1841,35,Salt Lake,991.0
+1842,35,Salt Lake,824.0
+1843,35,Salt Lake,343.0
+1844,35,Salt Lake,349.0
+1845,35,Salt Lake,519.0
+1846,35,Salt Lake,858.0
+1847,35,Salt Lake,613.0
+1848,35,Salt Lake,116.0
+1849,35,Salt Lake,266.0
+1850,35,Salt Lake,476.0
+1851,35,Salt Lake,191.0
+1852,35,Salt Lake,1094.0
+1853,35,Salt Lake,1304.0
+1854,35,Salt Lake,641.0
+1855,35,Salt Lake,279.0
+1856,35,Salt Lake,407.0
+1857,35,Salt Lake,662.0
+1858,35,Salt Lake,389.0
+1859,35,Salt Lake,584.0
+1860,35,Salt Lake,636.0
+1861,35,Salt Lake,0.0
+1862,35,Salt Lake,619.0
+1863,35,Salt Lake,490.0
+1864,35,Salt Lake,556.0
+1865,35,Salt Lake,426.0
+1866,35,Salt Lake,991.0
+1867,35,Salt Lake,247.0
+1868,35,Salt Lake,465.0
+1869,35,Salt Lake,350.0
+1870,35,Salt Lake,505.0
+1871,35,Salt Lake,0.0
+1872,35,Salt Lake,42.0
+1873,35,Salt Lake,139.0
+1874,35,Salt Lake,186.0
+1875,35,Salt Lake,140.0
+1876,35,Salt Lake,153.0
+1877,35,Salt Lake,440.0
+1878,35,Salt Lake,617.0
+1879,35,Salt Lake,541.0
+1880,35,Salt Lake,450.0
+1881,35,Salt Lake,400.0
+1882,35,Salt Lake,454.0
+1883,35,Salt Lake,1529.0
+1884,35,Salt Lake,397.0
+1885,35,Salt Lake,637.0
+1886,35,Salt Lake,0.0
+1887,35,Salt Lake,219.0
+1888,35,Salt Lake,3.0
+1889,35,Salt Lake,253.0
+1890,35,Salt Lake,477.0
+1891,35,Salt Lake,334.0
+1892,35,Salt Lake,343.0
+1893,35,Salt Lake,282.0
+1894,35,Salt Lake,483.0
+1895,35,Salt Lake,519.0
+1896,35,Salt Lake,317.0
+1897,35,Salt Lake,574.0
+1898,35,Salt Lake,1279.0
+1899,35,Salt Lake,301.0
+1900,35,Salt Lake,196.0
+1901,35,Salt Lake,474.0
+1902,35,Salt Lake,86.0
+1903,35,Salt Lake,767.0
+1904,35,Salt Lake,996.0
+1905,35,Salt Lake,513.0
+1906,35,Salt Lake,179.0
+1907,35,Salt Lake,228.0
+1908,35,Salt Lake,35.0
+1909,35,Salt Lake,354.0
+1910,35,Salt Lake,671.0
+1911,35,Salt Lake,666.0
+1912,35,Salt Lake,227.0
+1913,35,Salt Lake,265.0
+1914,35,Salt Lake,234.0
+1915,35,Salt Lake,331.0
+1916,35,Salt Lake,288.0
+1917,35,Salt Lake,148.0
+1918,35,Salt Lake,0.0
+1919,35,Salt Lake,11.0
+1920,35,Salt Lake,300.0
+1921,35,Salt Lake,217.0
+1922,35,Salt Lake,499.0
+1923,35,Salt Lake,395.0
+1924,35,Salt Lake,307.0
+1925,35,Salt Lake,22.0
+1926,35,Salt Lake,132.0
+1927,35,Salt Lake,499.0
+1928,35,Salt Lake,0.0
+1929,35,Salt Lake,679.0
+1930,35,Salt Lake,455.0
+1931,35,Salt Lake,486.0
+1932,35,Salt Lake,394.0
+1933,35,Salt Lake,452.0
+1934,35,Salt Lake,404.0
+1935,35,Salt Lake,401.0
+1936,35,Salt Lake,100.0
+1937,35,Salt Lake,234.0
+1938,35,Salt Lake,929.0
+1939,35,Salt Lake,720.0
+1940,35,Salt Lake,206.0
+1941,35,Salt Lake,524.0
+1942,35,Salt Lake,286.0
+1943,35,Salt Lake,258.0
+1944,35,Salt Lake,251.0
+1945,35,Salt Lake,700.0
+1946,35,Salt Lake,214.0
+1947,35,Salt Lake,284.0
+1948,35,Salt Lake,345.0
+1949,35,Salt Lake,295.0
+1950,35,Salt Lake,435.0
+1951,35,Salt Lake,379.0
+1952,35,Salt Lake,360.0
+1953,35,Salt Lake,0.0
+1954,35,Salt Lake,746.0
+1955,35,Salt Lake,278.0
+1956,35,Salt Lake,426.0
+1957,35,Salt Lake,369.0
+1958,35,Salt Lake,367.0
+1959,35,Salt Lake,274.0
+1960,35,Salt Lake,494.0
+1961,35,Salt Lake,267.0
+1962,35,Salt Lake,287.0
+1963,35,Salt Lake,335.0
+1964,35,Salt Lake,1.0
+1965,35,Salt Lake,0.0
+1966,35,Salt Lake,0.0
+1967,35,Salt Lake,1220.0
+1968,35,Salt Lake,680.0
+1969,35,Salt Lake,150.0
+1970,35,Salt Lake,120.0
+1971,35,Salt Lake,193.0
+1972,35,Salt Lake,550.0
+1973,35,Salt Lake,2.0
+1974,35,Salt Lake,560.0
+1975,35,Salt Lake,834.0
+1976,35,Salt Lake,496.0
+1977,35,Salt Lake,923.0
+1978,35,Salt Lake,712.0
+1979,35,Salt Lake,248.0
+1980,35,Salt Lake,700.0
+1981,35,Salt Lake,402.0
+1982,35,Salt Lake,614.0
+1983,35,Salt Lake,639.0
+1984,35,Salt Lake,225.0
+1985,35,Salt Lake,554.0
+1986,35,Salt Lake,357.0
+1987,35,Salt Lake,362.0
+1988,35,Salt Lake,857.0
+1989,35,Salt Lake,11.0
+1990,35,Salt Lake,0.0
+1991,35,Salt Lake,63.0
+1992,35,Salt Lake,563.0
+1993,35,Salt Lake,175.0
+1994,35,Salt Lake,0.0
+1995,35,Salt Lake,0.0
+1996,35,Salt Lake,1526.0
+1997,35,Salt Lake,574.0
+1998,35,Salt Lake,470.0
+1999,35,Salt Lake,759.0
+2000,35,Salt Lake,431.0
+2001,35,Salt Lake,51.0
+2002,35,Salt Lake,299.0
+2003,35,Salt Lake,161.0
+2004,35,Salt Lake,331.0
+2005,35,Salt Lake,114.0
+2006,35,Salt Lake,1115.0
+2007,35,Salt Lake,454.0
+2008,35,Salt Lake,0.0
+2009,35,Salt Lake,298.0
+2010,35,Salt Lake,476.0
+2011,35,Salt Lake,483.0
+2012,35,Salt Lake,457.0
+2013,35,Salt Lake,125.0
+2014,35,Salt Lake,456.0
+2015,35,Salt Lake,256.0
+2016,35,Salt Lake,346.0
+2017,35,Salt Lake,123.0
+2018,35,Salt Lake,186.0
+2019,35,Salt Lake,227.0
+2020,35,Salt Lake,283.0
+2021,35,Salt Lake,292.0
+2022,35,Salt Lake,437.0
+2023,35,Salt Lake,406.0
+2024,35,Salt Lake,172.0
+2025,35,Salt Lake,805.0
+2026,35,Salt Lake,426.0
+2027,35,Salt Lake,0.0
+2028,35,Salt Lake,769.0
+2029,35,Salt Lake,1518.0
+2030,35,Salt Lake,275.0
+2031,35,Salt Lake,217.0
+2032,35,Salt Lake,477.0
+2033,35,Salt Lake,632.0
+2034,35,Salt Lake,36.0
+2035,35,Salt Lake,355.0
+2036,35,Salt Lake,413.0
+2037,35,Salt Lake,120.0
+2038,35,Salt Lake,181.0
+2039,35,Salt Lake,1161.0
+2040,35,Salt Lake,762.0
+2041,35,Salt Lake,436.0
+2042,35,Salt Lake,256.0
+2043,35,Salt Lake,372.0
+2044,35,Salt Lake,773.0
+2045,35,Salt Lake,298.0
+2046,35,Salt Lake,258.0
+2047,35,Salt Lake,624.0
+2048,35,Salt Lake,897.0
+2049,35,Salt Lake,14.0
+2050,35,Salt Lake,349.0
+2051,35,Salt Lake,339.0
+2052,35,Salt Lake,613.0
+2053,35,Salt Lake,1846.0
+2054,35,Salt Lake,508.0
+2055,35,Salt Lake,718.0
+2056,35,Salt Lake,1044.0
+2057,35,Salt Lake,457.0
+2058,35,Salt Lake,1751.0
+2059,35,Salt Lake,74.0
+2060,35,Salt Lake,0.0
+2061,35,Salt Lake,1.0
+2062,35,Salt Lake,580.0
+2063,35,Salt Lake,176.0
+2064,35,Salt Lake,391.0
+2065,35,Salt Lake,248.0
+2066,35,Salt Lake,691.0
+2067,35,Salt Lake,459.0
+2068,35,Salt Lake,164.0
+2069,35,Salt Lake,914.0
+2070,35,Salt Lake,944.0
+2071,35,Salt Lake,700.0
+2072,35,Salt Lake,611.0
+2073,35,Salt Lake,271.0
+2074,35,Salt Lake,411.0
+2075,35,Salt Lake,111.0
+2076,35,Salt Lake,109.0
+2077,35,Salt Lake,351.0
+2078,35,Salt Lake,279.0
+2079,35,Salt Lake,666.0
+2080,35,Salt Lake,341.0
+2081,35,Salt Lake,136.0
+2082,35,Salt Lake,409.0
+2083,35,Salt Lake,832.0
+2084,35,Salt Lake,0.0
+2085,35,Salt Lake,124.0
+2086,35,Salt Lake,374.0
+2087,35,Salt Lake,363.0
+2088,35,Salt Lake,353.0
+2089,35,Salt Lake,129.0
+2090,35,Salt Lake,500.0
+2091,35,Salt Lake,515.0
+2092,35,Salt Lake,527.0
+2093,35,Salt Lake,160.0
+2094,35,Salt Lake,514.0
+2095,35,Salt Lake,315.0
+2096,35,Salt Lake,64.0
+2097,35,Salt Lake,540.0
+2098,35,Salt Lake,203.0
+2099,35,Salt Lake,121.0
+2100,35,Salt Lake,474.0
+2101,35,Salt Lake,364.0
+2102,35,Salt Lake,307.0
+2103,35,Salt Lake,341.0
+2104,35,Salt Lake,0.0
+2105,35,Salt Lake,507.0
+2106,35,Salt Lake,301.0
+2107,35,Salt Lake,284.0
+2108,35,Salt Lake,643.0
+2109,35,Salt Lake,623.0
+2110,35,Salt Lake,372.0
+2111,35,Salt Lake,0.0
+2112,35,Salt Lake,100.0
+2113,35,Salt Lake,96.0
+2114,35,Salt Lake,48.0
+2115,35,Salt Lake,214.0
+2116,35,Salt Lake,249.0
+2117,35,Salt Lake,391.0
+2118,35,Salt Lake,0.0
+2119,35,Salt Lake,429.0
+2120,35,Salt Lake,190.0
+2121,35,Salt Lake,284.0
+2122,35,Salt Lake,196.0
+2123,35,Salt Lake,126.0
+2124,35,Salt Lake,327.0
+2125,35,Salt Lake,110.0
+2126,35,Salt Lake,446.0
+2127,35,Salt Lake,498.0
+2128,35,Salt Lake,1.0
+2129,35,Salt Lake,1062.0
+2130,35,Salt Lake,329.0
+2131,35,Salt Lake,19.0
+2132,35,Salt Lake,268.0
+2133,35,Salt Lake,0.0
+2134,35,Salt Lake,1025.0
+2135,35,Salt Lake,631.0
+2136,35,Salt Lake,539.0
+2137,35,Salt Lake,219.0
+2138,35,Salt Lake,623.0
+2139,35,Salt Lake,0.0
+2140,35,Salt Lake,0.0
+2141,35,Salt Lake,0.0
+2142,35,Salt Lake,2.0
+2143,35,Salt Lake,0.0
+2144,35,Salt Lake,405.0
+2145,35,Salt Lake,268.0
+2146,35,Salt Lake,836.0
+2147,35,Salt Lake,468.0
+2148,35,Salt Lake,263.0
+2149,35,Salt Lake,0.0
+2150,35,Salt Lake,380.0
+2151,35,Salt Lake,398.0
+2152,35,Salt Lake,457.0
+2153,35,Salt Lake,0.0
+2154,35,Salt Lake,332.0
+2155,35,Salt Lake,718.0
+2156,35,Salt Lake,467.0
+2157,35,Salt Lake,0.0
+2158,35,Salt Lake,662.0
+2159,35,Salt Lake,0.0
+2160,35,Salt Lake,0.0
+2161,35,Salt Lake,0.0
+2162,35,Salt Lake,191.0
+2163,35,Salt Lake,88.0
+2164,35,Salt Lake,78.0
+2165,35,Salt Lake,113.0
+2166,35,Salt Lake,143.0
+2167,35,Salt Lake,603.0
+2168,35,Salt Lake,18.0
+2169,35,Salt Lake,222.0
+2170,35,Salt Lake,0.0
+2171,35,Salt Lake,150.0
+2172,35,Salt Lake,174.0
+2173,35,Salt Lake,176.0
+2174,35,Salt Lake,102.0
+2175,35,Salt Lake,110.0
+2176,35,Salt Lake,5.0
+2177,35,Salt Lake,329.0
+2178,35,Salt Lake,452.0
+2179,35,Salt Lake,16.0
+2180,35,Salt Lake,188.0
+2181,35,Salt Lake,322.0
+2182,35,Salt Lake,1222.0
+2183,35,Salt Lake,1072.0
+2184,35,Salt Lake,62.0
+2185,35,Salt Lake,0.0
+2186,35,Salt Lake,352.0
+2187,35,Salt Lake,26.0
+2188,35,Salt Lake,392.0
+2189,35,Salt Lake,177.0
+2190,35,Salt Lake,7.0
+2191,35,Salt Lake,0.0
+2192,35,Salt Lake,62.0
+2193,35,Salt Lake,13.0
+2194,35,Salt Lake,21.0
+2195,35,Salt Lake,72.0
+2196,35,Salt Lake,180.0
+2197,35,Salt Lake,29.0
+2198,35,Salt Lake,0.0
+2199,35,Salt Lake,18.0
+2200,35,Salt Lake,1.0
+2201,35,Salt Lake,0.0
+2202,35,Salt Lake,0.0
+2203,35,Salt Lake,0.0
+2204,35,Salt Lake,0.0
+2205,35,Salt Lake,0.0
+2206,35,Salt Lake,4.0
+2207,35,Salt Lake,27.0
+2208,35,Salt Lake,0.0
+2209,35,Salt Lake,0.0
+2210,35,Salt Lake,0.0
+2211,35,Salt Lake,1.0
+2212,35,Salt Lake,2.0
+2213,35,Salt Lake,0.0
+2214,35,Salt Lake,0.0
+2215,35,Salt Lake,0.0
+2216,35,Salt Lake,0.0
+2217,49,Utah,1.0
+2218,49,Utah,0.0
+2219,49,Utah,0.0
+2220,49,Utah,8.0
+2221,49,Utah,1.0
+2222,49,Utah,6.0
+2223,49,Utah,9.0
+2224,49,Utah,0.0
+2225,49,Utah,0.0
+2226,49,Utah,0.0
+2227,49,Utah,0.0
+2228,49,Utah,4.0
+2229,49,Utah,29.0
+2230,49,Utah,4.0
+2231,49,Utah,0.0
+2232,49,Utah,1.0
+2233,49,Utah,1.0
+2234,49,Utah,0.0
+2235,49,Utah,0.0
+2236,49,Utah,0.0
+2237,49,Utah,3.0
+2238,49,Utah,9.0
+2239,49,Utah,2.0
+2240,49,Utah,0.0
+2241,49,Utah,1.0
+2242,49,Utah,1.0
+2243,49,Utah,1.0
+2244,49,Utah,0.0
+2245,49,Utah,0.0
+2246,49,Utah,0.0
+2247,49,Utah,0.0
+2248,49,Utah,0.0
+2249,49,Utah,0.0
+2250,49,Utah,465.0
+2251,49,Utah,16.0
+2252,49,Utah,1.0
+2253,49,Utah,0.0
+2254,49,Utah,0.0
+2255,49,Utah,0.0
+2256,49,Utah,0.0
+2257,49,Utah,27.0
+2258,49,Utah,1.0
+2259,49,Utah,0.0
+2260,49,Utah,0.0
+2261,49,Utah,0.0
+2262,49,Utah,0.0
+2263,49,Utah,1.0
+2264,49,Utah,6.0
+2265,49,Utah,0.0
+2266,49,Utah,0.0
+2267,49,Utah,0.0
+2268,49,Utah,0.0
+2269,49,Utah,7.0
+2270,49,Utah,0.0
+2271,49,Utah,136.0
+2272,49,Utah,0.0
+2273,49,Utah,0.0
+2274,49,Utah,0.0
+2275,49,Utah,0.0
+2276,49,Utah,0.0
+2277,49,Utah,0.0
+2278,49,Utah,0.0
+2279,49,Utah,0.0
+2280,49,Utah,0.0
+2281,49,Utah,0.0
+2282,49,Utah,0.0
+2283,49,Utah,0.0
+2284,49,Utah,0.0
+2285,49,Utah,0.0
+2286,49,Utah,0.0
+2287,49,Utah,0.0
+2288,49,Utah,1.0
+2289,49,Utah,0.0
+2290,49,Utah,0.0
+2291,49,Utah,0.0
+2292,49,Utah,0.0
+2293,49,Utah,0.0
+2294,49,Utah,0.0
+2295,49,Utah,0.0
+2296,49,Utah,0.0
+2297,49,Utah,2.0
+2298,49,Utah,52.0
+2299,49,Utah,0.0
+2300,49,Utah,0.0
+2301,49,Utah,0.0
+2302,49,Utah,0.0
+2303,49,Utah,5.0
+2304,49,Utah,162.0
+2305,49,Utah,766.0
+2306,49,Utah,360.0
+2307,49,Utah,226.0
+2308,49,Utah,0.0
+2309,49,Utah,174.0
+2310,49,Utah,174.0
+2311,49,Utah,174.0
+2312,49,Utah,563.0
+2313,49,Utah,167.0
+2314,49,Utah,327.0
+2315,49,Utah,264.0
+2316,49,Utah,444.0
+2317,49,Utah,314.0
+2318,49,Utah,559.0
+2319,49,Utah,250.0
+2320,49,Utah,0.0
+2321,49,Utah,14.0
+2322,49,Utah,2.0
+2323,49,Utah,0.0
+2324,49,Utah,0.0
+2325,49,Utah,0.0
+2326,49,Utah,8.0
+2327,49,Utah,5.0
+2328,49,Utah,1.0
+2329,49,Utah,0.0
+2330,49,Utah,0.0
+2331,49,Utah,0.0
+2332,49,Utah,0.0
+2333,49,Utah,0.0
+2334,49,Utah,0.0
+2335,49,Utah,0.0
+2336,49,Utah,0.0
+2337,49,Utah,0.0
+2338,49,Utah,0.0
+2339,49,Utah,0.0
+2340,49,Utah,0.0
+2341,49,Utah,0.0
+2342,49,Utah,0.0
+2343,49,Utah,0.0
+2344,49,Utah,134.0
+2345,49,Utah,206.0
+2346,49,Utah,105.0
+2347,49,Utah,446.0
+2348,49,Utah,456.0
+2349,49,Utah,28.0
+2350,49,Utah,2.0
+2351,49,Utah,76.0
+2352,49,Utah,0.0
+2353,49,Utah,393.0
+2354,49,Utah,55.0
+2355,49,Utah,1.0
+2356,49,Utah,0.0
+2357,49,Utah,0.0
+2358,49,Utah,562.0
+2359,49,Utah,274.0
+2360,49,Utah,20.0
+2361,49,Utah,0.0
+2362,49,Utah,0.0
+2363,49,Utah,0.0
+2364,49,Utah,16.0
+2365,49,Utah,20.0
+2366,49,Utah,0.0
+2367,49,Utah,50.0
+2368,49,Utah,71.0
+2369,49,Utah,111.0
+2370,49,Utah,429.0
+2371,49,Utah,469.0
+2372,49,Utah,372.0
+2373,49,Utah,212.0
+2374,49,Utah,0.0
+2375,49,Utah,0.0
+2376,49,Utah,32.0
+2377,49,Utah,150.0
+2378,49,Utah,363.0
+2379,49,Utah,331.0
+2380,49,Utah,0.0
+2381,49,Utah,0.0
+2382,49,Utah,113.0
+2383,49,Utah,245.0
+2384,49,Utah,457.0
+2385,49,Utah,265.0
+2386,49,Utah,87.0
+2387,49,Utah,40.0
+2388,49,Utah,8.0
+2389,49,Utah,0.0
+2390,49,Utah,7.0
+2391,49,Utah,0.0
+2392,49,Utah,0.0
+2393,49,Utah,0.0
+2394,49,Utah,0.0
+2395,49,Utah,0.0
+2396,49,Utah,0.0
+2397,49,Utah,0.0
+2398,49,Utah,0.0
+2399,49,Utah,0.0
+2400,49,Utah,0.0
+2401,49,Utah,0.0
+2402,49,Utah,0.0
+2403,49,Utah,0.0
+2404,49,Utah,0.0
+2405,49,Utah,0.0
+2406,49,Utah,0.0
+2407,49,Utah,0.0
+2408,49,Utah,0.0
+2409,49,Utah,0.0
+2410,49,Utah,0.0
+2411,49,Utah,6.0
+2412,49,Utah,0.0
+2413,49,Utah,0.0
+2414,49,Utah,0.0
+2415,49,Utah,0.0
+2416,49,Utah,1.0
+2417,49,Utah,439.0
+2418,49,Utah,379.0
+2419,49,Utah,354.0
+2420,49,Utah,0.0
+2421,49,Utah,0.0
+2422,49,Utah,0.0
+2423,49,Utah,0.0
+2424,49,Utah,1.0
+2425,49,Utah,0.0
+2426,49,Utah,0.0
+2427,49,Utah,0.0
+2428,49,Utah,0.0
+2429,49,Utah,2.0
+2430,49,Utah,0.0
+2431,49,Utah,4.0
+2432,49,Utah,0.0
+2433,49,Utah,203.0
+2434,49,Utah,2239.0
+2435,49,Utah,170.0
+2436,49,Utah,365.0
+2437,49,Utah,1226.0
+2438,49,Utah,465.0
+2439,49,Utah,374.0
+2440,49,Utah,652.0
+2441,49,Utah,1114.0
+2442,49,Utah,358.0
+2443,49,Utah,223.0
+2444,49,Utah,536.0
+2445,49,Utah,474.0
+2446,49,Utah,515.0
+2447,49,Utah,80.0
+2448,49,Utah,504.0
+2449,49,Utah,437.0
+2450,49,Utah,338.0
+2451,49,Utah,170.0
+2452,49,Utah,195.0
+2453,49,Utah,165.0
+2454,49,Utah,412.0
+2455,49,Utah,3.0
+2456,49,Utah,9.0
+2457,49,Utah,475.0
+2458,49,Utah,386.0
+2459,49,Utah,420.0
+2460,49,Utah,745.0
+2461,49,Utah,283.0
+2462,49,Utah,46.0
+2463,49,Utah,228.0
+2464,49,Utah,84.0
+2465,49,Utah,991.0
+2466,49,Utah,426.0
+2467,49,Utah,1240.0
+2468,49,Utah,359.0
+2469,49,Utah,153.0
+2470,49,Utah,583.0
+2471,49,Utah,593.0
+2472,49,Utah,461.0
+2473,49,Utah,736.0
+2474,49,Utah,390.0
+2475,49,Utah,149.0
+2476,49,Utah,65.0
+2477,49,Utah,489.0
+2478,49,Utah,101.0
+2479,49,Utah,506.0
+2480,49,Utah,697.0
+2481,49,Utah,787.0
+2482,49,Utah,179.0
+2483,49,Utah,139.0
+2484,49,Utah,5.0
+2485,49,Utah,80.0
+2486,49,Utah,473.0
+2487,49,Utah,913.0
+2488,49,Utah,193.0
+2489,49,Utah,30.0
+2490,49,Utah,264.0
+2491,49,Utah,325.0
+2492,49,Utah,171.0
+2493,49,Utah,103.0
+2494,49,Utah,93.0
+2495,49,Utah,53.0
+2496,49,Utah,96.0
+2497,49,Utah,327.0
+2498,49,Utah,379.0
+2499,49,Utah,164.0
+2500,49,Utah,0.0
+2501,49,Utah,0.0
+2502,49,Utah,710.0
+2503,49,Utah,342.0
+2504,49,Utah,237.0
+2505,49,Utah,351.0
+2506,49,Utah,113.0
+2507,49,Utah,0.0
+2508,49,Utah,4.0
+2509,49,Utah,1.0
+2510,49,Utah,258.0
+2511,49,Utah,497.0
+2512,49,Utah,2.0
+2513,49,Utah,476.0
+2514,49,Utah,900.0
+2515,49,Utah,127.0
+2516,49,Utah,678.0
+2517,49,Utah,412.0
+2518,49,Utah,251.0
+2519,49,Utah,1139.0
+2520,49,Utah,497.0
+2521,49,Utah,82.0
+2522,49,Utah,344.0
+2523,49,Utah,1151.0
+2524,49,Utah,384.0
+2525,49,Utah,211.0
+2526,49,Utah,0.0
+2527,49,Utah,1.0
+2528,49,Utah,95.0
+2529,49,Utah,3.0
+2530,49,Utah,745.0
+2531,49,Utah,0.0
+2532,49,Utah,0.0
+2533,49,Utah,0.0
+2534,49,Utah,347.0
+2535,49,Utah,429.0
+2536,49,Utah,0.0
+2537,49,Utah,182.0
+2538,49,Utah,230.0
+2539,49,Utah,44.0
+2540,49,Utah,323.0
+2541,49,Utah,265.0
+2542,49,Utah,200.0
+2543,49,Utah,274.0
+2544,49,Utah,421.0
+2545,49,Utah,0.0
+2546,49,Utah,230.0
+2547,49,Utah,0.0
+2548,49,Utah,0.0
+2549,49,Utah,747.0
+2550,49,Utah,0.0
+2551,49,Utah,0.0
+2552,49,Utah,0.0
+2553,49,Utah,0.0
+2554,49,Utah,146.0
+2555,49,Utah,352.0
+2556,49,Utah,0.0
+2557,49,Utah,664.0
+2558,49,Utah,2.0
+2559,49,Utah,252.0
+2560,49,Utah,214.0
+2561,49,Utah,332.0
+2562,49,Utah,256.0
+2563,49,Utah,145.0
+2564,49,Utah,175.0
+2565,49,Utah,277.0
+2566,49,Utah,4.0
+2567,49,Utah,99.0
+2568,49,Utah,401.0
+2569,49,Utah,3.0
+2570,49,Utah,218.0
+2571,49,Utah,0.0
+2572,49,Utah,389.0
+2573,49,Utah,1181.0
+2574,49,Utah,332.0
+2575,49,Utah,66.0
+2576,49,Utah,429.0
+2577,49,Utah,259.0
+2578,49,Utah,410.0
+2579,49,Utah,439.0
+2580,49,Utah,220.0
+2581,49,Utah,364.0
+2582,49,Utah,523.0
+2583,49,Utah,494.0
+2584,49,Utah,287.0
+2585,49,Utah,151.0
+2586,49,Utah,196.0
+2587,49,Utah,102.0
+2588,49,Utah,19.0
+2589,49,Utah,663.0
+2590,49,Utah,110.0
+2591,49,Utah,56.0
+2592,49,Utah,138.0
+2593,49,Utah,277.0
+2594,49,Utah,159.0
+2595,49,Utah,127.0
+2596,49,Utah,601.0
+2597,49,Utah,447.0
+2598,49,Utah,371.0
+2599,49,Utah,203.0
+2600,49,Utah,148.0
+2601,49,Utah,298.0
+2602,49,Utah,26.0
+2603,49,Utah,61.0
+2604,49,Utah,247.0
+2605,49,Utah,346.0
+2606,49,Utah,146.0
+2607,49,Utah,108.0
+2608,49,Utah,57.0
+2609,49,Utah,218.0
+2610,49,Utah,236.0
+2611,49,Utah,101.0
+2612,49,Utah,150.0
+2613,49,Utah,212.0
+2614,49,Utah,132.0
+2615,49,Utah,255.0
+2616,49,Utah,231.0
+2617,49,Utah,461.0
+2618,49,Utah,268.0
+2619,49,Utah,18.0
+2620,49,Utah,322.0
+2621,49,Utah,291.0
+2622,49,Utah,216.0
+2623,49,Utah,25.0
+2624,49,Utah,648.0
+2625,49,Utah,304.0
+2626,49,Utah,456.0
+2627,49,Utah,131.0
+2628,49,Utah,237.0
+2629,49,Utah,0.0
+2630,49,Utah,0.0
+2631,49,Utah,1.0
+2632,49,Utah,153.0
+2633,49,Utah,363.0
+2634,49,Utah,320.0
+2635,49,Utah,161.0
+2636,49,Utah,71.0
+2637,49,Utah,0.0
+2638,49,Utah,0.0
+2639,49,Utah,0.0
+2640,49,Utah,14.0
+2641,49,Utah,701.0
+2642,49,Utah,536.0
+2643,49,Utah,84.0
+2644,49,Utah,141.0
+2645,49,Utah,0.0
+2646,49,Utah,0.0
+2647,49,Utah,634.0
+2648,49,Utah,300.0
+2649,49,Utah,107.0
+2650,49,Utah,576.0
+2651,49,Utah,231.0
+2652,49,Utah,363.0
+2653,49,Utah,62.0
+2654,49,Utah,1209.0
+2655,49,Utah,247.0
+2656,49,Utah,2498.0
+2657,49,Utah,116.0
+2658,49,Utah,375.0
+2659,49,Utah,83.0
+2660,49,Utah,602.0
+2661,49,Utah,415.0
+2662,49,Utah,0.0
+2663,49,Utah,142.0
+2664,49,Utah,376.0
+2665,49,Utah,22.0
+2666,49,Utah,183.0
+2667,49,Utah,250.0
+2668,49,Utah,221.0
+2669,49,Utah,534.0
+2670,49,Utah,433.0
+2671,49,Utah,460.0
+2672,49,Utah,342.0
+2673,49,Utah,387.0
+2674,49,Utah,552.0
+2675,49,Utah,287.0
+2676,49,Utah,268.0
+2677,49,Utah,337.0
+2678,49,Utah,258.0
+2679,49,Utah,231.0
+2680,49,Utah,208.0
+2681,49,Utah,469.0
+2682,49,Utah,363.0
+2683,49,Utah,183.0
+2684,49,Utah,272.0
+2685,49,Utah,260.0
+2686,49,Utah,352.0
+2687,49,Utah,276.0
+2688,49,Utah,295.0
+2689,49,Utah,150.0
+2690,49,Utah,347.0
+2691,49,Utah,221.0
+2692,49,Utah,401.0
+2693,49,Utah,617.0
+2694,49,Utah,355.0
+2695,49,Utah,433.0
+2696,49,Utah,228.0
+2697,49,Utah,433.0
+2698,49,Utah,381.0
+2699,49,Utah,350.0
+2700,49,Utah,207.0
+2701,49,Utah,262.0
+2702,49,Utah,438.0
+2703,49,Utah,241.0
+2704,49,Utah,224.0
+2705,49,Utah,343.0
+2706,49,Utah,34.0
+2707,49,Utah,345.0
+2708,49,Utah,105.0
+2709,49,Utah,76.0
+2710,49,Utah,122.0
+2711,49,Utah,469.0
+2712,49,Utah,79.0
+2713,49,Utah,275.0
+2714,49,Utah,201.0
+2715,49,Utah,237.0
+2716,49,Utah,367.0
+2717,49,Utah,147.0
+2718,49,Utah,263.0
+2719,49,Utah,1164.0
+2720,49,Utah,1005.0
+2721,49,Utah,440.0
+2722,49,Utah,330.0
+2723,49,Utah,344.0
+2724,49,Utah,223.0
+2725,49,Utah,261.0
+2726,49,Utah,0.0
+2727,49,Utah,0.0
+2728,49,Utah,0.0
+2729,49,Utah,0.0
+2730,49,Utah,0.0
+2731,49,Utah,428.0
+2732,49,Utah,2.0
+2733,49,Utah,43.0
+2734,49,Utah,188.0
+2735,49,Utah,173.0
+2736,49,Utah,320.0
+2737,49,Utah,40.0
+2738,49,Utah,214.0
+2739,49,Utah,290.0
+2740,49,Utah,425.0
+2741,49,Utah,308.0
+2742,49,Utah,125.0
+2743,49,Utah,146.0
+2744,49,Utah,46.0
+2745,49,Utah,178.0
+2746,49,Utah,445.0
+2747,49,Utah,400.0
+2748,49,Utah,36.0
+2749,49,Utah,57.0
+2750,49,Utah,148.0
+2751,49,Utah,76.0
+2752,49,Utah,672.0
+2753,49,Utah,575.0
+2754,49,Utah,590.0
+2755,49,Utah,72.0
+2756,49,Utah,93.0
+2757,49,Utah,534.0
+2758,49,Utah,192.0
+2759,49,Utah,676.0
+2760,49,Utah,457.0
+2761,49,Utah,0.0
+2762,49,Utah,176.0
+2763,49,Utah,1839.0
+2764,49,Utah,445.0
+2765,49,Utah,946.0
+2766,49,Utah,661.0
+2767,49,Utah,141.0
+2768,49,Utah,24.0
+2769,49,Utah,332.0
+2770,49,Utah,481.0
+2771,49,Utah,595.0
+2772,49,Utah,428.0
+2773,49,Utah,907.0
+2774,49,Utah,391.0
+2775,49,Utah,519.0
+2776,49,Utah,551.0
+2777,49,Utah,400.0
+2778,49,Utah,545.0
+2779,49,Utah,770.0
+2780,49,Utah,141.0
+2781,49,Utah,304.0
+2782,49,Utah,310.0
+2783,49,Utah,579.0
+2784,49,Utah,379.0
+2785,49,Utah,285.0
+2786,49,Utah,240.0
+2787,49,Utah,417.0
+2788,49,Utah,592.0
+2789,49,Utah,356.0
+2790,49,Utah,0.0
+2791,49,Utah,205.0
+2792,49,Utah,0.0
+2793,49,Utah,269.0
+2794,49,Utah,89.0
+2795,49,Utah,0.0
+2796,49,Utah,14.0
+2797,49,Utah,12.0
+2798,49,Utah,0.0
+2799,49,Utah,0.0
+2800,49,Utah,0.0
+2801,49,Utah,7.0
+2802,49,Utah,8.0
+2803,49,Utah,1361.0
+2804,49,Utah,629.0
+2805,49,Utah,0.0
+2806,49,Utah,4.0
+2807,49,Utah,1.0
+2808,49,Utah,251.0
+2809,49,Utah,749.0
+2810,49,Utah,1169.0
+2811,49,Utah,498.0
+2812,49,Utah,1.0
+2813,49,Utah,299.0
+2814,49,Utah,137.0
+2815,49,Utah,156.0
+2816,49,Utah,323.0
+2817,49,Utah,0.0
+2818,49,Utah,865.0
+2819,49,Utah,2.0
+2820,49,Utah,221.0
+2821,49,Utah,158.0
+2822,49,Utah,0.0
+2823,49,Utah,2.0
+2824,49,Utah,24.0
+2825,49,Utah,323.0
+2826,49,Utah,231.0
+2827,49,Utah,149.0
+2828,49,Utah,606.0
+2829,49,Utah,661.0
+2830,49,Utah,138.0
+2831,49,Utah,335.0
+2832,49,Utah,534.0
+2833,49,Utah,435.0
+2834,49,Utah,473.0
+2835,49,Utah,284.0
+2836,49,Utah,126.0
+2837,49,Utah,954.0
+2838,49,Utah,533.0
+2839,49,Utah,700.0
+2840,49,Utah,578.0
+2841,49,Utah,332.0
+2842,49,Utah,609.0
+2843,49,Utah,706.0
+2844,49,Utah,577.0
+2845,49,Utah,363.0
+2846,49,Utah,367.0
+2847,49,Utah,822.0
+2848,49,Utah,466.0
+2849,49,Utah,426.0
+2850,49,Utah,85.0
+2851,49,Utah,0.0
+2852,49,Utah,2.0
+2853,49,Utah,829.0
+2854,49,Utah,383.0
+2855,49,Utah,758.0
+2856,49,Utah,251.0
+2857,49,Utah,379.0
+2858,49,Utah,516.0
+2859,49,Utah,419.0
+2860,49,Utah,0.0
+2861,49,Utah,108.0
+2862,49,Utah,396.0
+2863,49,Utah,641.0
+2864,49,Utah,223.0
+2865,49,Utah,515.0
+2866,49,Utah,483.0
+2867,49,Utah,285.0
+2868,49,Utah,392.0
+2869,49,Utah,348.0
+2870,49,Utah,105.0
+2871,49,Utah,576.0
+2872,49,Utah,431.0
+2873,49,Utah,451.0
+2874,49,Utah,606.0
+2875,49,Utah,84.0
+2876,49,Utah,459.0
+2877,49,Utah,242.0
+2878,49,Utah,553.0
+2879,49,Utah,101.0
+2880,49,Utah,354.0
+2881,49,Utah,362.0
+2882,49,Utah,256.0
+2883,49,Utah,405.0
+2884,49,Utah,665.0
+2885,49,Utah,18.0
+2886,49,Utah,187.0
+2887,49,Utah,621.0
+2888,49,Utah,287.0
+2889,49,Utah,395.0
+2890,49,Utah,70.0
+2891,49,Utah,493.0
+2892,49,Utah,580.0
+2893,49,Utah,320.0
+2894,49,Utah,522.0
+2895,49,Utah,331.0
+2896,49,Utah,0.0
+2897,49,Utah,21.0
+2898,49,Utah,77.0
+2899,49,Utah,534.0
+2900,49,Utah,203.0
+2901,49,Utah,7.0
+2902,49,Utah,0.0
+2903,49,Utah,195.0
+2904,49,Utah,454.0
+2905,49,Utah,406.0
+2906,49,Utah,834.0
+2907,49,Utah,452.0
+2908,49,Utah,573.0
+2909,49,Utah,410.0
+2910,49,Utah,334.0
+2911,49,Utah,344.0
+2912,49,Utah,135.0
+2913,49,Utah,326.0
+2914,49,Utah,376.0
+2915,49,Utah,465.0
+2916,49,Utah,456.0
+2917,49,Utah,349.0
+2918,49,Utah,65.0
+2919,49,Utah,344.0
+2920,49,Utah,337.0
+2921,49,Utah,526.0
+2922,49,Utah,287.0
+2923,49,Utah,0.0
+2924,49,Utah,124.0
+2925,49,Utah,378.0
+2926,49,Utah,0.0
+2927,49,Utah,498.0
+2928,49,Utah,156.0
+2929,49,Utah,342.0
+2930,49,Utah,890.0
+2931,49,Utah,189.0
+2932,49,Utah,589.0
+2933,49,Utah,213.0
+2934,49,Utah,604.0
+2935,49,Utah,68.0
+2936,49,Utah,32.0
+2937,49,Utah,188.0
+2938,49,Utah,300.0
+2939,49,Utah,120.0
+2940,49,Utah,398.0
+2941,49,Utah,343.0
+2942,49,Utah,6.0
+2943,49,Utah,517.0
+2944,49,Utah,126.0
+2945,49,Utah,13.0
+2946,49,Utah,456.0
+2947,49,Utah,241.0
+2948,49,Utah,1.0
+2949,49,Utah,2.0
+2950,49,Utah,37.0
+2951,49,Utah,261.0
+2952,49,Utah,463.0
+2953,49,Utah,278.0
+2954,49,Utah,6.0
+2955,49,Utah,6.0
+2956,49,Utah,48.0
+2957,49,Utah,38.0
+2958,49,Utah,142.0
+2959,49,Utah,39.0
+2960,49,Utah,660.0
+2961,49,Utah,320.0
+2962,49,Utah,347.0
+2963,49,Utah,826.0
+2964,49,Utah,677.0
+2965,49,Utah,171.0
+2966,49,Utah,2.0
+2967,49,Utah,360.0
+2968,49,Utah,187.0
+2969,49,Utah,495.0
+2970,49,Utah,494.0
+2971,49,Utah,567.0
+2972,49,Utah,849.0
+2973,49,Utah,592.0
+2974,49,Utah,478.0
+2975,49,Utah,342.0
+2976,49,Utah,428.0
+2977,49,Utah,370.0
+2978,49,Utah,308.0
+2979,49,Utah,451.0
+2980,49,Utah,439.0
+2981,49,Utah,236.0
+2982,49,Utah,256.0
+2983,49,Utah,2.0
+2984,49,Utah,342.0
+2985,49,Utah,112.0
+2986,49,Utah,246.0
+2987,49,Utah,616.0
+2988,49,Utah,291.0
+2989,49,Utah,300.0
+2990,49,Utah,42.0
+2991,49,Utah,244.0
+2992,49,Utah,209.0
+2993,49,Utah,115.0
+2994,49,Utah,116.0
+2995,49,Utah,275.0
+2996,49,Utah,200.0
+2997,49,Utah,215.0
+2998,49,Utah,291.0
+2999,49,Utah,262.0
+3000,49,Utah,353.0
+3001,49,Utah,363.0
+3002,49,Utah,0.0
+3003,49,Utah,405.0
+3004,49,Utah,486.0
+3005,49,Utah,222.0
+3006,49,Utah,216.0
+3007,49,Utah,323.0
+3008,49,Utah,850.0
+3009,49,Utah,228.0
+3010,49,Utah,122.0
+3011,49,Utah,359.0
+3012,49,Utah,279.0
+3013,49,Utah,427.0
+3014,49,Utah,222.0
+3015,49,Utah,136.0
+3016,49,Utah,756.0
+3017,49,Utah,315.0
+3018,49,Utah,166.0
+3019,49,Utah,12.0
+3020,49,Utah,419.0
+3021,49,Utah,583.0
+3022,49,Utah,167.0
+3023,49,Utah,315.0
+3024,49,Utah,1.0
+3025,49,Utah,14.0
+3026,49,Utah,0.0
+3027,49,Utah,0.0
+3028,49,Utah,0.0
+3029,49,Utah,513.0
+3030,49,Utah,534.0
+3031,49,Utah,164.0
+3032,49,Utah,495.0
+3033,49,Utah,0.0
+3034,49,Utah,0.0
+3035,49,Utah,474.0
+3036,49,Utah,0.0
+3037,49,Utah,0.0
+3038,49,Utah,22.0
+3039,49,Utah,0.0
+3040,49,Utah,0.0
+3041,49,Utah,0.0
+3042,49,Utah,128.0
+3043,49,Utah,0.0
+3044,49,Utah,0.0
+3045,49,Utah,0.0
+3046,49,Utah,203.0
+3047,49,Utah,135.0
+3048,49,Utah,0.0
+3049,49,Utah,23.0
+3050,49,Utah,0.0
+3051,49,Utah,336.0
+3052,49,Utah,396.0
+3053,49,Utah,463.0
+3054,49,Utah,1.0
+3055,49,Utah,276.0
+3056,49,Utah,408.0
+3057,49,Utah,245.0
+3058,49,Utah,306.0
+3059,49,Utah,328.0
+3060,49,Utah,329.0
+3061,49,Utah,0.0
+3062,49,Utah,207.0
+3063,49,Utah,388.0
+3064,49,Utah,265.0
+3065,49,Utah,266.0
+3066,49,Utah,182.0
+3067,49,Utah,353.0
+3068,49,Utah,282.0
+3069,49,Utah,93.0
+3070,49,Utah,47.0
+3071,49,Utah,38.0
+3072,49,Utah,329.0
+3073,49,Utah,252.0
+3074,49,Utah,255.0
+3075,49,Utah,344.0
+3076,49,Utah,229.0
+3077,49,Utah,345.0
+3078,49,Utah,151.0
+3079,49,Utah,472.0
+3080,49,Utah,292.0
+3081,49,Utah,517.0
+3082,49,Utah,16.0
+3083,49,Utah,33.0
+3084,49,Utah,206.0
+3085,49,Utah,204.0
+3086,49,Utah,341.0
+3087,49,Utah,200.0
+3088,49,Utah,358.0
+3089,49,Utah,206.0
+3090,49,Utah,177.0
+3091,49,Utah,112.0
+3092,49,Utah,105.0
+3093,49,Utah,39.0
+3094,49,Utah,110.0
+3095,49,Utah,0.0
+3096,49,Utah,5.0
+3097,49,Utah,10.0
+3098,49,Utah,25.0
+3099,49,Utah,84.0
+3100,49,Utah,178.0
+3101,49,Utah,220.0
+3102,49,Utah,200.0
+3103,49,Utah,33.0
+3104,49,Utah,50.0
+3105,49,Utah,40.0
+3106,49,Utah,58.0
+3107,49,Utah,195.0
+3108,49,Utah,294.0
+3109,49,Utah,187.0
+3110,49,Utah,336.0
+3111,49,Utah,106.0
+3112,49,Utah,169.0
+3113,49,Utah,310.0
+3114,49,Utah,260.0
+3115,49,Utah,223.0
+3116,49,Utah,76.0
+3117,49,Utah,126.0
+3118,49,Utah,247.0
+3119,49,Utah,315.0
+3120,49,Utah,162.0
+3121,49,Utah,41.0
+3122,49,Utah,49.0
+3123,49,Utah,62.0
+3124,49,Utah,84.0
+3125,49,Utah,71.0
+3126,49,Utah,109.0
+3127,49,Utah,106.0
+3128,49,Utah,114.0
+3129,49,Utah,108.0
+3130,49,Utah,18.0
+3131,49,Utah,8.0
+3132,49,Utah,0.0
+3133,49,Utah,0.0
+3134,49,Utah,0.0
+3135,49,Utah,0.0
+3136,49,Utah,0.0
+3137,49,Utah,0.0
+3138,49,Utah,0.0
+3139,49,Utah,0.0
+3140,49,Utah,4.0
+3141,49,Utah,0.0
+3142,49,Utah,5.0
+3143,49,Utah,13.0
+3144,49,Utah,12.0
+3145,49,Utah,0.0
+3146,49,Utah,1.0
+3147,49,Utah,283.0
+3148,49,Utah,279.0
+3149,49,Utah,15.0
+3150,49,Utah,13.0
+3151,49,Utah,17.0
+3152,49,Utah,5.0
+3153,49,Utah,0.0
+3154,49,Utah,0.0
+3155,49,Utah,14.0
+3156,49,Utah,19.0
+3157,49,Utah,14.0
+3158,49,Utah,0.0
+3159,49,Utah,8.0
+3160,49,Utah,6.0
+3161,49,Utah,5.0
+3162,49,Utah,3.0
+3163,49,Utah,0.0
+3164,49,Utah,0.0
+3165,49,Utah,0.0
+3166,49,Utah,2.0
+3167,49,Utah,2.0
+3168,49,Utah,3.0
+3169,49,Utah,9.0
+3170,49,Utah,3.0
+3171,49,Utah,3.0
+3172,49,Utah,2.0
+3173,49,Utah,1.0
+3174,49,Utah,3.0
+3175,49,Utah,0.0
+3176,49,Utah,0.0
+3177,49,Utah,0.0
+3178,49,Utah,0.0
+3179,49,Utah,359.0
+3180,49,Utah,75.0
+3181,49,Utah,44.0
+3182,49,Utah,134.0
+3183,49,Utah,228.0
+3184,49,Utah,296.0
+3185,49,Utah,320.0
+3186,49,Utah,173.0
+3187,49,Utah,531.0
+3188,49,Utah,257.0
+3189,49,Utah,237.0
+3190,49,Utah,176.0
+3191,49,Utah,281.0
+3192,49,Utah,57.0
+3193,49,Utah,197.0
+3194,49,Utah,247.0
+3195,49,Utah,266.0
+3196,49,Utah,223.0
+3197,49,Utah,417.0
+3198,49,Utah,143.0
+3199,49,Utah,285.0
+3200,49,Utah,4.0
+3201,49,Utah,325.0
+3202,49,Utah,333.0
+3203,49,Utah,303.0
+3204,49,Utah,321.0
+3205,49,Utah,145.0
+3206,49,Utah,176.0
+3207,49,Utah,219.0
+3208,49,Utah,206.0
+3209,49,Utah,185.0
+3210,49,Utah,277.0
+3211,49,Utah,610.0
+3212,49,Utah,354.0
+3213,49,Utah,6.0
+3214,49,Utah,133.0
+3215,49,Utah,83.0
+3216,49,Utah,258.0
+3217,49,Utah,190.0
+3218,49,Utah,448.0
+3219,49,Utah,386.0
+3220,49,Utah,344.0
+3221,49,Utah,534.0
+3222,49,Utah,116.0
+3223,49,Utah,239.0
+3224,49,Utah,394.0
+3225,49,Utah,439.0
+3226,49,Utah,239.0
+3227,49,Utah,8.0
+3228,49,Utah,1.0
+3229,49,Utah,0.0
+3230,49,Utah,138.0
+3231,49,Utah,135.0
+3232,49,Utah,0.0
+3233,49,Utah,96.0
+3234,49,Utah,16.0
+3235,49,Utah,25.0
+3236,49,Utah,289.0
+3237,49,Utah,223.0
+3238,49,Utah,0.0
+3239,49,Utah,9.0
+3240,49,Utah,13.0
+3241,49,Utah,75.0
+3242,49,Utah,13.0
+3243,49,Utah,16.0
+3244,49,Utah,11.0
+3245,49,Utah,107.0
+3246,49,Utah,0.0
+3247,49,Utah,165.0
+3248,49,Utah,154.0
+3249,49,Utah,37.0
+3250,49,Utah,27.0
+3251,49,Utah,18.0
+3252,49,Utah,13.0
+3253,49,Utah,13.0
+3254,49,Utah,20.0
+3255,49,Utah,409.0
+3256,49,Utah,90.0
+3257,49,Utah,1.0
+3258,49,Utah,87.0
+3259,49,Utah,2.0
+3260,49,Utah,44.0
+3261,49,Utah,181.0
+3262,49,Utah,42.0
+3263,49,Utah,62.0
+3264,49,Utah,16.0
+3265,49,Utah,19.0
+3266,49,Utah,4.0
+3267,49,Utah,5.0
+3268,49,Utah,0.0
+3269,49,Utah,2.0
+3270,49,Utah,11.0
+3271,49,Utah,106.0
+3272,49,Utah,109.0
+3273,49,Utah,5.0
+3274,49,Utah,133.0
+3275,49,Utah,15.0
+3276,49,Utah,11.0
+3277,49,Utah,87.0
+3278,49,Utah,140.0
+3279,49,Utah,348.0
+3280,49,Utah,17.0
+3281,49,Utah,30.0
+3282,49,Utah,430.0
+3283,49,Utah,129.0
+3284,49,Utah,112.0
+3285,49,Utah,194.0
+3286,49,Utah,195.0
+3287,49,Utah,231.0
+3288,49,Utah,110.0
+3289,49,Utah,7.0
+3290,49,Utah,43.0
+3291,49,Utah,119.0
+3292,49,Utah,183.0
+3293,49,Utah,313.0
+3294,49,Utah,34.0
+3295,49,Utah,210.0
+3296,49,Utah,217.0
+3297,49,Utah,194.0
+3298,49,Utah,244.0
+3299,49,Utah,51.0
+3300,49,Utah,29.0
+3301,49,Utah,331.0
+3302,49,Utah,36.0
+3303,49,Utah,213.0
+3304,49,Utah,40.0
+3305,49,Utah,9.0
+3306,49,Utah,183.0
+3307,49,Utah,163.0
+3308,49,Utah,311.0
+3309,49,Utah,5.0
+3310,49,Utah,128.0
+3311,49,Utah,225.0
+3312,49,Utah,176.0
+3313,49,Utah,75.0
+3314,49,Utah,266.0
+3315,49,Utah,23.0
+3316,49,Utah,103.0
+3317,49,Utah,247.0
+3318,49,Utah,232.0
+3319,49,Utah,325.0
+3320,49,Utah,440.0
+3321,49,Utah,6.0
+3322,49,Utah,5.0
+3323,49,Utah,0.0
+3324,49,Utah,8.0
+3325,49,Utah,7.0
+3326,49,Utah,9.0
+3327,49,Utah,11.0
+3328,49,Utah,7.0
+3329,49,Utah,15.0
+3330,49,Utah,6.0
+3331,49,Utah,11.0
+3332,49,Utah,8.0
+3333,49,Utah,56.0
+3334,49,Utah,15.0
+3335,49,Utah,14.0
+3336,49,Utah,4.0
+3337,49,Utah,4.0
+3338,49,Utah,9.0
+3339,49,Utah,21.0
+3340,49,Utah,7.0
+3341,49,Utah,11.0
+3342,49,Utah,12.0
+3343,49,Utah,9.0
+3344,49,Utah,19.0
+3345,49,Utah,25.0
+3346,49,Utah,16.0
+3347,49,Utah,16.0
+3348,49,Utah,12.0
+3349,49,Utah,2.0
+3350,49,Utah,7.0
+3351,49,Utah,8.0
+3352,49,Utah,16.0
+3353,49,Utah,14.0
+3354,49,Utah,18.0
+3355,49,Utah,21.0
+3356,49,Utah,7.0
+3357,49,Utah,10.0
+3358,49,Utah,18.0
+3359,49,Utah,22.0
+3360,49,Utah,10.0
+3361,49,Utah,15.0
+3362,49,Utah,7.0
+3363,49,Utah,7.0
+3364,49,Utah,33.0
+3365,49,Utah,7.0
+3366,49,Utah,20.0
+3367,49,Utah,13.0
+3368,49,Utah,13.0
+3369,49,Utah,16.0
+3370,49,Utah,13.0
+3371,49,Utah,7.0
+3372,49,Utah,26.0
+3373,49,Utah,26.0
+3374,49,Utah,10.0
+3375,49,Utah,7.0
+3376,49,Utah,18.0
+3377,49,Utah,7.0
+3378,49,Utah,4.0
+3379,49,Utah,1.0
+3380,49,Utah,3.0
+3381,49,Utah,0.0
+3382,49,Utah,0.0
+3383,49,Utah,4.0
+3384,49,Utah,9.0
+3385,49,Utah,6.0
+3386,49,Utah,3.0
+3387,49,Utah,70.0
+3388,49,Utah,19.0
+3389,49,Utah,6.0
+3390,49,Utah,7.0
+3391,49,Utah,0.0
+3392,49,Utah,0.0
+3393,49,Utah,13.0
+3394,49,Utah,14.0
+3395,49,Utah,11.0
+3396,49,Utah,7.0
+3397,49,Utah,17.0
+3398,49,Utah,8.0
+3399,49,Utah,4.0
+3400,49,Utah,1.0
+3401,49,Utah,5.0
+3402,49,Utah,4.0
+3403,49,Utah,15.0
+3404,49,Utah,21.0
+3405,49,Utah,14.0
+3406,49,Utah,0.0
+3407,49,Utah,11.0
+3408,49,Utah,25.0
+3409,49,Utah,10.0
+3410,49,Utah,380.0
+3411,49,Utah,34.0
+3412,49,Utah,62.0
+3413,49,Utah,9.0
+3414,49,Utah,33.0
+3415,49,Utah,38.0
+3416,49,Utah,23.0
+3417,49,Utah,58.0
+3418,49,Utah,85.0
+3419,49,Utah,0.0
+3420,49,Utah,293.0
+3421,49,Utah,189.0
+3422,49,Utah,0.0
+3423,49,Utah,0.0
+3424,49,Utah,306.0
+3425,49,Utah,311.0
+3426,49,Utah,381.0
+3427,49,Utah,35.0
+3428,49,Utah,206.0
+3429,49,Utah,27.0
+3430,49,Utah,338.0
+3431,49,Utah,248.0
+3432,49,Utah,312.0
+3433,49,Utah,38.0
+3434,49,Utah,219.0
+3435,49,Utah,63.0
+3436,49,Utah,175.0
+3437,49,Utah,301.0
+3438,49,Utah,140.0
+3439,49,Utah,232.0
+3440,49,Utah,126.0
+3441,49,Utah,199.0
+3442,49,Utah,570.0
+3443,49,Utah,243.0
+3444,49,Utah,11.0
+3445,49,Utah,223.0
+3446,49,Utah,21.0
+3447,49,Utah,75.0
+3448,49,Utah,50.0
+3449,49,Utah,161.0
+3450,49,Utah,108.0
+3451,49,Utah,0.0
+3452,49,Utah,3.0
+3453,49,Utah,5.0
+3454,49,Utah,13.0
+3455,49,Utah,0.0
+3456,49,Utah,8.0
+3457,49,Utah,242.0
+3458,49,Utah,5.0
+3459,49,Utah,43.0
+3460,49,Utah,189.0
+3461,49,Utah,104.0
+3462,49,Utah,52.0
+3463,49,Utah,51.0
+3464,49,Utah,21.0
+3465,49,Utah,8.0
+3466,49,Utah,0.0
+3467,49,Utah,655.0
+3468,49,Utah,294.0
+3469,49,Utah,6.0
+3470,49,Utah,7.0
+3471,49,Utah,4.0
+3472,49,Utah,226.0
+3473,49,Utah,182.0
+3474,49,Utah,186.0
+3475,49,Utah,230.0
+3476,49,Utah,47.0
+3477,49,Utah,87.0
+3478,49,Utah,216.0
+3479,49,Utah,28.0
+3480,49,Utah,109.0
+3481,49,Utah,1.0
+3482,49,Utah,70.0
+3483,49,Utah,311.0
+3484,49,Utah,241.0
+3485,49,Utah,182.0
+3486,49,Utah,345.0
+3487,49,Utah,1665.0
+3488,49,Utah,241.0
+3489,49,Utah,1.0
+3490,49,Utah,51.0
+3491,49,Utah,202.0
+3492,49,Utah,34.0
+3493,49,Utah,313.0
+3494,49,Utah,184.0
+3495,49,Utah,27.0
+3496,49,Utah,21.0
+3497,49,Utah,104.0
+3498,49,Utah,906.0
+3499,49,Utah,367.0
+3500,49,Utah,170.0
+3501,49,Utah,291.0
+3502,49,Utah,851.0
+3503,49,Utah,16.0
+3504,49,Utah,1.0
+3505,49,Utah,0.0
+3506,49,Utah,33.0
+3507,49,Utah,24.0
+3508,49,Utah,103.0
+3509,49,Utah,71.0
+3510,49,Utah,17.0
+3511,49,Utah,230.0
+3512,49,Utah,112.0
+3513,49,Utah,12.0
+3514,49,Utah,1.0
+3515,49,Utah,73.0
+3516,49,Utah,2.0
+3517,49,Utah,0.0
+3518,49,Utah,1.0
+3519,49,Utah,0.0
+3520,49,Utah,0.0
+3521,49,Utah,1.0
+3522,49,Utah,0.0
+3523,49,Utah,32.0
+3524,49,Utah,0.0
+3525,49,Utah,18.0
+3526,49,Utah,0.0
+3527,49,Utah,4.0
+3528,49,Utah,34.0
+3529,49,Utah,6.0
+3530,49,Utah,2.0
+3531,49,Utah,10.0
+3532,49,Utah,41.0
+3533,49,Utah,54.0
+3534,49,Utah,31.0
+3535,49,Utah,0.0
+3536,49,Utah,0.0
+3537,49,Utah,0.0
+3538,49,Utah,5.0
+3539,49,Utah,0.0
+3540,49,Utah,65.0
+3541,49,Utah,0.0
+3542,49,Utah,1.0
+3543,49,Utah,0.0
+3544,49,Utah,34.0
+3545,49,Utah,31.0
+3546,49,Utah,0.0
+3547,49,Utah,5.0
+3548,49,Utah,2.0
+3549,49,Utah,0.0
+3550,49,Utah,0.0
+3551,49,Utah,15.0
+3552,49,Utah,0.0
+3553,49,Utah,0.0
+3554,49,Utah,0.0
+3555,49,Utah,5.0
+3556,49,Utah,0.0
+3557,49,Utah,0.0
+3558,49,Utah,0.0
+3559,49,Utah,3.0
+3560,49,Utah,273.0
+3561,49,Utah,0.0
+3562,49,Utah,1.0

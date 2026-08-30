@@ -328,8 +328,17 @@ def load_distance_skim_for_period_from_runs(scenario_id: str, period: str) -> np
 
 
 def load_distance_skim_for_period(scenario_id: str, period: str) -> np.ndarray:
+    """The snapshot only freezes Peak/Off-Peak arrays (as compressed .npz,
+    see report_snapshot.py) -- Daily is derived here instead, exactly
+    matching load_distance_skim_for_period_from_runs's own math:
+    mean(Peak, Off-Peak) == mean(AM,PM,MD,EV) since Peak/Off-Peak are each
+    already an unweighted mean of two of those four sub-periods. Freezing
+    a third ~35 MB array per scenario purely to duplicate this arithmetic
+    isn't worth the disk -- the whole point of retiring a run set."""
     if rd.is_retired(RUN_SET_ID):
-        return np.load(_snapshot_path(f"{scenario_id}_gp_dist_{period}.npy"))
+        if period == "Daily":
+            return (load_distance_skim_for_period(scenario_id, "Peak") + load_distance_skim_for_period(scenario_id, "Off-Peak")) / 2
+        return np.load(_snapshot_path(f"{scenario_id}_gp_dist_{period}.npz"))["arr"]
     return load_distance_skim_for_period_from_runs(scenario_id, period)
 
 
@@ -352,8 +361,14 @@ def load_hbw_trip_matrix_for_period_from_runs(scenario_id: str, period: str) -> 
 
 
 def load_hbw_trip_matrix_for_period(scenario_id: str, period: str) -> np.ndarray:
+    """Only Peak/Off-Peak arrays are frozen (see report_snapshot.py) --
+    Daily is derived as their sum here, matching
+    load_hbw_trip_matrix_for_period_from_runs's own Daily = Peak + Off-Peak
+    special case exactly (no separate all-day OMX exists there either)."""
     if rd.is_retired(RUN_SET_ID):
-        return np.load(_snapshot_path(f"{scenario_id}_hbw_matrix_{period}.npy"))
+        if period == "Daily":
+            return load_hbw_trip_matrix_for_period(scenario_id, "Peak") + load_hbw_trip_matrix_for_period(scenario_id, "Off-Peak")
+        return np.load(_snapshot_path(f"{scenario_id}_hbw_matrix_{period}.npz"))["arr"]
     return load_hbw_trip_matrix_for_period_from_runs(scenario_id, period)
 
 
