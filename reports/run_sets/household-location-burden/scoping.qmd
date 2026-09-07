@@ -67,7 +67,7 @@ Centers.
 
 | Decision | Options | Recommendation | If left unresolved |
 |---|---|---|---|
-| **N** — households per site | 500 or 1000 | 1000, for a more clearly measurable effect | Defaults to 500 (boss's first-mentioned number) |
+| **N** — households per site | 500 or 1000 | 1000, for a more clearly measurable effect | Defaults to 500 (the first-mentioned number in the original ask) |
 | **Congestion threshold** | V/C ≥ 0.8, ≥ 1.0, or report both | Report both — cheap, since both are already in the same summary CSV | Defaults to reporting both |
 | **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
 | **Site list** | See "Candidate sites" below — Murray control plus typical-vs-center pairs in Western Davis, SW Salt Lake, and western Utah counties (each with alternates) | Start with Murray + Syracuse pair (minimal proof-of-methodology build); once proven, expand to the full 7-site recommended list (Murray + 3 typical-vs-center pairs) | Build proceeds with the recommended picks below unless told otherwise |
