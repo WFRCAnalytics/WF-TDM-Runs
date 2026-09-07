@@ -1,20 +1,40 @@
 ---
 title: "Household Location Burden Index"
-subtitle: "Analysis proposal — for review, nothing run yet"
+subtitle: "Analysis proposal — for review, only a base scenario exists so far"
 format:
   html:
     toc: true
     toc-depth: 2
     embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
 ---
+
+```{python}
+#| label: setup
+import os
+import sys
+
+sys.path.insert(0, os.path.join('..', '..'))
+import report_data as rd
+import pandas as pd
+
+RUN_SET_ID = "household-location-burden"
+```
 
 **[← All run sets](../../index.qmd)**
 
 ::: {.callout-important}
-## Status: proposal only
-No scenarios have been built or run. This page lays out a methodology sketch,
-how it would map onto this framework, and the decisions needed before any
-model time is spent. Nothing below reflects real model output.
+## Status: proposal, one scenario registered
+Only a `base` scenario exists in this run set so far (the converged 2023
+network, reused from the `v10.0-beta.2` study — no households added). No
+Control or Test scenario has been built or run, so the Burden Index itself
+cannot be computed yet. This page lays out the methodology, real baseline
+numbers from that one scenario, and the decisions needed before Control/Test
+scenarios get built.
 :::
 
 ## The question
@@ -70,43 +90,61 @@ congestion threshold (V/C ≥ 0.8 and/or ≥ 1.0).
 **Burden Index** = ΔVHT(site) ÷ ΔVHT(Murray control) — giving the
 "1.6x" / "1.2x" style figure directly.
 
-## Baseline signal, from the existing 2023 run
+## Baseline signal, from the registered `base` scenario
 
-Real numbers, not simulated — computed directly from the segment-level
-network summary already curated for the `v10.0-beta.2-2023` base run
-(`runs/v10.0-beta.2/v10.0-beta.2-2023/outputs/_Summary_SEGID_filtered.csv`),
-which is a converged 2023 highway assignment already sitting in this repo.
-No new Cube Voyager run was needed to produce this table — it's a direct
-aggregation of that file's per-segment volume/capacity/VHT fields, the same
-V/C≥0.8 / V/C≥1.0 tiering `02_Summarize_HighwayNet.s` would apply, just done
-in Python against data that already exists.
+Real numbers, computed live from this run set's own committed data — not a
+pasted-in snapshot. `base` was registered via `import-manual-run`, reusing
+the already-converged `v10.0-beta.2-2023` raw network (same TDM ref) rather
+than spending Cube Voyager time re-running it from scratch; no households
+have been added to it. The table below aggregates its curated segment-level
+summary directly, applying the same V/C≥0.8 / V/C≥1.0 tiering
+`02_Summarize_HighwayNet.s` would.
 
-| Period | Total VHT | VHT at V/C ≥ 0.8 | VHT at V/C ≥ 1.0 |
-|---|---:|---:|---:|
-| AM | 225,355 | 66,522 (29.5%) | 17,225 (7.6%) |
-| MD | 405,888 | 43,243 (10.7%) | 908 (0.2%) |
-| PM | 338,003 | 146,780 (43.4%) | 51,135 (15.1%) |
-| EV | 312,990 | 115 (0.0%) | 0 (0.0%) |
+```{python}
+#| label: baseline-table
+#| output: asis
 
-Regionwide lane-miles in this network: **9,014** (segment-direction rows).
+runs = rd.latest_run_per_scenario(RUN_SET_ID)
+base_run = next(r for r in runs if r["scenario_id"] == "base")
+seg_rel_path = next(
+    p for p in rd.curated_output_paths(base_run) if p.endswith("_Summary_SEGID_filtered.csv")
+)
+seg_df = pd.read_csv(os.path.join(rd.REPO_ROOT, seg_rel_path), skipinitialspace=True)
+
+rows = []
+for period in ["AM", "MD", "PM", "EV"]:
+    vc = pd.to_numeric(seg_df[f"{period}_VC"], errors="coerce")
+    vht = pd.to_numeric(seg_df[f"{period}_VHT"], errors="coerce")
+    total = vht.sum()
+    c08 = vht[vc >= 0.8].sum()
+    c10 = vht[vc >= 1.0].sum()
+    rows.append(
+        f"| {period} | {total:,.0f} | {c08:,.0f} ({c08 / total:.1%}) | {c10:,.0f} ({c10 / total:.1%}) |"
+    )
+
+lane_miles = pd.to_numeric(seg_df["LANEMILES"], errors="coerce").sum()
+
+print("| Period | Total VHT | VHT at V/C ≥ 0.8 | VHT at V/C ≥ 1.0 |")
+print("|---|---:|---:|---:|")
+print("\n".join(rows))
+print(f"\nRegionwide lane-miles in this network: **{lane_miles:,.0f}** (segment-direction rows).")
+```
 
 This is *system scale*, not the site-comparison metric itself — it's today's
 regionwide congested-VHT backdrop that a 500–1000-household ΔVHT would be
-measured against. PM is the most congested period by a wide margin (43% of
-all PM vehicle-hours occur on links at V/C≥0.8); AM is a distant second; MD
-and EV carry almost no V/C≥1.0 congestion. This confirms AM+PM is the right
-peak-period scope for the Burden Index, and suggests PM alone may show the
-clearest site-to-site differences.
+measured against. PM is the most congested period by a wide margin; AM is a
+distant second; MD and EV carry almost no V/C≥1.0 congestion. This confirms
+AM+PM is the right peak-period scope for the Burden Index, and suggests PM
+alone may show the clearest site-to-site differences.
 
 ::: {.callout-note}
-## Reusing this run as the study's Base scenario
-This converged run is the natural `base` scenario for the actual study (see
-"How this fits the run-management framework" below) — its raw scenario
-folder can be seeded via `start_from_copy` and resumed at post-processing
-once the BCA-summary driver-script edit is in place, rather than re-running
-full feedback from scratch. It hasn't been registered under the
-`household-location-burden` run set yet; that's a quick step once the site
-list is ready.
+## What's still missing for Control/Test scenarios
+This `base` scenario only has the segment summary curated so far — the
+regionwide *congestion-tier* summary (`Summary_HighwayNet.csv`, needed for
+the Δ calculation once Control/Test scenarios exist) requires the
+custom driver-script edit described below, then re-registering `base` with
+that output included too. Adding Control/Test scenarios still needs real
+Cube Voyager runs — see "Decisions needed" and "Effort and runtime" below.
 :::
 
 ## What the model already gives us to work with
@@ -118,20 +156,21 @@ together for this purpose:
 |---|---|---|
 | Systemwide VMT/VHT by period, purpose, and congestion tier (V/C ≥ 0.8, ≥ 1.0) | `2_ModelScripts/7_PostProcessing/4_BCA_Summaries/02_Summarize_HighwayNet.s` | Exists, does exactly this — but its `READ FILE` line is **commented out** in the default driver script, so it doesn't currently run |
 | A way to add households to a specific TAZ without touching anything else | `WFRC_SEFile` / `MAG_SEFile` — plain TAZ-level `TOTHH`/`HHPOP` CSVs | Exists; this framework already has a proven pattern for generating per-scenario SE variants (used for the `non-motorized-2023` study) |
-| A converged 2023 base network to build on | The `v10.0-beta.2` run set's `Base_2023` scenario, already run in this repo | Exists and converged — reusable as the Base run rather than starting from scratch |
+| A converged 2023 base network to build on | The `v10.0-beta.2` run set's `Base_2023` scenario, already run in this repo | **Done** — registered as this run set's own `base` scenario via `import-manual-run`, no re-run needed |
 | Household composition (size, income, workers, autos) for the "typical household" | `1_HHDisag_AutoOwn/` (LifeCycle → HHDisaggregation → AutoOwnership) | The model derives this itself from `TOTHH`/`HHPOP`, using distributions that already respond to local accessibility — there's no separate lever to force a specific household profile |
 | Tighter convergence / warm-start across runs, to keep a 500–1000 HH signal from being swamped by run-to-run noise | — | **Not found.** No iteration-count, RMSE, or warm-start key is exposed in the Control Center. This needs an answer from whoever maintains the TDM's feedback-loop scripts before results can be trusted at this small a scale |
 
 ## How this fits the run-management framework
 
-Mechanically, this would be a new run set — `household-location-burden` —
+Mechanically, this is a new run set — `household-location-burden` —
 following the same pattern already proven by `non-motorized-2023` and
 `bring-work-trips-closer-to-home`:
 
-- **`base`** scenario — reuse the existing converged `v10.0-beta.2-2023`
-  run rather than re-running full feedback from scratch (seed its folder via
-  `start_from_copy`, then resume just the post-processing steps with
-  `start_at_label` to pick up the newly-enabled BCA summary output).
+- **`base`** scenario — **done**. Registered by reusing the existing
+  converged `v10.0-beta.2-2023` run rather than re-running full feedback
+  from scratch. To pick up the BCA congestion-tier summary once the driver
+  script is edited, its raw folder can be re-entered via `start_at_label`
+  (resuming just the post-processing steps) rather than a full re-run.
 - **`control-murray`** and one **`site-<name>`** scenario per candidate
   location — each pointed at its own generated SE file via
   `overrides.WFRC_SEFile`, the same relative-path mechanism

@@ -1,0 +1,11 @@
+scenario_id: base
+description: >
+  Converged 2023 base network -- no households added. Reused from the
+  v10.0-beta.2-2023 run (UDOT select-link study, same TDM ref) rather than
+  re-run from scratch; registered here via import-manual-run so this run
+  set has its own record of it.
+use_baseline_scenario_name: true
+
+baseline_control_center: "_ControlCenter - Base_2023.block"
+
+manual_scenario_folder: "Scenarios/v10.0-beta.2/v10.0-beta.2-2023"
