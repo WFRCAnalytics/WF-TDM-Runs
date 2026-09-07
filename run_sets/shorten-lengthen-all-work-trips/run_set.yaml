@@ -20,6 +20,7 @@ description: >
 
 tdm_ref: "v10.0.0-beta.1-closer-to-home"
 baseline_control_center: "_ControlCenter - OY_2027.block"
+report_snapshot_script: report_snapshot.py
 
 # All four non-baseline scenarios (ShiftM10/ShiftM05/ShiftP05/ShiftP10) share
 # this run set's one tdm_ref above, so `run-set` checks it out once and runs

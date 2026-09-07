@@ -261,7 +261,9 @@
         "sha256": "49186b74d3101860b4787b77ab065f6fc1d65c101425907d20ca8e93c375dc58",
         "repo_path": "runs/shorten-lengthen-all-work-trips/ShiftP10/outputs/Skm_PM.omx"
       }
-    ]
+    ],
+    "retired": true,
+    "retired_at": "2026-08-30T15:11:26.827323+00:00"
   },
   "error": null,
   "seeded_from": {
