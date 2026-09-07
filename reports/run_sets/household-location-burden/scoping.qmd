@@ -66,19 +66,19 @@ site's TAZ). Same household count everywhere, so differences reflect
 
 ```{mermaid}
 flowchart LR
-    SE[Base SE data] --> Base[Base run<br/>no HH added]
-    SE -->|+N HH at Murray| Control[Control run]
-    SE -->|+N HH at Site A| SiteA[Test: Site A]
-    SE -->|+N HH at Site B| SiteB[Test: Site B]
-    SE -->|+N HH at Site …| SiteN[Test: Site …]
+    SE["Base SE data"] --> Base["Base run<br/>no HH added"]
+    SE -->|"+N HH at Murray"| Control["Control run"]
+    SE -->|"+N HH at Site A"| SiteA["Test: Site A"]
+    SE -->|"+N HH at Site B"| SiteB["Test: Site B"]
+    SE -->|"+N HH at Site ..."| SiteN["Test: Site ..."]
 
-    Base --> Metric[ΔVHT = Test − Base<br/>peak periods, congested V/C tiers]
+    Base --> Metric["Delta VHT = Test minus Base<br/>peak periods, congested V/C tiers"]
     Control --> Metric
     SiteA --> Metric
     SiteB --> Metric
     SiteN --> Metric
 
-    Metric --> Index["Burden Index(site) =<br/>ΔVHT(site) / ΔVHT(Murray control)"]
+    Metric --> Index["Burden Index(site) =<br/>Delta VHT(site) / Delta VHT(Murray control)"]
 ```
 
 **Metric:** systemwide congested vehicle-hours-traveled (ΔVHT), not just the
