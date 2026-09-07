@@ -1,6 +1,6 @@
 ---
 title: "Household Location Burden Index"
-subtitle: "Analysis proposal — for review, only a base scenario exists so far"
+subtitle: "Scoping document — for review, only a base scenario exists so far"
 format:
   html:
     toc: true
@@ -28,13 +28,13 @@ RUN_SET_ID = "household-location-burden"
 **[← All run sets](../../index.qmd)**
 
 ::: {.callout-important}
-## Status: proposal, one scenario registered
+## Status: scoping, one scenario registered
 Only a `base` scenario exists in this run set so far (the converged 2023
 network, reused from the `v10.0-beta.2` study — no households added). No
 Control or Test scenario has been built or run, so the Burden Index itself
 cannot be computed yet. This page lays out the methodology, real baseline
-numbers from that one scenario, and the decisions needed before Control/Test
-scenarios get built.
+numbers from that one scenario, candidate sites, and the decisions needed
+before Control/Test scenarios get built.
 :::
 
 ## The question
@@ -147,6 +147,67 @@ that output included too. Adding Control/Test scenarios still needs real
 Cube Voyager runs — see "Decisions needed" and "Effort and runtime" below.
 :::
 
+## Candidate sites
+
+::: {.callout-note}
+Candidates, not yet confirmed. Data-driven, but the final pick is a
+decision for the study lead — see "Decisions needed" below.
+:::
+
+Method: spatially joined the TDM's own TAZ shapefile
+(`tdm/1_Inputs/1_TAZ/WFv1000_TAZ.shp`) against WFRC's **Wasatch Choice 2050
+Centers (Vision Map)** feature service — the actual regional-centers layer
+referenced in the original ask, queried live from
+`services1.arcgis.com/taguadKoI1XFwivx/.../Wasatch_Choice_2050_Centers_(Vision_Map)/FeatureServer`
+— then cross-referenced household counts from `SE_2023.csv`. Household/city
+figures below are pulled live from those same local files on every render.
+
+```{python}
+#| label: candidate-sites-table
+#| output: asis
+
+import geopandas as gpd
+
+taz_path = os.path.join(rd.REPO_ROOT, "tdm", "1_Inputs", "1_TAZ", "WFv1000_TAZ.shp")
+taz_gdf = gpd.read_file(taz_path)
+taz_gdf["TAZID"] = taz_gdf["TAZID"].astype(int)
+
+se_path = os.path.join(rd.REPO_ROOT, "tdm", "1_Inputs", "2_SEData", "WFRC", "SE_2023.csv")
+se_df = pd.read_csv(se_path)
+se_df = se_df.rename(columns={se_df.columns[0]: "TAZID"})
+taz_gdf = taz_gdf.merge(se_df[["TAZID", "TOTHH", "HHPOP"]], on="TAZID", how="left")
+
+candidates = [
+    ("Murray control", 1619, "Murray", "Populous, ordinary residential TAZ -- geographic-center reference"),
+    ("Western Davis -- typical (recommended)", 684, "Syracuse", "Large low-density subdivision, no designated center nearby"),
+    ("Western Davis -- typical (alternate)", 602, "West Point", "Further west by X-coordinate; smaller sample"),
+    ("Davis CTC -- Syracuse City Center (recommended)", 674, "Syracuse", "Same city as the recommended typical site -- isolates center-vs-not"),
+    ("Davis CTC -- Clinton Town Center (alternate)", 610, "Clinton", ""),
+    ("Davis CTC -- West Point City Center (alternate)", 600, "West Point", ""),
+    ("Davis CTC -- Station Park, Farmington (alternate, Urban Center)", 780, "Farmington", "Larger/more significant center, for a bigger contrast"),
+]
+taz_ids = [c[1] for c in candidates]
+label_by_id = {c[1]: c[0] for c in candidates}
+note_by_id = {c[1]: c[3] for c in candidates}
+
+sub = taz_gdf[taz_gdf["TAZID"].isin(taz_ids)][["TAZID", "CITY_NAME", "TOTHH", "HHPOP"]].copy()
+sub["label"] = sub["TAZID"].map(label_by_id)
+sub["note"] = sub["TAZID"].map(note_by_id)
+sub = sub.set_index("TAZID").loc[taz_ids].reset_index()
+
+print("| Candidate | TAZID | City | HH | Pop | Note |")
+print("|---|---:|---|---:|---:|---|")
+for _, r in sub.iterrows():
+    print(f"| {r['label']} | {r['TAZID']} | {r['CITY_NAME']} | {r['TOTHH']:,.0f} | {r['HHPOP']:,.0f} | {r['note']} |")
+```
+
+**Recommendation:** pair the Syracuse typical site (684) against the Syracuse
+City Center (674) — same city, so the comparison isolates "designated center
+vs. not" rather than mixing in city-level differences, which is exactly the
+contrast the original ask describes. Combined with the Murray control
+(1619), that's the minimal 3-scenario build (plus `base`) needed to prove the
+methodology end-to-end before expanding to a fuller site list.
+
 ## What the model already gives us to work with
 
 This isn't hypothetical — the pieces exist in the TDM today, just not wired
@@ -197,7 +258,7 @@ this repo.
 | **N** — households per site | 500 or 1000 | 1000, for a stronger signal against regional noise (see convergence risk below) | Defaults to 500 (boss's first-mentioned number) |
 | **Congestion threshold** | V/C ≥ 0.8, ≥ 1.0, or report both | Report both — cheap, since both are already in the same summary CSV | Defaults to reporting both |
 | **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
-| **Site list** | Western Davis County, Davis County's designated City/Town Centers (Wasatch Choice RCP centers), plus other target geographies | Needs a real TAZ list. No City/Town Centers layer was found in this repo's TDM inputs — likely needs to come from WFRC's regional centers GIS layer | **Blocks starting the build** — this is the one open item that isn't just a config default |
+| **Site list** | See "Candidate sites" above — Murray control (1619), Western Davis typical (684 or 602), Davis CTC (674, 610, 600, or 780) | Murray 1619 + Syracuse typical 684 + Syracuse City Center 674, for the minimal 3-scenario proof-of-methodology build | Build proceeds with the recommended picks above unless told otherwise |
 | **Convergence / noise mitigation** | (a) increase feedback iterations for these runs specifically, (b) run each site multiple times and average, (c) accept single-run noise and caveat results | Needs input from whoever maintains the TDM's feedback-loop scripts — no Control Center lever was found for this | Results could be dominated by run-to-run noise rather than the effect being measured |
 
 ## Effort and runtime

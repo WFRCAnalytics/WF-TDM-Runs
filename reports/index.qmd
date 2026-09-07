@@ -22,17 +22,17 @@ nm2023_scenario_count = rd.scenario_count("non-motorized-2023")
 Generated from committed run metadata under `runs/`, newest run set first.
 A new run set appears here automatically once it has at least one committed run.
 
-## Proposals
+## Scoping documents
 
 *Not yet built or run — for review.*
 
-### [Household Location Burden Index](run_sets/household-location-burden/proposal.html)
+### [Household Location Burden Index](run_sets/household-location-burden/scoping.html)
 
-Analysis sketch: comparing the systemwide congested-VHT impact of adding the
-same number of households at different locations around the region, relative
-to a Murray (geographic-center) reference. Lays out the proposed methodology,
-what the model already supports, and the decisions (site list, convergence
-approach) needed before any model time is spent.
+Comparing the systemwide congested-VHT impact of adding the same number of
+households at different locations around the region, relative to a Murray
+(geographic-center) reference. Lays out the proposed methodology, candidate
+sites, what the model already supports, and the decisions (convergence
+approach, final site pick) needed before any model time is spent.
 
 ```{python}
 #| echo: false
