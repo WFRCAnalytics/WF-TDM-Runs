@@ -70,6 +70,45 @@ congestion threshold (V/C ≥ 0.8 and/or ≥ 1.0).
 **Burden Index** = ΔVHT(site) ÷ ΔVHT(Murray control) — giving the
 "1.6x" / "1.2x" style figure directly.
 
+## Baseline signal, from the existing 2023 run
+
+Real numbers, not simulated — computed directly from the segment-level
+network summary already curated for the `v10.0-beta.2-2023` base run
+(`runs/v10.0-beta.2/v10.0-beta.2-2023/outputs/_Summary_SEGID_filtered.csv`),
+which is a converged 2023 highway assignment already sitting in this repo.
+No new Cube Voyager run was needed to produce this table — it's a direct
+aggregation of that file's per-segment volume/capacity/VHT fields, the same
+V/C≥0.8 / V/C≥1.0 tiering `02_Summarize_HighwayNet.s` would apply, just done
+in Python against data that already exists.
+
+| Period | Total VHT | VHT at V/C ≥ 0.8 | VHT at V/C ≥ 1.0 |
+|---|---:|---:|---:|
+| AM | 225,355 | 66,522 (29.5%) | 17,225 (7.6%) |
+| MD | 405,888 | 43,243 (10.7%) | 908 (0.2%) |
+| PM | 338,003 | 146,780 (43.4%) | 51,135 (15.1%) |
+| EV | 312,990 | 115 (0.0%) | 0 (0.0%) |
+
+Regionwide lane-miles in this network: **9,014** (segment-direction rows).
+
+This is *system scale*, not the site-comparison metric itself — it's today's
+regionwide congested-VHT backdrop that a 500–1000-household ΔVHT would be
+measured against. PM is the most congested period by a wide margin (43% of
+all PM vehicle-hours occur on links at V/C≥0.8); AM is a distant second; MD
+and EV carry almost no V/C≥1.0 congestion. This confirms AM+PM is the right
+peak-period scope for the Burden Index, and suggests PM alone may show the
+clearest site-to-site differences.
+
+::: {.callout-note}
+## Reusing this run as the study's Base scenario
+This converged run is the natural `base` scenario for the actual study (see
+"How this fits the run-management framework" below) — its raw scenario
+folder can be seeded via `start_from_copy` and resumed at post-processing
+once the BCA-summary driver-script edit is in place, rather than re-running
+full feedback from scratch. It hasn't been registered under the
+`household-location-burden` run set yet; that's a quick step once the site
+list is ready.
+:::
+
 ## What the model already gives us to work with
 
 This isn't hypothetical — the pieces exist in the TDM today, just not wired
