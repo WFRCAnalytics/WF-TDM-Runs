@@ -70,7 +70,7 @@ Centers.
 | **N** — households per site | 500 or 1000 | 1000, for a more clearly measurable effect | Defaults to 500 (boss's first-mentioned number) |
 | **Congestion threshold** | V/C ≥ 0.8, ≥ 1.0, or report both | Report both — cheap, since both are already in the same summary CSV | Defaults to reporting both |
 | **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
-| **Site list** | See "Candidate sites" below — Murray control (1619), Western Davis typical (684 or 602), Davis CTC (674, 610, 600, or 780) | Murray 1619 + Syracuse typical 684 + Syracuse City Center 674, for the minimal 3-scenario proof-of-methodology build | Build proceeds with the recommended picks below unless told otherwise |
+| **Site list** | See "Candidate sites" below — Murray control plus typical-vs-center pairs in Western Davis, SW Salt Lake, and western Utah counties (each with alternates) | Start with Murray + Syracuse pair (minimal proof-of-methodology build); once proven, expand to the full 7-site recommended list (Murray + 3 typical-vs-center pairs) | Build proceeds with the recommended picks below unless told otherwise |
 | **Network vintage(s)** | 2023 (today) only, or 2023 + 2055 (long-range Needs) | Both — burden today, plus whether the center-vs-sprawl gap holds, widens, or narrows as the region grows to its 2055 forecast. More relevant to a growth-siting decision than a single-year snapshot | Proposed as part of the initial build, not a later add-on |
 
 : {tbl-colwidths="[20,30,30,20]" .fixed-table}
@@ -210,6 +210,7 @@ figures below are pulled live from those same local files on every render.
 #| fig-align: center
 
 import json
+import math
 import geopandas as gpd
 import plotly.graph_objects as go
 
@@ -224,14 +225,25 @@ taz_gdf = taz_gdf.merge(se_df[["TAZID", "TOTHH", "HHPOP"]], on="TAZID", how="lef
 
 # category / recommended appended as elements 4/5 -- element indices 0-3
 # (label, TAZID, city, note) are unchanged from the table cell below.
+# category is just "typical (sprawl)" vs. "center" vs. the Murray control --
+# which region a site is in is carried by its label/city instead of a
+# separate color, so the map stays readable as more regions get added.
 candidates = [
     ("Murray control", 1619, "Murray", "Populous, ordinary residential TAZ -- geographic-center reference", "Murray control", True),
-    ("Western Davis -- typical (recommended)", 684, "Syracuse", "Large low-density subdivision, no designated center nearby", "Western Davis (typical)", True),
-    ("Western Davis -- typical (alternate)", 602, "West Point", "Further west by X-coordinate; smaller sample", "Western Davis (typical)", False),
-    ("Davis CTC -- Syracuse City Center (recommended)", 674, "Syracuse", "Same city as the recommended typical site -- isolates center-vs-not", "Davis City/Town Center", True),
-    ("Davis CTC -- Clinton Town Center (alternate)", 610, "Clinton", "", "Davis City/Town Center", False),
-    ("Davis CTC -- West Point City Center (alternate)", 600, "West Point", "", "Davis City/Town Center", False),
-    ("Davis CTC -- Station Park, Farmington (alternate, Urban Center)", 780, "Farmington", "Larger/more significant center, for a bigger contrast", "Davis City/Town Center", False),
+    ("Western Davis -- typical (recommended)", 684, "Syracuse", "Large low-density subdivision, no designated center nearby", "Typical (sprawl)", True),
+    ("Western Davis -- typical (alternate)", 602, "West Point", "Further west by X-coordinate; smaller sample", "Typical (sprawl)", False),
+    ("Davis CTC -- Syracuse City Center (recommended)", 674, "Syracuse", "Same city as the recommended typical site -- isolates center-vs-not", "City/Town Center", True),
+    ("Davis CTC -- Clinton Town Center (alternate)", 610, "Clinton", "", "City/Town Center", False),
+    ("Davis CTC -- West Point City Center (alternate)", 600, "West Point", "", "City/Town Center", False),
+    ("Davis CTC -- Station Park, Farmington (alternate, Urban Center)", 780, "Farmington", "Larger/more significant center, for a bigger contrast", "City/Town Center", False),
+    ("SW Salt Lake County -- typical (recommended)", 2048, "Herriman", "Largest typical TAZ in the county's southwest corner", "Typical (sprawl)", True),
+    ("SW Salt Lake County -- typical (alternate)", 2066, "Riverton", "", "Typical (sprawl)", False),
+    ("SW Salt Lake CTC -- Herriman Town Center (recommended)", 2039, "Herriman", "Same city as the recommended typical site -- isolates center-vs-not", "City/Town Center", True),
+    ("SW Salt Lake CTC -- Downtown Riverton (alternate)", 2080, "Riverton", "", "City/Town Center", False),
+    ("Western Utah County -- typical (recommended)", 2467, "Eagle Mountain", "Largest typical TAZ among the newly added target areas", "Typical (sprawl)", True),
+    ("Western Utah County -- typical (alternate)", 2519, "Saratoga Springs", "", "Typical (sprawl)", False),
+    ("Western Utah CTC -- Eagle Mountain City Center (recommended)", 2313, "Eagle Mountain", "Same city as the recommended typical site -- isolates center-vs-not", "City/Town Center", True),
+    ("Western Utah CTC -- Crossroads, Saratoga Springs (alternate)", 2509, "Saratoga Springs", "", "City/Town Center", False),
 ]
 taz_ids = [c[1] for c in candidates]
 label_by_id = {c[1]: c[0] for c in candidates}
@@ -244,8 +256,8 @@ recommended_by_id = {c[1]: c[5] for c in candidates}
 # these three passed all checks including CVD separation).
 CATEGORY_COLORS = {
     "Murray control": "#2a78d6",
-    "Western Davis (typical)": "#eb6834",
-    "Davis City/Town Center": "#1baf7a",
+    "Typical (sprawl)": "#eb6834",
+    "City/Town Center": "#1baf7a",
 }
 
 map_gdf = taz_gdf[taz_gdf["TAZID"].isin(taz_ids)].copy()
@@ -284,13 +296,34 @@ for cat, color in CATEGORY_COLORS.items():
         hoverinfo="skip",
     ))
 
+# Fit zoom/center to whatever candidates exist rather than a fixed value --
+# the standard "zoom to fit bounds" formula, so the map keeps framing
+# correctly as sites get added or removed. Adapted from the well-known
+# Google Maps bounds-to-zoom algorithm.
+MAP_WIDTH, MAP_HEIGHT = 900, 550
+
+
+def _lat_rad(lat):
+    s = math.sin(lat * math.pi / 180)
+    return math.log((1 + s) / (1 - s)) / 2
+
+
+lat_min, lat_max = map_gdf["cy"].min(), map_gdf["cy"].max()
+lon_min, lon_max = map_gdf["cx"].min(), map_gdf["cx"].max()
+lat_fraction = (_lat_rad(lat_max) - _lat_rad(lat_min)) / math.pi
+lon_fraction = (lon_max - lon_min) / 360
+fit_zoom = min(
+    math.log2(MAP_HEIGHT / 256 / max(lat_fraction, 1e-9)),
+    math.log2(MAP_WIDTH / 256 / max(lon_fraction, 1e-9)),
+) - math.log2(1.15)  # 15% padding so edge markers/labels aren't clipped
+
 fig.update_layout(
     map={
         "style": "carto-positron",
-        "zoom": 8.6,
-        "center": {"lat": map_gdf["cy"].mean(), "lon": map_gdf["cx"].mean()},
+        "zoom": fit_zoom,
+        "center": {"lat": (lat_min + lat_max) / 2, "lon": (lon_min + lon_max) / 2},
     },
-    height=550,
+    height=MAP_HEIGHT,
     margin={"l": 0, "r": 0, "t": 10, "b": 0},
     legend={"orientation": "h", "yanchor": "bottom", "y": 1.0, "xanchor": "left", "x": 0},
 )
@@ -312,12 +345,20 @@ for _, r in sub.iterrows():
     print(f"| {r['label']} | {r['TAZID']} | {r['CITY_NAME']} | {r['TOTHH']:,.0f} | {r['HHPOP']:,.0f} | {r['note']} |")
 ```
 
-**Recommendation:** pair the Syracuse typical site (684) against the Syracuse
-City Center (674) — same city, so the comparison isolates "designated center
-vs. not" rather than mixing in city-level differences, which is exactly the
-contrast the original ask describes. Combined with the Murray control
-(1619), that's the minimal 3-scenario build (plus `base`) needed to prove the
-methodology end-to-end before expanding to a fuller site list.
+**Recommendation:** start with the Syracuse typical site (684) paired against
+the Syracuse City Center (674) — same city, so the comparison isolates
+"designated center vs. not" rather than mixing in city-level differences,
+which is exactly the contrast the original ask describes. Combined with the
+Murray control (1619), that's the minimal 3-scenario build (plus `base`)
+needed to prove the methodology end-to-end.
+
+Once that's proven, the recommended **fuller site list** repeats the same
+same-city typical-vs-center pairing in two more fast-growing, peripheral
+parts of the region (household counts in the table above): Herriman (2048)
+vs. Herriman Town Center (2039) for southwest Salt Lake County, and Eagle
+Mountain (2467) vs. Eagle Mountain City Center (2313) for western Utah
+County. That's 3 typical-vs-center pairs plus Murray — 7 sites total, each
+run against both network vintages.
 
 ## What the model already gives us to work with
 
@@ -373,8 +414,10 @@ logsums + four-period assignment) — households are added before
 disaggregation, so nothing upstream can be skipped or reused between sites.
 Only the two Base runs benefit from reuse (both already run, neither needs
 re-running). Running both the 2023 and 2055 vintages roughly doubles
-the Test/Control run count for the same site list: N sites × 2 years + 2
-control runs, against two free Base runs. Runtime scales linearly with
+the Test/Control run count for the same site list. For the recommended
+7-site list (Murray control + 3 typical-vs-center pairs), that's 1 control
+run + 6 test runs, × 2 years = **14 Test/Control runs** against two free
+Base runs — before counting any alternates. Runtime scales linearly with
 number of sites *and* years; `max_parallel_runs` (already supported, not yet
 exercised on a real multi-scenario batch) could help once Cube Voyager
 licensing/hardware limits on this workstation are confirmed.
