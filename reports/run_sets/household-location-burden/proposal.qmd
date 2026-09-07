@@ -1,0 +1,150 @@
+---
+title: "Household Location Burden Index"
+subtitle: "Analysis proposal — for review, nothing run yet"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+---
+
+**[← All run sets](../../index.qmd)**
+
+::: {.callout-important}
+## Status: proposal only
+No scenarios have been built or run. This page lays out a methodology sketch,
+how it would map onto this framework, and the decisions needed before any
+model time is spent. Nothing below reflects real model output.
+:::
+
+## The question
+
+> Maybe a combination approach could be useful? What if we calculated and
+> compared the additional Congested Roadway Capacity Demand (physical space
+> e.g. lane-mile minutes) from an extra 500 or 1000 typical households added
+> to specific locations around the region? We would use the TDM to estimate
+> the amount of peak-period roadway capacity added (which would include the
+> space-time footprint of the new households and their impact on delay for
+> others), based on the roadway travel that they would add to the system
+> (allowing for different modes to be chosen, and travel across the day for
+> various activities).
+>
+> This would be a measure of the burden placed on the system to access their
+> daily needs and opportunities, and it could be expressed as a percentage of
+> the burden placed by adding the extra HH to the geographic center of the
+> region which is in Murray. *"A household placed in Western Davis County
+> puts 1.6x more burden on the system"* — but if it's in one of Davis
+> County's identified City and Town Centers, it's only 1.2x as much burden.
+
+## Proposed methodology
+
+**Design:** one converged **Base** run, one **Control** run (Base + N
+households added at a Murray TAZ — the geographic-center reference), and one
+**Test** run per candidate site (Base + the same N households added at that
+site's TAZ). Same household count everywhere, so differences reflect
+*location*, not household mix.
+
+```{mermaid}
+flowchart LR
+    SE[Base SE data] --> Base[Base run<br/>no HH added]
+    SE -->|+N HH at Murray| Control[Control run]
+    SE -->|+N HH at Site A| SiteA[Test: Site A]
+    SE -->|+N HH at Site B| SiteB[Test: Site B]
+    SE -->|+N HH at Site …| SiteN[Test: Site …]
+
+    Base --> Metric[ΔVHT = Test − Base<br/>peak periods, congested V/C tiers]
+    Control --> Metric
+    SiteA --> Metric
+    SiteB --> Metric
+    SiteN --> Metric
+
+    Metric --> Index["Burden Index(site) =<br/>ΔVHT(site) / ΔVHT(Murray control)"]
+```
+
+**Metric:** systemwide congested vehicle-hours-traveled (ΔVHT), not just the
+new households' own trips — the whole point is capturing the delay imposed
+on *everyone else*, which only shows up as a regionwide before/after
+difference. Peak periods (AM, PM), filtered to links at or above a
+congestion threshold (V/C ≥ 0.8 and/or ≥ 1.0).
+
+**Burden Index** = ΔVHT(site) ÷ ΔVHT(Murray control) — giving the
+"1.6x" / "1.2x" style figure directly.
+
+## What the model already gives us to work with
+
+This isn't hypothetical — the pieces exist in the TDM today, just not wired
+together for this purpose:
+
+| Need | Existing TDM piece | Status |
+|---|---|---|
+| Systemwide VMT/VHT by period, purpose, and congestion tier (V/C ≥ 0.8, ≥ 1.0) | `2_ModelScripts/7_PostProcessing/4_BCA_Summaries/02_Summarize_HighwayNet.s` | Exists, does exactly this — but its `READ FILE` line is **commented out** in the default driver script, so it doesn't currently run |
+| A way to add households to a specific TAZ without touching anything else | `WFRC_SEFile` / `MAG_SEFile` — plain TAZ-level `TOTHH`/`HHPOP` CSVs | Exists; this framework already has a proven pattern for generating per-scenario SE variants (used for the `non-motorized-2023` study) |
+| A converged 2023 base network to build on | The `v10.0-beta.2` run set's `Base_2023` scenario, already run in this repo | Exists and converged — reusable as the Base run rather than starting from scratch |
+| Household composition (size, income, workers, autos) for the "typical household" | `1_HHDisag_AutoOwn/` (LifeCycle → HHDisaggregation → AutoOwnership) | The model derives this itself from `TOTHH`/`HHPOP`, using distributions that already respond to local accessibility — there's no separate lever to force a specific household profile |
+| Tighter convergence / warm-start across runs, to keep a 500–1000 HH signal from being swamped by run-to-run noise | — | **Not found.** No iteration-count, RMSE, or warm-start key is exposed in the Control Center. This needs an answer from whoever maintains the TDM's feedback-loop scripts before results can be trusted at this small a scale |
+
+## How this fits the run-management framework
+
+Mechanically, this would be a new run set — `household-location-burden` —
+following the same pattern already proven by `non-motorized-2023` and
+`bring-work-trips-closer-to-home`:
+
+- **`base`** scenario — reuse the existing converged `v10.0-beta.2-2023`
+  run rather than re-running full feedback from scratch (seed its folder via
+  `start_from_copy`, then resume just the post-processing steps with
+  `start_at_label` to pick up the newly-enabled BCA summary output).
+- **`control-murray`** and one **`site-<name>`** scenario per candidate
+  location — each pointed at its own generated SE file via
+  `overrides.WFRC_SEFile`, the same relative-path mechanism
+  `non-motorized-2023` uses.
+- A shared **custom driver script** (this run set's own copy of
+  `__HailMary_1Subfolder.s`, with the BCA summary line turned on) — the
+  framework's existing `driver_script` mechanism, no core code changes
+  needed.
+- **Outputs curated**: just the small `Summary_HighwayNet.csv` per
+  scenario — well under the size ceiling, no raw network/matrix files
+  committed.
+- A small Burden Index calculation module, reported here once real runs
+  exist — same shape as `non-motorized-2023`'s `report_loader.py`.
+
+No changes to the TDM codebase, the orchestrator's core logic, or how Cube
+Voyager runs are required — this is entirely new configuration plus one
+custom driver script, the same category of work as every other run set in
+this repo.
+
+## Decisions needed before building this
+
+| Decision | Options | Recommendation | If left unresolved |
+|---|---|---|---|
+| **N** — households per site | 500 or 1000 | 1000, for a stronger signal against regional noise (see convergence risk below) | Defaults to 500 (boss's first-mentioned number) |
+| **Congestion threshold** | V/C ≥ 0.8, ≥ 1.0, or report both | Report both — cheap, since both are already in the same summary CSV | Defaults to reporting both |
+| **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
+| **Site list** | Western Davis County, Davis County's designated City/Town Centers (Wasatch Choice RCP centers), plus other target geographies | Needs a real TAZ list. No City/Town Centers layer was found in this repo's TDM inputs — likely needs to come from WFRC's regional centers GIS layer | **Blocks starting the build** — this is the one open item that isn't just a config default |
+| **Convergence / noise mitigation** | (a) increase feedback iterations for these runs specifically, (b) run each site multiple times and average, (c) accept single-run noise and caveat results | Needs input from whoever maintains the TDM's feedback-loop scripts — no Control Center lever was found for this | Results could be dominated by run-to-run noise rather than the effect being measured |
+
+## Effort and runtime
+
+Each Test/Control scenario needs a **full feedback run** (mode choice
+logsums + four-period assignment) — households are added before
+disaggregation, so nothing upstream can be skipped or reused between sites.
+Only the Base run benefits from reuse. Runtime scales linearly with number
+of sites; `max_parallel_runs` (already supported, not yet exercised on a
+real multi-scenario batch) could help once Cube Voyager licensing/hardware
+limits on this workstation are confirmed.
+
+Suggested build order:
+1. Confirm the Base-run reuse strategy and the driver-script edit; validate
+   `Summary_HighwayNet.csv` comes out as expected on the existing Base run alone.
+2. Build SE generation + one real site + the Murray control; validate the
+   ΔVHT / Burden Index math end-to-end on real output before committing to
+   the full site list.
+3. Once proven, add the remaining sites from the confirmed list.
+
+## Bottom line
+
+The metric, the SE-modification mechanism, and the run-set framework are all
+already proven in this repo for other studies — this is a matter of
+configuration and one small driver-script change, not new engineering. What's
+missing before this can start is **the site list** and **a convergence
+strategy**; both need a decision from outside this repo before any model time
+is spent.
