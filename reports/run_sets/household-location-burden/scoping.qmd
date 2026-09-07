@@ -27,16 +27,6 @@ RUN_SET_ID = "household-location-burden"
 
 **[← All run sets](../../index.qmd)**
 
-::: {.callout-important}
-## Status: scoping, one scenario registered
-Only a `base` scenario exists in this run set so far (the converged 2023
-network, reused from the `v10.0-beta.2` study — no households added). No
-Control or Test scenario has been built or run, so the Burden Index itself
-cannot be computed yet. This page lays out the methodology, real baseline
-numbers from that one scenario, candidate sites, and the decisions needed
-before Control/Test scenarios get built.
-:::
-
 ## The question
 
 > Maybe a combination approach could be useful? What if we calculated and
