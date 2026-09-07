@@ -209,7 +209,8 @@ together for this purpose:
 | A way to add households to a specific TAZ without touching anything else | `WFRC_SEFile` / `MAG_SEFile` — plain TAZ-level `TOTHH`/`HHPOP` CSVs | Exists; this framework already has a proven pattern for generating per-scenario SE variants (used for the `non-motorized-2023` study) |
 | A converged 2023 base network to build on | The `v10.0-beta.2` run set's `Base_2023` scenario, already run in this repo | **Done** — registered as this run set's own `base` scenario via `import-manual-run`, no re-run needed |
 | Household composition (size, income, workers, autos) for the "typical household" | `1_HHDisag_AutoOwn/` (LifeCycle → HHDisaggregation → AutoOwnership) | The model derives this itself from `TOTHH`/`HHPOP`, using distributions that already respond to local accessibility — there's no separate lever to force a specific household profile |
-| Tighter convergence / warm-start across runs, to keep a 500–1000 HH signal from being swamped by run-to-run noise | — | **Not found.** No iteration-count, RMSE, or warm-start key is exposed in the Control Center. This needs an answer from whoever maintains the TDM's feedback-loop scripts before results can be trusted at this small a scale |
+
+: {tbl-colwidths="[35,30,35]"}
 
 ## How this fits the run-management framework
 
@@ -245,11 +246,12 @@ this repo.
 
 | Decision | Options | Recommendation | If left unresolved |
 |---|---|---|---|
-| **N** — households per site | 500 or 1000 | 1000, for a stronger signal against regional noise (see convergence risk below) | Defaults to 500 (boss's first-mentioned number) |
+| **N** — households per site | 500 or 1000 | 1000, for a more clearly measurable effect | Defaults to 500 (boss's first-mentioned number) |
 | **Congestion threshold** | V/C ≥ 0.8, ≥ 1.0, or report both | Report both — cheap, since both are already in the same summary CSV | Defaults to reporting both |
 | **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
 | **Site list** | See "Candidate sites" above — Murray control (1619), Western Davis typical (684 or 602), Davis CTC (674, 610, 600, or 780) | Murray 1619 + Syracuse typical 684 + Syracuse City Center 674, for the minimal 3-scenario proof-of-methodology build | Build proceeds with the recommended picks above unless told otherwise |
-| **Convergence / noise mitigation** | (a) increase feedback iterations for these runs specifically, (b) run each site multiple times and average, (c) accept single-run noise and caveat results | Needs input from whoever maintains the TDM's feedback-loop scripts — no Control Center lever was found for this | Results could be dominated by run-to-run noise rather than the effect being measured |
+
+: {tbl-colwidths="[20,30,30,20]"}
 
 ## Effort and runtime
 
@@ -273,7 +275,7 @@ Suggested build order:
 
 The metric, the SE-modification mechanism, and the run-set framework are all
 already proven in this repo for other studies — this is a matter of
-configuration and one small driver-script change, not new engineering. What's
-missing before this can start is **the site list** and **a convergence
-strategy**; both need a decision from outside this repo before any model time
-is spent.
+configuration and one small driver-script change, not new engineering. Every
+remaining decision above (N, congestion threshold, peak window, final site
+picks) has a sensible default, so the build can proceed on the recommended
+picks unless told otherwise.
