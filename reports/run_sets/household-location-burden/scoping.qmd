@@ -13,6 +13,26 @@ execute:
 jupyter: july2025
 ---
 
+<style>
+/* tbl-colwidths alone doesn't stop a long unbroken inline-code string (a
+   file path with no spaces) from forcing its column wider than its share --
+   table-layout: auto sizes columns to fit unbreakable content regardless of
+   the colgroup hint. table-layout: fixed makes the hint authoritative, and
+   break-all on code lets long paths actually wrap instead of overflowing. */
+.fixed-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.fixed-table td {
+  overflow-wrap: anywhere;
+}
+.fixed-table code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+</style>
+
 ```{python}
 #| label: setup
 import os
@@ -29,22 +49,19 @@ RUN_SET_ID = "household-location-burden"
 
 ## The question
 
-> Maybe a combination approach could be useful? What if we calculated and
-> compared the additional Congested Roadway Capacity Demand (physical space
-> e.g. lane-mile minutes) from an extra 500 or 1000 typical households added
-> to specific locations around the region? We would use the TDM to estimate
-> the amount of peak-period roadway capacity added (which would include the
-> space-time footprint of the new households and their impact on delay for
-> others), based on the roadway travel that they would add to the system
-> (allowing for different modes to be chosen, and travel across the day for
-> various activities).
->
-> This would be a measure of the burden placed on the system to access their
-> daily needs and opportunities, and it could be expressed as a percentage of
-> the burden placed by adding the extra HH to the geographic center of the
-> region which is in Murray. *"A household placed in Western Davis County
-> puts 1.6x more burden on the system"* — but if it's in one of Davis
-> County's identified City and Town Centers, it's only 1.2x as much burden.
+Leadership asked whether the TDM could quantify the additional **Congested
+Roadway Capacity Demand** — peak-period roadway burden — created by adding a
+fixed number of typical households (500 or 1000) at different locations
+around the region. Capturing that burden properly means letting the TDM run
+its full multimodal, all-day pipeline for those households (mode choice,
+trip timing, route choice) and measuring the *delay it imposes on everyone
+else already on the system*, not just the new households' own travel.
+
+The result would be expressed as a Burden Index relative to a reference
+location at the region's geographic center (Murray): a household placed in
+Western Davis County, for instance, might place meaningfully more burden on
+the system than one placed in one of Davis County's designated City or Town
+Centers.
 
 ## Proposed methodology
 
@@ -210,7 +227,7 @@ together for this purpose:
 | A converged 2023 base network to build on | The `v10.0-beta.2` run set's `Base_2023` scenario, already run in this repo | **Done** — registered as this run set's own `base` scenario via `import-manual-run`, no re-run needed |
 | Household composition (size, income, workers, autos) for the "typical household" | `1_HHDisag_AutoOwn/` (LifeCycle → HHDisaggregation → AutoOwnership) | The model derives this itself from `TOTHH`/`HHPOP`, using distributions that already respond to local accessibility — there's no separate lever to force a specific household profile |
 
-: {tbl-colwidths="[35,30,35]"}
+: {tbl-colwidths="[35,30,35]" .fixed-table}
 
 ## How this fits the run-management framework
 
@@ -251,7 +268,7 @@ this repo.
 | **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
 | **Site list** | See "Candidate sites" above — Murray control (1619), Western Davis typical (684 or 602), Davis CTC (674, 610, 600, or 780) | Murray 1619 + Syracuse typical 684 + Syracuse City Center 674, for the minimal 3-scenario proof-of-methodology build | Build proceeds with the recommended picks above unless told otherwise |
 
-: {tbl-colwidths="[20,30,30,20]"}
+: {tbl-colwidths="[20,30,30,20]" .fixed-table}
 
 ## Effort and runtime
 
