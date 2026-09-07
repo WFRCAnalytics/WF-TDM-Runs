@@ -263,6 +263,19 @@ of sites; `max_parallel_runs` (already supported, not yet exercised on a
 real multi-scenario batch) could help once Cube Voyager licensing/hardware
 limits on this workstation are confirmed.
 
+**Why not combine multiple sites into one run?** Congestion is non-linear —
+that's the whole reason V/C-tiered VHT is the metric. Adding households from
+two sites in the same run gives you their *combined* effect on network
+delay, with no way to split credit between them afterward (their trips might
+stack on the same congested links, or might not interact at all). Base and
+Control aren't combinable either — they're mutually exclusive states of the
+same synthetic population. Recovering true per-site effects from combined
+runs would need a full factorial design (every combination, solved for
+interaction terms), which needs *more* runs than one-at-a-time, not fewer.
+So N candidate sites need N separate Test runs against one shared Base — this
+design is already the minimal N+1, and the +1 is free (Base is reused, not
+re-run).
+
 Suggested build order:
 1. Confirm the Base-run reuse strategy and the driver-script edit; validate
    `Summary_HighwayNet.csv` comes out as expected on the existing Base run alone.
