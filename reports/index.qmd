@@ -100,7 +100,7 @@ for rs_id in run_set_ids:
     if rs_id == "v10.0-beta.2":
         description = rd.run_set_description(rs_id)
         display(Markdown(
-            f"## [v10.0-beta.2](run_sets/v10.0-beta.2.qmd)\n\n{byline_md}{description}\n\n"
+            f"## v10.0-beta.2\n\n{byline_md}{description}\n\n"
             "- [Interactive vizTool explorer (external)](https://wfrc.utah.gov/viztool-latest-build/)\n\n"
             + rd.run_history_html(rs_id)
         ))
