@@ -1,0 +1,53 @@
+---
+title: "v10.0-beta.2"
+subtitle: "Base + Needs scenarios (2023, 2036, 2046, 2055) on the v10.0-beta.2 TDM"
+format:
+  html:
+    toc: false
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
+---
+
+```{python}
+#| label: setup
+import os
+import sys
+
+sys.path.insert(0, os.path.join('..'))
+import report_data as rd
+
+RUN_SET_ID = "v10.0-beta.2"
+```
+
+**[← All run sets](../index.qmd)**
+
+```{python}
+#| echo: false
+#| output: asis
+from IPython.display import Markdown, display
+
+byline = rd.run_set_byline(RUN_SET_ID)
+description = rd.run_set_description(RUN_SET_ID)
+parts = []
+if byline:
+    parts.append(f"*{byline}*")
+if description:
+    parts.append(description)
+if parts:
+    display(Markdown("\n\n".join(parts)))
+```
+
+Base Year 2023 plus the three Regional Transportation Plan Needs-year
+scenarios (2036, 2046, 2055), run against the v10.0-beta.2 TDM network. Each
+scenario's curated segment-level summary (`_Summary_SEGID_filtered.csv`) is
+committed under `runs/v10.0-beta.2/<scenario>/outputs/`.
+
+```{python}
+#| echo: false
+#| output: asis
+display(Markdown(rd.run_history_html(RUN_SET_ID)))
+```

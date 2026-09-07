@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "run_set_id": "v10.0-beta.2",
+  "scenario_id": "v10.0-beta.2-2046",
+  "run_id": "20260829-125104-369e",
+  "status": "failed",
+  "execution_mode": "cli",
+  "started_at": "2026-08-29T12:51:04.840003+00:00",
+  "finished_at": "2026-08-29T12:56:47.521160+00:00",
+  "framework_commit": "9a209e9fc17f0aa647b710108cd39732528cc0e6",
+  "tdm": {
+    "requested_ref": "runs/v10.0-beta.2",
+    "resolved_commit": "19947be21ed6ce740707b2128aa2de3e714c4480",
+    "resolved_tag": "runs/v10.0-beta.2",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - Needs_2046.block",
+    "run_set_overrides": {},
+    "scenario_overrides": {
+      "UserName": "Bill Hereth",
+      "UserCompany": "WFRC",
+      "RunDescription": "Needs 2046 Run for v10.0-beta.2",
+      "runId": "_",
+      "Run_vizTool": 1,
+      "vizToolDir": "M:\\GitHub\\WF-TDM-Runs\\runs\\v10.0-beta.2\\.vizTool"
+    },
+    "rendered_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046\\_ControlCenter.block",
+    "driver_script": "Scenarios/_default/__HailMary_1Subfolder_resumable.s"
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "M:\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046\\_ControlCenter.block",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046"
+    ],
+    "voyager_exe": "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe",
+    "exit_code": 2,
+    "log_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046\\logs\\orchestrator_invocation.log",
+    "status_source": "exit_code"
+  },
+  "outputs": {
+    "inventory_count": 169,
+    "inventory_total_bytes": 514158470,
+    "curated": []
+  },
+  "error": "No resolved model completion report in M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046\\_Log\\_RunTime.txt (see M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046\\logs\\orchestrator_invocation.log). Voyager exit code: 2.\n\nVoyager errors (TPPL0001.PRN):\nF(607): Too many math errors.\nF(641): Step 368, RUN MATRIX can not be run while ONRUNERRORGOTO processing. No files under M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\v10.0-beta.2\\v10.0-beta.2-2046 matched outputs.include [{'datafile': '5_AssignHwy/4_Summaries/*Summary_SEGID.csv', 'columns': ['SEGID', 'DISTANCE', 'DIRECTION', 'FUNCGROUP', 'SUBAREAID', 'CO_FIPS', 'LANES', 'LANEMILES', 'FTCLASS', 'CAP1HL', 'AM_Vol', 'MD_Vol', 'PM_Vol', 'EV_Vol', 'DY_Vol', 'FF_Spd', 'AM_Spd', 'MD_Spd', 'PM_Spd', 'EV_Spd', 'DY_Spd', 'FF_Tme', 'AM_Tme', 'MD_Tme', 'PM_Tme', 'EV_Tme', 'AM_CAP', 'MD_CAP', 'PM_CAP', 'EV_CAP', 'DY_CAP', 'AM_VC', 'MD_VC', 'PM_VC', 'EV_VC', 'MAX_VC', 'AM_VMT', 'MD_VMT', 'PM_VMT', 'EV_VMT', 'DY_VMT', 'AM_VMT_PC', 'MD_VMT_PC', 'PM_VMT_PC', 'EV_VMT_PC', 'DY_VMT_PC', 'AM_VMT_LT', 'MD_VMT_LT', 'PM_VMT_LT', 'EV_VMT_LT', 'DY_VMT_LT', 'AM_VMT_MD', 'MD_VMT_MD', 'PM_VMT_MD', 'EV_VMT_MD', 'DY_VMT_MD', 'AM_VMT_HV', 'MD_VMT_HV', 'PM_VMT_HV', 'EV_VMT_HV', 'DY_VMT_HV', 'FF_VHT', 'AM_VHT', 'MD_VHT', 'PM_VHT', 'EV_VHT', 'DY_VHT', 'AM_VHD', 'MD_VHD', 'PM_VHD', 'EV_VHD', 'DY_VHD']}]."
+}

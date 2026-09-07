@@ -8,8 +8,16 @@
   "properties": {
     "scenario_id": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
-      "description": "Unique, stable identifier within the run set. Also used as Control Center ScenarioName unless overridden. Never reuse after retiring a scenario."
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+      "description": "Unique, stable identifier within the run set. Used for the run's folder/file naming and as the Control Center ScenarioName unless scenario_name overrides it. Never reuse after retiring a scenario."
+    },
+    "scenario_name": {
+      "type": "string",
+      "description": "Overrides scenario_id as the Control Center ScenarioName value written into _ControlCenter.block. Purely cosmetic -- folder naming, run_info records, and every other identifier still use scenario_id. Defaults to scenario_id when omitted. Ignored if use_baseline_scenario_name is true."
+    },
+    "use_baseline_scenario_name": {
+      "type": "boolean",
+      "description": "When true, ScenarioName is left out of the orchestrator's computed identity fields entirely, so the baseline Control Center template's own ScenarioName line passes through into _ControlCenter.block untouched -- scenario_id and scenario_name are both ignored. Default false (ScenarioName is always set by the framework, per scenario_name/scenario_id)."
     },
     "description": {
       "type": "string"

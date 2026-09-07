@@ -100,7 +100,23 @@ def resolved_tdm_ref(run_set: dict, scenario: dict) -> str:
 
 
 def resolved_baseline_filename(run_set: dict, scenario: dict) -> str:
-    return scenario.get("baseline_control_center") or run_set["baseline_control_center"]
+    filename = scenario.get("baseline_control_center") or run_set.get("baseline_control_center")
+    if not filename:
+        raise ConfigValidationError(
+            f"scenario '{scenario['scenario_id']}' in run set '{run_set['run_set_id']}' has no "
+            "baseline_control_center, and the run set doesn't declare one either -- set it on "
+            "the run set (shared default) or on the scenario itself."
+        )
+    return filename
+
+
+def resolved_scenario_name(scenario: dict) -> str | None:
+    """Control Center ScenarioName value to inject, or None if
+    use_baseline_scenario_name is true and the baseline template's own
+    ScenarioName line should be left untouched instead."""
+    if scenario.get("use_baseline_scenario_name"):
+        return None
+    return scenario.get("scenario_name") or scenario["scenario_id"]
 
 
 def resolved_start_at_label(scenario: dict) -> str | None:

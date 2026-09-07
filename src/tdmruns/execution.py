@@ -288,10 +288,12 @@ def run_scenario(
     seeded_from = seed.seed(repo_root, run_set_id, scenario, folder)
 
     identity_fields = {
-        "ScenarioName": scenario_id,
         "ScenarioDir": _windows_style(str(folder.resolve()), trailing_sep=False),
         "ModelDir": _windows_style(str(tdm_path.resolve()), trailing_sep=False),
     }
+    scenario_name = cfg.resolved_scenario_name(scenario)
+    if scenario_name is not None:
+        identity_fields["ScenarioName"] = scenario_name
     rendered = cc.render(run_set_overrides, scenario_overrides, cc_local_layer, identity_fields)
     baseline_path = tdm_path / framework["control_center_defaults_dir"] / baseline_filename
     control_center_path = folder / "_ControlCenter.block"

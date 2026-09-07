@@ -1,0 +1,22 @@
+#========================================================================================
+# run_sets/v10.0-beta.2/run_set.yaml
+#========================================================================================
+run_set_id: v10.0-beta.2
+author: "Bill Hereth"
+description: "Base Year 2023 and RTP Needs-year (2036, 2046, 2055) scenarios on the v10.0-beta.2 TDM network"
+
+tdm_ref: "runs/v10.0-beta.2"
+
+# This TDM version's network file requires the newer Bentley CUBE 25.01.01
+voyager_exe: "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe"
+
+# prep_script:   # optional: path to a Python script relative to this run_set dir
+                 # run once per scenario before model execution
+                 # script receives --run-set-dir and --scenario-id as arguments
+
+outputs:
+  include:
+    - datafile: "5_AssignHwy/4_Summaries/*Summary_SEGID.csv"
+      columns: [SEGID, DISTANCE, DIRECTION, FUNCGROUP, SUBAREAID, CO_FIPS, LANES, LANEMILES, FTCLASS, CAP1HL, AM_Vol, MD_Vol, PM_Vol, EV_Vol, DY_Vol, FF_Spd, AM_Spd, MD_Spd, PM_Spd, EV_Spd, DY_Spd, FF_Tme, AM_Tme, MD_Tme, PM_Tme, EV_Tme, AM_CAP, MD_CAP, PM_CAP, EV_CAP, DY_CAP, AM_VC, MD_VC, PM_VC, EV_VC, MAX_VC, AM_VMT, MD_VMT, PM_VMT, EV_VMT, DY_VMT, AM_VMT_PC, MD_VMT_PC, PM_VMT_PC, EV_VMT_PC, DY_VMT_PC, AM_VMT_LT, MD_VMT_LT, PM_VMT_LT, EV_VMT_LT, DY_VMT_LT, AM_VMT_MD, MD_VMT_MD, PM_VMT_MD, EV_VMT_MD, DY_VMT_MD, AM_VMT_HV, MD_VMT_HV, PM_VMT_HV, EV_VMT_HV, DY_VMT_HV, FF_VHT, AM_VHT, MD_VHT, PM_VHT, EV_VHT, DY_VHT, AM_VHD, MD_VHD, PM_VHD, EV_VHD, DY_VHD]
+
+  max_file_size_mb: 95

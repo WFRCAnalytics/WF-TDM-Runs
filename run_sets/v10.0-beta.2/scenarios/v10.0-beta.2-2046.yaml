@@ -1,0 +1,14 @@
+scenario_id: v10.0-beta.2-2046
+description: "Needs 2046 Run for v10.0-beta.2"
+use_baseline_scenario_name: true
+
+driver_script: __HailMary_1Subfolder_resumable.s
+baseline_control_center: "_ControlCenter - Needs_2046.block"
+
+overrides:
+  UserName: "Bill Hereth"
+  UserCompany: "WFRC"
+  RunDescription: "Needs 2046 Run for v10.0-beta.2"
+  runId: "_"
+  Run_vizTool: 1
+  vizToolDir: 'M:\GitHub\WF-TDM-Runs\runs\v10.0-beta.2\.vizTool'
