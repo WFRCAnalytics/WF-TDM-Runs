@@ -22,18 +22,6 @@ nm2023_scenario_count = rd.scenario_count("non-motorized-2023")
 Generated from committed run metadata under `runs/`, newest run set first.
 A new run set appears here automatically once it has at least one committed run.
 
-## Scoping documents
-
-*Not yet built or run — for review.*
-
-### [Household Location Burden Index](run_sets/household-location-burden/scoping.html)
-
-Comparing the systemwide congested-VHT impact of adding the same number of
-households at different locations around the region, relative to a Murray
-(geographic-center) reference. Lays out the proposed methodology, candidate
-sites, what the model already supports, and the decisions (convergence
-approach, final site pick) needed before any model time is spent.
-
 ```{python}
 #| echo: false
 #| output: asis
@@ -97,6 +85,24 @@ for rs_id in run_set_ids:
             "page below), not through the generic run-metadata table.\n\n"
             "- [Summary view](run_sets/udot-sel-link/summary.html)\n"
             "- [Select Link Explorer (external)](https://wfrc.utah.gov/apps/9000-12600-South-Select-Link/)\n"
+        ))
+        continue
+
+    if rs_id == "household-location-burden":
+        description = rd.run_set_description(rs_id)
+        display(Markdown(
+            f"## Household Location Burden Index\n\n{byline_md}{description}\n\n"
+            "- [Scoping document](run_sets/household-location-burden/scoping.html)\n\n"
+            + rd.run_history_html(rs_id)
+        ))
+        continue
+
+    if rs_id == "v10.0-beta.2":
+        description = rd.run_set_description(rs_id)
+        display(Markdown(
+            f"## v10.0-beta.2\n\n{byline_md}{description}\n\n"
+            "- [Scenario detail & run history](run_sets/v10.0-beta.2.qmd)\n"
+            "- [Interactive vizTool explorer (external)](https://wfrc.utah.gov/viztool-latest-build/)\n"
         ))
         continue
 
