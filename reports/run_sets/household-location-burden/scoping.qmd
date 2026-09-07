@@ -49,7 +49,7 @@ RUN_SET_ID = "household-location-burden"
 
 ## The question
 
-Leadership asked whether the TDM could quantify the additional **Congested
+This study asks whether the TDM could quantify the additional **Congested
 Roadway Capacity Demand** — peak-period roadway burden — created by adding a
 fixed number of typical households (500 or 1000) at different locations
 around the region. Capturing that burden properly means letting the TDM run
@@ -63,17 +63,35 @@ Western Davis County, for instance, might place meaningfully more burden on
 the system than one placed in one of Davis County's designated City or Town
 Centers.
 
+## Decisions needed before building this
+
+| Decision | Options | Recommendation | If left unresolved |
+|---|---|---|---|
+| **N** — households per site | 500 or 1000 | 1000, for a more clearly measurable effect | Defaults to 500 (boss's first-mentioned number) |
+| **Congestion threshold** | V/C ≥ 0.8, ≥ 1.0, or report both | Report both — cheap, since both are already in the same summary CSV | Defaults to reporting both |
+| **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
+| **Site list** | See "Candidate sites" below — Murray control (1619), Western Davis typical (684 or 602), Davis CTC (674, 610, 600, or 780) | Murray 1619 + Syracuse typical 684 + Syracuse City Center 674, for the minimal 3-scenario proof-of-methodology build | Build proceeds with the recommended picks below unless told otherwise |
+| **Network vintage(s)** | 2023 (today) only, or 2023 + 2055 (long-range Needs) | Both — burden today, plus whether the center-vs-sprawl gap holds, widens, or narrows as the region grows to its 2055 forecast. More relevant to a growth-siting decision than a single-year snapshot | Proposed as part of the initial build, not a later add-on |
+
+: {tbl-colwidths="[20,30,30,20]" .fixed-table}
+
 ## Proposed methodology
 
-**Design:** one converged **Base** run, one **Control** run (Base + N
+**Design:** one **Base** run, one **Control** run (Base + N
 households added at a Murray TAZ — the geographic-center reference), and one
 **Test** run per candidate site (Base + the same N households added at that
 site's TAZ). Same household count everywhere, so differences reflect
 *location*, not household mix.
 
+**Run this whole pattern twice — once against 2023 (today), once against
+2055 (long-range Needs)**, proposed as part of the initial build rather than
+a later add-on (see "Decisions needed" above). The diagram below shows one
+vintage; the 2055 pass is the identical pattern against the 2055 network and
+2055 SE forecast instead.
+
 ```{mermaid}
 flowchart LR
-    SE["Base SE data"] --> Base["Base run<br/>no HH added"]
+    SE["Base SE data<br/>(2023 or 2055)"] --> Base["Base run<br/>no HH added"]
     SE -->|"+N HH at Murray"| Control["Control run"]
     SE -->|"+N HH at Site A"| SiteA["Test: Site A"]
     SE -->|"+N HH at Site B"| SiteB["Test: Site B"]
@@ -95,17 +113,30 @@ difference. Peak periods (AM, PM), filtered to links at or above a
 congestion threshold (V/C ≥ 0.8 and/or ≥ 1.0).
 
 **Burden Index** = ΔVHT(site) ÷ ΔVHT(Murray control) — giving the
-"1.6x" / "1.2x" style figure directly.
+"1.6x" / "1.2x" style figure directly, computed separately for 2023 and
+2055 so the two years can be compared side by side.
+
+::: {.callout-note}
+## A caveat on comparing 2023 and 2055 directly
+N households is a much bigger *relative* bump against a TAZ's 2023
+household count than against its 2055 forecast, which already assumes
+decades of organic growth at these sites. A rising or falling Burden Index
+between the two years could partly reflect that shrinking relative size,
+not just a real shift in how the network absorbs growth at that location —
+worth calling out when the results are reported, not something the study
+design itself corrects for.
+:::
 
 ## Baseline signal, from the registered `base` scenario
 
-Real numbers, computed live from this run set's own committed data — not a
-pasted-in snapshot. `base` was registered via `import-manual-run`, reusing
-the already-converged `v10.0-beta.2-2023` raw network (same TDM ref) rather
-than spending Cube Voyager time re-running it from scratch; no households
-have been added to it. The table below aggregates its curated segment-level
-summary directly, applying the same V/C≥0.8 / V/C≥1.0 tiering
-`02_Summarize_HighwayNet.s` would.
+These are real numbers from an already-completed model run — not simulated
+for illustration. That run is the region's current (2023) road network
+exactly as it exists today, with no new households added yet; reusing it
+here meant no new traffic-model run was needed just to produce this table.
+It shows how congested the road network already is, by time of day, using
+the same "how congested" math (V/C ≥ 0.8 and ≥ 1.0 — road segments running
+at or above 80%/100% of their capacity) that will measure each candidate
+site's impact later.
 
 ```{python}
 #| label: baseline-table
@@ -150,15 +181,20 @@ This `base` scenario only has the segment summary curated so far — the
 regionwide *congestion-tier* summary (`Summary_HighwayNet.csv`, needed for
 the Δ calculation once Control/Test scenarios exist) requires the
 custom driver-script edit described below, then re-registering `base` with
-that output included too. Adding Control/Test scenarios still needs real
-Cube Voyager runs — see "Decisions needed" and "Effort and runtime" below.
+that output included too. A 2055 counterpart to this `base` scenario
+doesn't exist yet either — it needs the same one-step `import-manual-run`
+registration against the `v10.0-beta.2` run set's already-run `Needs_2055`
+scenario, no new Cube Voyager run required (see "How this fits
+the run-management framework" below). Adding Control/Test scenarios for
+either year still needs real Cube Voyager runs — see "Decisions needed" and
+"Effort and runtime" below.
 :::
 
 ## Candidate sites
 
 ::: {.callout-note}
 Candidates, not yet confirmed. Data-driven, but the final pick is a
-decision for the study lead — see "Decisions needed" below.
+decision for the study lead — see "Decisions needed" above.
 :::
 
 Method: spatially joined the TDM's own TAZ shapefile
@@ -170,10 +206,12 @@ referenced in the original ask, queried live from
 figures below are pulled live from those same local files on every render.
 
 ```{python}
-#| label: candidate-sites-table
-#| output: asis
+#| label: candidate-sites-map
+#| fig-align: center
 
+import json
 import geopandas as gpd
+import plotly.graph_objects as go
 
 taz_path = os.path.join(rd.REPO_ROOT, "tdm", "1_Inputs", "1_TAZ", "WFv1000_TAZ.shp")
 taz_gdf = gpd.read_file(taz_path)
@@ -184,18 +222,84 @@ se_df = pd.read_csv(se_path)
 se_df = se_df.rename(columns={se_df.columns[0]: "TAZID"})
 taz_gdf = taz_gdf.merge(se_df[["TAZID", "TOTHH", "HHPOP"]], on="TAZID", how="left")
 
+# category / recommended appended as elements 4/5 -- element indices 0-3
+# (label, TAZID, city, note) are unchanged from the table cell below.
 candidates = [
-    ("Murray control", 1619, "Murray", "Populous, ordinary residential TAZ -- geographic-center reference"),
-    ("Western Davis -- typical (recommended)", 684, "Syracuse", "Large low-density subdivision, no designated center nearby"),
-    ("Western Davis -- typical (alternate)", 602, "West Point", "Further west by X-coordinate; smaller sample"),
-    ("Davis CTC -- Syracuse City Center (recommended)", 674, "Syracuse", "Same city as the recommended typical site -- isolates center-vs-not"),
-    ("Davis CTC -- Clinton Town Center (alternate)", 610, "Clinton", ""),
-    ("Davis CTC -- West Point City Center (alternate)", 600, "West Point", ""),
-    ("Davis CTC -- Station Park, Farmington (alternate, Urban Center)", 780, "Farmington", "Larger/more significant center, for a bigger contrast"),
+    ("Murray control", 1619, "Murray", "Populous, ordinary residential TAZ -- geographic-center reference", "Murray control", True),
+    ("Western Davis -- typical (recommended)", 684, "Syracuse", "Large low-density subdivision, no designated center nearby", "Western Davis (typical)", True),
+    ("Western Davis -- typical (alternate)", 602, "West Point", "Further west by X-coordinate; smaller sample", "Western Davis (typical)", False),
+    ("Davis CTC -- Syracuse City Center (recommended)", 674, "Syracuse", "Same city as the recommended typical site -- isolates center-vs-not", "Davis City/Town Center", True),
+    ("Davis CTC -- Clinton Town Center (alternate)", 610, "Clinton", "", "Davis City/Town Center", False),
+    ("Davis CTC -- West Point City Center (alternate)", 600, "West Point", "", "Davis City/Town Center", False),
+    ("Davis CTC -- Station Park, Farmington (alternate, Urban Center)", 780, "Farmington", "Larger/more significant center, for a bigger contrast", "Davis City/Town Center", False),
 ]
 taz_ids = [c[1] for c in candidates]
 label_by_id = {c[1]: c[0] for c in candidates}
 note_by_id = {c[1]: c[3] for c in candidates}
+category_by_id = {c[1]: c[4] for c in candidates}
+recommended_by_id = {c[1]: c[5] for c in candidates}
+
+# Categorical hues (not the literal WFRC brand triad -- navy/amber failed
+# the colorblind-safety validator's lightness/chroma checks as map marks;
+# these three passed all checks including CVD separation).
+CATEGORY_COLORS = {
+    "Murray control": "#2a78d6",
+    "Western Davis (typical)": "#eb6834",
+    "Davis City/Town Center": "#1baf7a",
+}
+
+map_gdf = taz_gdf[taz_gdf["TAZID"].isin(taz_ids)].copy()
+map_gdf["category"] = map_gdf["TAZID"].map(category_by_id)
+map_gdf["recommended"] = map_gdf["TAZID"].map(recommended_by_id)
+map_gdf["short_label"] = map_gdf["CITY_NAME"] + " (TAZ " + map_gdf["TAZID"].astype(str) + ")"
+centroid_ll = map_gdf.geometry.centroid.to_crs(4326)
+map_gdf["cx"] = centroid_ll.x
+map_gdf["cy"] = centroid_ll.y
+map_gdf = map_gdf.to_crs(4326)
+
+fig = go.Figure()
+for cat, color in CATEGORY_COLORS.items():
+    cat_sub = map_gdf[map_gdf["category"] == cat]
+    cat_geojson = json.loads(cat_sub[["TAZID", "geometry"]].to_json())
+    rec_suffix = cat_sub["recommended"].map({True: " (recommended)", False: " (alternate)"})
+    fig.add_trace(go.Choroplethmap(
+        geojson=cat_geojson,
+        locations=cat_sub["TAZID"],
+        featureidkey="properties.TAZID",
+        z=[1] * len(cat_sub),
+        colorscale=[[0, color], [1, color]],
+        showscale=False,
+        marker={"line": {"width": 1.5, "color": "white"}},
+        name=cat,
+        showlegend=True,
+        hovertext=cat_sub["short_label"] + rec_suffix,
+        hoverinfo="text",
+    ))
+    fig.add_trace(go.Scattermap(
+        lat=cat_sub["cy"], lon=cat_sub["cx"],
+        mode="text",
+        text=cat_sub["short_label"],
+        textfont={"size": 11, "color": "#1B3A5C"},
+        showlegend=False,
+        hoverinfo="skip",
+    ))
+
+fig.update_layout(
+    map={
+        "style": "carto-positron",
+        "zoom": 8.6,
+        "center": {"lat": map_gdf["cy"].mean(), "lon": map_gdf["cx"].mean()},
+    },
+    height=550,
+    margin={"l": 0, "r": 0, "t": 10, "b": 0},
+    legend={"orientation": "h", "yanchor": "bottom", "y": 1.0, "xanchor": "left", "x": 0},
+)
+fig.show(config={"displayModeBar": False})
+```
+
+```{python}
+#| label: candidate-sites-table
+#| output: asis
 
 sub = taz_gdf[taz_gdf["TAZID"].isin(taz_ids)][["TAZID", "CITY_NAME", "TOTHH", "HHPOP"]].copy()
 sub["label"] = sub["TAZID"].map(label_by_id)
@@ -224,7 +328,7 @@ together for this purpose:
 |---|---|---|
 | Systemwide VMT/VHT by period, purpose, and congestion tier (V/C ≥ 0.8, ≥ 1.0) | `2_ModelScripts/7_PostProcessing/4_BCA_Summaries/02_Summarize_HighwayNet.s` | Exists, does exactly this — but its `READ FILE` line is **commented out** in the default driver script, so it doesn't currently run |
 | A way to add households to a specific TAZ without touching anything else | `WFRC_SEFile` / `MAG_SEFile` — plain TAZ-level `TOTHH`/`HHPOP` CSVs | Exists; this framework already has a proven pattern for generating per-scenario SE variants (used for the `non-motorized-2023` study) |
-| A converged 2023 base network to build on | The `v10.0-beta.2` run set's `Base_2023` scenario, already run in this repo | **Done** — registered as this run set's own `base` scenario via `import-manual-run`, no re-run needed |
+| 2023 and 2055 base networks to build on | The `v10.0-beta.2` run set's `Base_2023` and `Needs_2055` scenarios, both already run in this repo | 2023 **done** — registered as this run set's own `base` scenario via `import-manual-run`. 2055 not yet registered, but the same one-step `import-manual-run` against the already-run `Needs_2055` scenario is all it needs |
 | Household composition (size, income, workers, autos) for the "typical household" | `1_HHDisag_AutoOwn/` (LifeCycle → HHDisaggregation → AutoOwnership) | The model derives this itself from `TOTHH`/`HHPOP`, using distributions that already respond to local accessibility — there's no separate lever to force a specific household profile |
 
 : {tbl-colwidths="[35,30,35]" .fixed-table}
@@ -235,15 +339,18 @@ Mechanically, this is a new run set — `household-location-burden` —
 following the same pattern already proven by `non-motorized-2023` and
 `bring-work-trips-closer-to-home`:
 
-- **`base`** scenario — **done**. Registered by reusing the existing
-  converged `v10.0-beta.2-2023` run rather than re-running full feedback
-  from scratch. To pick up the BCA congestion-tier summary once the driver
-  script is edited, its raw folder can be re-entered via `start_at_label`
-  (resuming just the post-processing steps) rather than a full re-run.
-- **`control-murray`** and one **`site-<name>`** scenario per candidate
-  location — each pointed at its own generated SE file via
-  `overrides.WFRC_SEFile`, the same relative-path mechanism
-  `non-motorized-2023` uses.
+- **`base`** (2023) — **done**. Registered by reusing the existing
+  `v10.0-beta.2-2023` run rather than re-running full feedback from scratch.
+  To pick up the BCA congestion-tier summary once the driver script is
+  edited, its raw folder can be re-entered via `start_at_label` (resuming
+  just the post-processing steps) rather than a full re-run.
+- **`base-2055`** — same treatment, reusing `v10.0-beta.2`'s already-run
+  `Needs_2055` scenario. Not yet registered.
+- **`control-murray-2023`** / **`control-murray-2055`** and one
+  **`site-<name>-2023`** / **`site-<name>-2055`** pair per candidate
+  location — each pointed at its own generated SE file (drawn from the
+  matching year's SE forecast) via `overrides.WFRC_SEFile`, the same
+  relative-path mechanism `non-motorized-2023` uses.
 - A shared **custom driver script** (this run set's own copy of
   `__HailMary_1Subfolder.s`, with the BCA summary line turned on) — the
   framework's existing `driver_script` mechanism, no core code changes
@@ -259,26 +366,18 @@ Voyager runs are required — this is entirely new configuration plus one
 custom driver script, the same category of work as every other run set in
 this repo.
 
-## Decisions needed before building this
-
-| Decision | Options | Recommendation | If left unresolved |
-|---|---|---|---|
-| **N** — households per site | 500 or 1000 | 1000, for a more clearly measurable effect | Defaults to 500 (boss's first-mentioned number) |
-| **Congestion threshold** | V/C ≥ 0.8, ≥ 1.0, or report both | Report both — cheap, since both are already in the same summary CSV | Defaults to reporting both |
-| **Peak window** | AM+PM only, or all four periods | AM+PM, matching "peak-period" in the original ask; MD/EV available in the same file if wanted later | Defaults to AM+PM |
-| **Site list** | See "Candidate sites" above — Murray control (1619), Western Davis typical (684 or 602), Davis CTC (674, 610, 600, or 780) | Murray 1619 + Syracuse typical 684 + Syracuse City Center 674, for the minimal 3-scenario proof-of-methodology build | Build proceeds with the recommended picks above unless told otherwise |
-
-: {tbl-colwidths="[20,30,30,20]" .fixed-table}
-
 ## Effort and runtime
 
 Each Test/Control scenario needs a **full feedback run** (mode choice
 logsums + four-period assignment) — households are added before
 disaggregation, so nothing upstream can be skipped or reused between sites.
-Only the Base run benefits from reuse. Runtime scales linearly with number
-of sites; `max_parallel_runs` (already supported, not yet exercised on a
-real multi-scenario batch) could help once Cube Voyager licensing/hardware
-limits on this workstation are confirmed.
+Only the two Base runs benefit from reuse (both already run, neither needs
+re-running). Running both the 2023 and 2055 vintages roughly doubles
+the Test/Control run count for the same site list: N sites × 2 years + 2
+control runs, against two free Base runs. Runtime scales linearly with
+number of sites *and* years; `max_parallel_runs` (already supported, not yet
+exercised on a real multi-scenario batch) could help once Cube Voyager
+licensing/hardware limits on this workstation are confirmed.
 
 **Why not combine multiple sites into one run?** Congestion is non-linear —
 that's the whole reason V/C-tiered VHT is the metric. Adding households from
@@ -295,11 +394,15 @@ re-run).
 
 Suggested build order:
 1. Confirm the Base-run reuse strategy and the driver-script edit; validate
-   `Summary_HighwayNet.csv` comes out as expected on the existing Base run alone.
-2. Build SE generation + one real site + the Murray control; validate the
-   ΔVHT / Burden Index math end-to-end on real output before committing to
-   the full site list.
-3. Once proven, add the remaining sites from the confirmed list.
+   `Summary_HighwayNet.csv` comes out as expected on the existing 2023 Base
+   run alone.
+2. Register `base-2055` the same way, and confirm it too.
+3. Build SE generation + one real site + the Murray control for **2023
+   only**; validate the ΔVHT / Burden Index math end-to-end on real output
+   before committing to the full site list or the second year.
+4. Once proven, replicate that same site + control for **2055**, to confirm
+   the pattern holds across both vintages.
+5. Add the remaining sites from the confirmed list, for both years.
 
 ## Bottom line
 
@@ -307,5 +410,5 @@ The metric, the SE-modification mechanism, and the run-set framework are all
 already proven in this repo for other studies — this is a matter of
 configuration and one small driver-script change, not new engineering. Every
 remaining decision above (N, congestion threshold, peak window, final site
-picks) has a sensible default, so the build can proceed on the recommended
-picks unless told otherwise.
+picks, network vintages) has a sensible default, so the build can proceed on
+the recommended picks — 2023 and 2055, both — unless told otherwise.
