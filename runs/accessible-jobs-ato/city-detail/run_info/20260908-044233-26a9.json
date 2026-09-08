@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "run_set_id": "accessible-jobs-ato",
+  "scenario_id": "city-detail",
+  "run_id": "20260908-044233-26a9",
+  "status": "success",
+  "execution_mode": "cli",
+  "started_at": "2026-09-08T04:42:33.611658+00:00",
+  "finished_at": "2026-09-08T05:01:13.576938+00:00",
+  "framework_commit": "e610c02853a38a72eb74b827708ec680de3677c6",
+  "tdm": {
+    "requested_ref": "v10.0.0-beta.2",
+    "resolved_commit": "2772f0b1e3d4b2efb2be45cf16a56b78d1ae66db",
+    "resolved_tag": "v10.0.0-beta.2",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - Base_2023.block",
+    "run_set_overrides": {},
+    "scenario_overrides": {},
+    "rendered_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\accessible-jobs-ato\\city-detail\\_ControlCenter.block",
+    "driver_script": "hail-mary/__HailMary_1Subfolder_ato_detail.s"
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\accessible-jobs-ato\\city-detail",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "M:\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\accessible-jobs-ato\\city-detail\\_ControlCenter.block",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\accessible-jobs-ato\\city-detail"
+    ],
+    "voyager_exe": "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe",
+    "exit_code": 0,
+    "log_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\accessible-jobs-ato\\city-detail\\logs\\orchestrator_invocation.log",
+    "status_source": "model_log",
+    "model_log": {
+      "outcome": "success",
+      "crashed_step": null,
+      "started_at": "2026-08-29,  01:56:45",
+      "finished_at": "2026-08-29,  06:45:11",
+      "run_time": "004:48:25",
+      "exit_code_mismatch": false
+    }
+  },
+  "outputs": {
+    "inventory_count": 1062,
+    "inventory_total_bytes": 36144482865,
+    "curated": [
+      {
+        "relative_path": "5_AssignHwy/4_Summaries/___v10.0-beta.2__Base__2023___Access_to_Opportunity_CityDetail.csv",
+        "size_bytes": 4149571,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "ab59a1157b505acc60e54070be7fd4814bfa393c17f1f24939ea260d600c2f8b",
+        "repo_path": "runs/accessible-jobs-ato/city-detail/outputs/___v10.0-beta.2__Base__2023___Access_to_Opportunity_CityDetail.csv",
+        "committed": true
+      },
+      {
+        "relative_path": "5_AssignHwy/4_Summaries/___v10.0-beta.2__Base__2023___Access_to_Opportunity_CityTotals.csv",
+        "size_bytes": 2814,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "550ee00a38d3fc77d71c0b948b9d869ef1a448054901e2b947d71e2930e88f82",
+        "repo_path": "runs/accessible-jobs-ato/city-detail/outputs/___v10.0-beta.2__Base__2023___Access_to_Opportunity_CityTotals.csv",
+        "committed": true
+      },
+      {
+        "relative_path": "5_AssignHwy/4_Summaries/_Access_to_Opportunity.csv",
+        "size_bytes": 1610574,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "7efc466cf32deea5e4e7fbc37f4347bd016f69d6dc83272293fcb1ab26c8634b",
+        "repo_path": "runs/accessible-jobs-ato/city-detail/outputs/_Access_to_Opportunity.csv",
+        "committed": true
+      }
+    ]
+  },
+  "error": null
+}

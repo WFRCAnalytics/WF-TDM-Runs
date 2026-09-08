@@ -1,0 +1,41 @@
+#========================================================================================
+# run_sets/accessible-jobs-ato/run_set.yaml
+#========================================================================================
+run_set_id: accessible-jobs-ato
+author: "Bill Hereth"
+description: >
+  Prep run set for a new "accessible jobs" web app (a companion to WFRC's
+  APP-WFRC-Commute-Patterns commute-flow map) driven by the TDM's Access to
+  Opportunity (ATO) output instead of observed LEHD commute flows. `base`
+  reuses the already-converged v10.0-beta.2-2023 scenario directly (no new
+  model run); `city-detail` seeds a private copy of it via start_from_copy
+  and runs a new post-process step (access_to_opportunity_detail.s) that
+  retains destination-level detail for a city-level Internal/Outbound/Inbound
+  rollup. See reports/run_sets/accessible-jobs-ato/scoping.qmd for the full
+  design and open decisions.
+
+tdm_ref: "v10.0.0-beta.2"
+
+# Same network vintage as v10.0-beta.2 / household-location-burden -- requires
+# the newer Bentley CUBE 25.01.01
+voyager_exe: "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe"
+
+outputs:
+  include:
+    # Existing (collapsed, one-row-per-origin-TAZ) ATO index -- already real
+    # and already computable today, per-mode decayed Jobs/HH access plus the
+    # congestion/circuity loss decomposition. Curated for `base` as a
+    # baseline sanity check. This glob is a suffix match (*Access_to_Opportunity.csv)
+    # so it does NOT also match the CityDetail file below.
+    - datafile: "5_AssignHwy/4_Summaries/*Access_to_Opportunity.csv"
+
+    # New: City x City destination-level detail from access_to_opportunity_detail.s
+    # (run_sets/accessible-jobs-ato/scripts/), produced only by `city-detail`.
+    # See reports/run_sets/accessible-jobs-ato/scoping.qmd.
+    - datafile: "5_AssignHwy/4_Summaries/*Access_to_Opportunity_CityDetail.csv"
+
+    # Per-city HH/Job totals -- the denominators APP-ATO-Interactive's
+    # process_data.py divides the CityDetail table by.
+    - datafile: "5_AssignHwy/4_Summaries/*Access_to_Opportunity_CityTotals.csv"
+
+  max_file_size_mb: 95
