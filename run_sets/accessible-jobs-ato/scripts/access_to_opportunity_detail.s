@@ -99,6 +99,19 @@
 ;     script's own logic (confirmed by an unchanged-logic re-run fixing it)
 ;     -- if it recurs, re-add a diagnostic like the one described above
 ;     rather than assuming the formula itself is wrong again.
+;   - ADDED (2026-09-08): sector-specific Loss_* decomposition. The auto
+;     Loss_Cong/Loss_Net columns above were built against Job_Auto only
+;     (all sectors combined) -- selecting a sector in the app changed which
+;     jobs counted for the Job_<mode>/JobTimeWt_<mode> columns but left the
+;     "Access Lost" panel showing the same all-sectors congestion/circuity
+;     numbers regardless, a real gap found only after shipping (same
+;     mistake, and same fix shape, as the average-opportunity-time sector
+;     gap above). Adds CityRetailAutoFF/SL, CityIndustrialAutoFF/SL,
+;     CityOtherAutoFF/SL -- same free-flow/straight-line weighting as
+;     CityJobAutoFF/SL, just multiplying Retail_j/Industrial_j/Other_j
+;     instead of Job_j. process_data.py takes the same differences
+;     (Loss_Retail_Cong = RetailAutoFF - Retail_Auto, etc.) it already takes
+;     for the all-sectors version.
 ;
 ; Run manually against an already-populated scenario folder (this run set's
 ; `base` scenario is registered via manual_scenario_folder, never through
@@ -276,6 +289,19 @@ FILEO PRINTO[2] = '@ScenarioDir@\5_AssignHwy\4_Summaries\@runId@Access_to_Opport
           CityHHAutoFF  = 6724,
           CityHHAutoSL  = 6724
 
+    ; Per-sector free-flow/straight-line auto access sums -- same idea as
+    ; CityJobAutoFF/SL above, so the app's Access Lost panel actually
+    ; responds to the Sector toggle instead of always showing the
+    ; all-sectors congestion/circuity numbers (see the 2026-09-08 header
+    ; addition). Jobs-side only, same as CityRetail_*/CityIndustrial_*/
+    ; CityOther_* below -- a household isn't sector-typed.
+    ARRAY CityRetailAutoFF     = 6724,
+          CityRetailAutoSL     = 6724,
+          CityIndustrialAutoFF = 6724,
+          CityIndustrialAutoSL = 6724,
+          CityOtherAutoFF      = 6724,
+          CityOtherAutoSL      = 6724
+
     ; Sector breakdown of Job_* (RETEMP/INDEMP/OTHEMP, already on SE_File.dbf,
     ; loaded above as ZDATI[1] -- these three sum to TOTEMP by construction,
     ; same source CLAUDE.md's "TDM's own sector categories" already
@@ -399,6 +425,12 @@ FILEO PRINTO[2] = '@ScenarioDir@\5_AssignHwy\4_Summaries\@runId@Access_to_Opport
             CityOtherTimeWt_TranDrive[CityFlat] = 0
             CityOtherTimeWt_Bike[CityFlat]      = 0
             CityOtherTimeWt_Walk[CityFlat]      = 0
+            CityRetailAutoFF[CityFlat]     = 0
+            CityRetailAutoSL[CityFlat]     = 0
+            CityIndustrialAutoFF[CityFlat] = 0
+            CityIndustrialAutoSL[CityFlat] = 0
+            CityOtherAutoFF[CityFlat]      = 0
+            CityOtherAutoSL[CityFlat]      = 0
         ENDLOOP
 
         LOOP CityOnly = 1, NUM_CITIES
@@ -642,6 +674,17 @@ FILEO PRINTO[2] = '@ScenarioDir@\5_AssignHwy\4_Summaries\@runId@Access_to_Opport
             CityOther_Bike[CityFlat]      = CityOther_Bike[CityFlat]      + W_Bike      * Other_j * HH_i
             CityOther_Walk[CityFlat]      = CityOther_Walk[CityFlat]      + W_Walk      * Other_j * HH_i
 
+            ; Per-sector free-flow/straight-line auto access sums -- same
+            ; weighting pattern as CityJobAutoFF/SL above, feeding the
+            ; per-sector Loss_Cong/Loss_Net decomposition (see file-header
+            ; comment). Auto only, same scope as the all-sectors version.
+            CityRetailAutoFF[CityFlat]     = CityRetailAutoFF[CityFlat]     + W_Auto_FF * Retail_j     * HH_i
+            CityRetailAutoSL[CityFlat]     = CityRetailAutoSL[CityFlat]     + W_Auto_SL * Retail_j     * HH_i
+            CityIndustrialAutoFF[CityFlat] = CityIndustrialAutoFF[CityFlat] + W_Auto_FF * Industrial_j * HH_i
+            CityIndustrialAutoSL[CityFlat] = CityIndustrialAutoSL[CityFlat] + W_Auto_SL * Industrial_j * HH_i
+            CityOtherAutoFF[CityFlat]      = CityOtherAutoFF[CityFlat]      + W_Auto_FF * Other_j      * HH_i
+            CityOtherAutoSL[CityFlat]      = CityOtherAutoSL[CityFlat]      + W_Auto_SL * Other_j      * HH_i
+
             ; Per-sector "average opportunity time" numerators -- same
             ; weighting as CityRetail_*/CityIndustrial_*/CityOther_* just
             ; above, times this pair's own travel time (see the file-header
@@ -689,7 +732,8 @@ FILEO PRINTO[2] = '@ScenarioDir@\5_AssignHwy\4_Summaries\@runId@Access_to_Opport
                  'Other_Auto',      'Other_TranWalk',      'Other_TranDrive',      'Other_Bike',      'Other_Walk',
                  'RetailTimeWt_Auto',     'RetailTimeWt_TranWalk',     'RetailTimeWt_TranDrive',     'RetailTimeWt_Bike',     'RetailTimeWt_Walk',
                  'IndustrialTimeWt_Auto', 'IndustrialTimeWt_TranWalk', 'IndustrialTimeWt_TranDrive', 'IndustrialTimeWt_Bike', 'IndustrialTimeWt_Walk',
-                 'OtherTimeWt_Auto',      'OtherTimeWt_TranWalk',      'OtherTimeWt_TranDrive',      'OtherTimeWt_Bike',      'OtherTimeWt_Walk'
+                 'OtherTimeWt_Auto',      'OtherTimeWt_TranWalk',      'OtherTimeWt_TranDrive',      'OtherTimeWt_Bike',      'OtherTimeWt_Walk',
+                 'RetailAutoFF', 'RetailAutoSL', 'IndustrialAutoFF', 'IndustrialAutoSL', 'OtherAutoFF', 'OtherAutoSL'
 
         LOOP CityA = 1, NUM_CITIES
             LOOP CityB = 1, NUM_CITIES
@@ -751,7 +795,13 @@ FILEO PRINTO[2] = '@ScenarioDir@\5_AssignHwy\4_Summaries\@runId@Access_to_Opport
                          ROUND(CityOtherTimeWt_TranWalk[DumpFlat]     ),
                          ROUND(CityOtherTimeWt_TranDrive[DumpFlat]    ),
                          ROUND(CityOtherTimeWt_Bike[DumpFlat]         ),
-                         ROUND(CityOtherTimeWt_Walk[DumpFlat]         )
+                         ROUND(CityOtherTimeWt_Walk[DumpFlat]         ),
+                         ROUND(CityRetailAutoFF[DumpFlat]    ),
+                         ROUND(CityRetailAutoSL[DumpFlat]    ),
+                         ROUND(CityIndustrialAutoFF[DumpFlat]),
+                         ROUND(CityIndustrialAutoSL[DumpFlat]),
+                         ROUND(CityOtherAutoFF[DumpFlat]     ),
+                         ROUND(CityOtherAutoSL[DumpFlat]     )
             ENDLOOP
         ENDLOOP
 
