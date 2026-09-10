@@ -97,6 +97,15 @@ for rs_id in run_set_ids:
         ))
         continue
 
+    if rs_id == "accessible-jobs-ato":
+        description = rd.run_set_description(rs_id)
+        display(Markdown(
+            f"## Accessible Jobs (ATO City Rollup)\n\n{byline_md}{description}\n\n"
+            "- [Scoping document](run_sets/accessible-jobs-ato/scoping.html)\n\n"
+            + rd.run_history_html(rs_id)
+        ))
+        continue
+
     if rs_id == "v10.0-beta.2":
         description = rd.run_set_description(rs_id)
         display(Markdown(

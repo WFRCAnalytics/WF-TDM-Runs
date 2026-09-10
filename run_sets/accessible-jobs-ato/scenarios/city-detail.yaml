@@ -1,0 +1,21 @@
+scenario_id: city-detail
+description: >
+  Private copy of `base`'s scenario folder, seeded via start_from_copy so the
+  new access_to_opportunity_detail.s post-process step can run without
+  touching the shared v10.0-beta.2-2023 raw folder that `base` (and
+  household-location-burden's own `base` scenario) both point to directly
+  via manual_scenario_folder. Runs through the CLI (run-scenario), unlike
+  `base` -- start_from_copy only applies to a CLI-driven run.
+
+use_baseline_scenario_name: true
+
+baseline_control_center: "_ControlCenter - Base_2023.block"
+
+start_from_copy: base
+
+# The first attempt (2026-09-07) already seeded this scenario's 34 GB raw
+# folder successfully -- lock it down so debugging access_to_opportunity_detail.s
+# doesn't re-copy base's folder on every retry.
+lock_down_copy: true
+
+driver_script: hail-mary/__HailMary_1Subfolder_ato_detail.s

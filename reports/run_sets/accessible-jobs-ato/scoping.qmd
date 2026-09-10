@@ -1,0 +1,300 @@
+---
+title: "Accessible Jobs (ATO City Rollup)"
+subtitle: "Scoping document — City x City detail script runs successfully against real Cube Voyager"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
+---
+
+```{python}
+#| label: setup
+import os
+import sys
+
+sys.path.insert(0, os.path.join('..', '..'))
+import report_data as rd
+import pandas as pd
+
+RUN_SET_ID = "accessible-jobs-ato"
+```
+
+**[← All run sets](../../index.qmd)**
+
+## The question
+
+WFRC wants a new web app showing where accessible jobs are, in the same
+desire-line/arc style as `APP-WFRC-Commute-Patterns` — a separate, existing
+repo that maps *observed* LEHD commute flows as curved arcs between cities,
+sized by worker counts. The new app would show a *modeled* quantity instead:
+for a selected city, how many jobs its residents can reach, split into
+
+- **Internal** — jobs within the city, accessible from within the city
+- **Outbound** — jobs *outside* the city that the city's own residents can reach
+- **Inbound** — how much the city's own jobs contribute to *other* cities' accessibility
+
+The TDM already computes a decay-weighted **Access to Opportunity (ATO)**
+index per zone. The gap isn't the underlying model — it's that today's ATO
+output collapses every destination into a single number per origin, with no
+way to tell *which* destinations it came from, which is what a city rollup
+needs.
+
+## Decisions already made
+
+- **City assignment uses the TAZ shapefile's own city field, not Census/TIGER
+  place boundaries.** `APP-WFRC-Commute-Patterns` defines "city" via Census
+  places; the TDM's `WFv1000_TAZ.dbf` has its own `CITY_UGRC` field. No
+  reconciliation between the two is planned — the rollup uses `CITY_UGRC`
+  directly, matching the field `bring-work-trips-closer-to-home` already
+  uses for its "City Area" geography.
+- **The TAZ-to-city aggregation happens inside the Cube script, not in
+  Python afterward** (Option A below) — chosen over emitting a large
+  thresholded TAZ-pair file and aggregating downstream, because the city set
+  is small enough that the in-script approach produces a tiny output
+  directly, with no cutoff-tuning needed.
+- **Custom code lives in this run set's own folder, never inside `tdm/`** —
+  same principle as every other run set's custom driver scripts (see
+  `docs/architecture/0007-custom-driver-script.md`): a new Cube script and a
+  small crosswalk file go in `run_sets/accessible-jobs-ato/scripts/` and
+  `run_sets/accessible-jobs-ato/inputs/`, never as an edit to
+  `tdm/2_ModelScripts/`.
+
+## Decisions still needed
+
+| Decision | Options | Recommendation | If left unresolved |
+|---|---|---|---|
+| **Decay-weighted index vs. a literal job count** | Ship only the existing decay-weighted ATO units (continuous, not a hard travel-time cutoff) rolled up by city; or additionally compute a parallel hard-cutoff variant ("jobs within 30 minutes") | Ship the decay-weighted rollup first — it's the TDM's existing, validated measure, reuses the same `ATO_Weight.csv` decay curve already in production use. Add a hard-cutoff variant later if a public-facing "X jobs within Y minutes" framing turns out to matter more than the index | Defaults to decay-weighted only; a literal job-count headline number isn't available for the app |
+| **Sector detail in v1** | Roll up `SE_File.dbf`'s job categories (`RETEMP`/`INDEMP`/`OTHEMP`, or finer) alongside the total, so the app can show an industry mix of *accessible* jobs; or defer to a later pass | Include it now — the script already visits zone `j`'s `SE_File` row once per pair; carrying a few more fields costs nothing extra | Defaults to total jobs only; no industry-mix chart possible in the app's first version |
+| **Reverse "workers accessible" quantity** | Compute the HH-weighted mirror image (how many workers can reach this city's jobs) alongside the jobs-weighted version now, or later | Include it now — same reasoning as sector detail, the loop already visits every pair once | Defaults to the jobs-accessible direction only |
+
+: {tbl-colwidths="[28,32,25,15]" .fixed-table}
+
+## What the model already gives us to work with
+
+```{python}
+#| label: baseline-table
+#| output: asis
+
+runs = rd.latest_run_per_scenario(RUN_SET_ID)
+base_run = next(r for r in runs if r["scenario_id"] == "base")
+ato_rel_path = next(
+    p for p in rd.curated_output_paths(base_run) if p.endswith("Access_to_Opportunity.csv")
+)
+ato_df = pd.read_csv(os.path.join(rd.REPO_ROOT, ato_rel_path), skipinitialspace=True)
+
+n_rows = len(ato_df)
+total_hh = ato_df["HH"].sum()
+total_job = ato_df["Job"].sum()
+mean_auto = ato_df["Job_byAuto"].mean()
+mean_tran = ato_df["Job_byTran"].mean()
+mean_bike = ato_df["Job_byBike"].mean()
+mean_walk = ato_df["Job_byWalk"].mean()
+
+print(f"These numbers are real, pulled from an already-completed model run — "
+      f"the existing `Access_to_Opportunity.csv` from the region's converged "
+      f"2023 base network, curated into this run set via `import-manual-run` "
+      f"with no new Cube Voyager run.\n")
+print("| Metric | Value |")
+print("|---|---:|")
+print(f"| TAZs with a row in today's output | {n_rows:,} |")
+print(f"| Total households across those TAZs | {total_hh:,.0f} |")
+print(f"| Total jobs across those TAZs | {total_job:,.0f} |")
+print(f"| Mean per-TAZ decay-weighted ATO (jobs, auto) | {mean_auto:,.0f} |")
+print(f"| Mean per-TAZ decay-weighted ATO (jobs, transit) | {mean_tran:,.0f} |")
+print(f"| Mean per-TAZ decay-weighted ATO (jobs, bike) | {mean_bike:,.0f} |")
+print(f"| Mean per-TAZ decay-weighted ATO (jobs, walk) | {mean_walk:,.0f} |")
+```
+
+::: {.callout-note}
+## Correction to an earlier assumption, checked against real output
+Today's `08_Access_to_Opportunity.s` gates its output row on
+`DEVACRES>0` (a developable-acreage field, likely there to feed WFRC's REMM
+land-use model). Earlier discussion flagged this as a risk — that
+non-developable TAZs would be silently missing from a rollup. Checked
+against the real curated file above: **all 3,562 real TAZs get a row** (the
+TDM's `UsedZones=3629` includes ~67 external/dummy zones that are already
+excluded by the script's own zone loop, unrelated to `DEVACRES`). So this
+filter isn't dropping any real zone in the current base scenario. It's still
+the right call for the new script not to inherit this filter — a fully
+built-out TAZ in a different scenario or vintage could plausibly have
+`DEVACRES=0` — but it is not an active bug in today's data, and shouldn't be
+described as one.
+:::
+
+| Need | Existing TDM piece | Status |
+|---|---|---|
+| Decay-weighted accessibility by mode, per zone | `tdm/2_ModelScripts/5_AssignHwy/08_Access_to_Opportunity.s` | Exists, real, in production — computes exactly this for auto (congested/free-flow/straight-line), transit (walk- and drive-access, peak only), bike, and walk. The gap is that it only ever writes the *collapsed* per-origin total — no row for any individual destination pair exists on disk today |
+| Jobs and households by TAZ | `SE_File.dbf` (`TOTHH`/`TOTEMP`, plus sector detail) | Exists in every scenario folder already |
+| Travel-time skims by mode | Highway (`Skm_AM/PM/FF.mtx`) and transit (`skm_w4-9_Pk.mtx`/`skm_d4-9_Pk.mtx`) | Exist in every scenario folder already; transit skims are peak-only, so a time-of-day comparison is only possible for auto today |
+| TAZ-to-city assignment, TAZ centroids | `tdm/1_Inputs/1_TAZ/WFv1000_TAZ.dbf` | Already has `CITY_FIPS`/`CITY_UGRC`/`CITY_NAME`, county, the full small/medium/large/super planning-district hierarchy, and `X`/`Y` centroids as static per-TAZ attributes — confirmed by reading the field list directly. No new export needed; the app's data pipeline reads this live from `tdm/`, the same way `non-motorized-2023`'s reports already read TAZ/district shapefiles live rather than curating a copy |
+| A converged base scenario to compute against | `v10.0-beta.2`'s `v10.0-beta.2-2023` scenario | Already run and registered here as this run set's `base` scenario, same reuse `household-location-burden` already does — no new full model run needed |
+
+: {tbl-colwidths="[30,40,30]" .fixed-table}
+
+## Proposed design: Option A — aggregate to city inside the Cube script
+
+`08_Access_to_Opportunity.s` already loops over every `(i, j)` TAZ pair —
+that's how it computes the collapsed per-origin total today. The new script
+(`run_sets/accessible-jobs-ato/scripts/access_to_opportunity_detail.s`, a
+sibling of the original, not an edit to it) reuses that same loop structure
+but accumulates into a **City × City array** instead of a per-origin scalar,
+using a `TAZID → CityIdx` crosswalk to decide which city cell a pair's
+decayed contribution belongs in. This now runs successfully end to end — see
+"Effort and runtime" below for the real debugging path that got there,
+including two abandoned designs (a `LOOKUP`-based text translation, then a
+`CITY_FIPS`-based one) and the fact that the array itself has to be
+flattened to one dimension, not the genuine 2D array first assumed.
+
+```{mermaid}
+flowchart LR
+    Skims["Skims + SE_File<br/>(already exist per scenario)"] --> Loop["Per-(i,j) TAZ loop<br/>(existing script structure, reused)"]
+    CityIdx["city_index.csv<br/>TAZID -> CityIdx, loaded as DBI"] --> Loop
+    Loop --> Array["Flattened City x City array<br/>CityFlat = (City_i-1)*82+City_j"]
+    Array --> Output["New output file:<br/>one row per city pair, per mode"]
+    Output --> Rollup["App rollup:<br/>diagonal = Internal<br/>row = Outbound, column = Inbound"]
+```
+
+Why this table already gives you Internal/Outbound/Inbound for free: the
+diagonal of a `(home_city, work_city)` table is Internal; reading across a
+city's own row (excluding the diagonal) is Outbound; reading down its own
+column (excluding the diagonal) is Inbound. This is the identical shape
+`APP-WFRC-Commute-Patterns`'s own `aggregate_city_flows()` already produces
+for LODES data, and the same self-flow-exclusion query pattern its `db.js`
+already uses (`IS DISTINCT FROM`, not `!=`, for the same reason: some
+geographies leave the column `NULL` rather than empty).
+
+**How it actually gets run — a second scenario, seeded by `start_from_copy`,
+not a manual invocation against the shared folder.** An earlier draft of
+this plan proposed running the new script directly against `base`'s raw
+folder (`v10.0-beta.2-2023`) — rejected, since that folder is shared:
+`household-location-burden`'s own `base` scenario also points at it via
+`manual_scenario_folder`, and mutating it with an untested new script risks
+that run set's bookkeeping too. Instead, this run set declares a second
+scenario, **`city-detail`** (`run_sets/accessible-jobs-ato/scenarios/city-detail.yaml`),
+with `start_from_copy: base` — the framework's existing seeding mechanism
+(see CLAUDE.md's `start_from_copy` architecture note) that copies a sibling
+scenario's *entire* raw folder into this scenario's own, before running
+anything. `city-detail` runs through the normal CLI (`tdmruns run-scenario`),
+using a minimal custom `driver_script`
+(`run_sets/accessible-jobs-ato/hail-mary/__HailMary_1Subfolder_ato_detail.s`)
+that reads only `_ControlCenter.block` and `GeneralParameters.block` (the
+same two files every driver script reads first) and then
+`access_to_opportunity_detail.s` — none of the actual model pipeline steps.
+Since `base`'s folder is 34 GB, this copy is the expensive part of running
+this scenario at all, not the new script itself; `city-detail.yaml` now
+declares `lock_down_copy: true` (added after the first successful copy) so
+later retries (while
+debugging the new script) don't repeat that copy. Its output then gets added
+to `run_set.yaml`'s `outputs.include` and picked up by
+`tdmruns import-manual-run` or the run's own automatic curation, exactly
+like the existing collapsed file already curated for this run set (see the table
+above).
+
+## Known limitations, carried into the app regardless of the rollup design
+
+- **Transit is peak-only.** Every transit skim file is named `_Pk` — there's
+  no off-peak transit skim, so "accessible jobs by time of day" can only
+  vary for auto today.
+- **Auto's Internal/Outbound split will likely skew heavily toward
+  Outbound** — auto's decay radius typically exceeds a single city's
+  diameter, so most of a city's *own* jobs are barely decayed at all and the
+  split is more informative for walk/bike/transit.
+- **No sector taxonomy match to the companion app's LODES-based industry
+  mix.** `SE_File.dbf`'s categories (`RETEMP`/`INDEMP`/`OTHEMP`, or the finer
+  `RETL`/`MANU`/`OFFI`/etc.) are trip-generation categories, not LODES's
+  NAICS-based supersectors — an industry-mix chart in the new app needs its
+  own legend, not a relabeled copy of the commute app's.
+- **No age/earnings analog at all.** `SE_File.dbf` carries no wage-band or
+  age split of jobs, so those two dimensions from the commute app have no
+  TDM equivalent and would simply be absent from the accessible-jobs app.
+
+## Effort and runtime
+
+No new full Cube Voyager model run was needed — the new script reads skims
+and `SE_File.dbf` that already exist in `city-detail`'s (seeded from `base`)
+scenario folder. Confirmed by an actual run (2026-09-07): **4.5 minutes**
+end to end, bounded by the same `(i, j)` TAZ-pair loop the existing
+collapsed script already pays for every scenario run today (roughly
+3,600 × 3,600 ≈ 13 million pairs).
+
+**The script now runs successfully end to end.** Getting there took four
+real Cube Voyager compile failures, each fixed from the actual error message
+in `TPPL####.PRN`, not guessed in advance:
+
+1. `LOOKUP` has no `STRING=T` option (`F(018): STRING is invalid key`) —
+   text-keyed lookup isn't available the way it was first assumed to be.
+2. The numeric fallback (`CITY_FIPS`, already on `WFv1000_TAZ.dbf`) turned
+   out to have a real data collision, not a syntax problem: `CITY_FIPS=0`
+   is shared by Hill AFB and unincorporated county land.
+3. `ARRAY name = N` dimensions must be a literal integer — a variable
+   (`NUM_CITIES`) compiled as `ARRAY ...=NUM_CITIES is invalid value`.
+4. **The big one:** `ARRAY CityJob_Auto = 82, 82` does **not** declare a
+   two-dimensional array in Cube MATRIX — it silently does the same thing
+   `08_Access_to_Opportunity.s`'s own confirmed-working
+   `ARRAY Node_X = N, Node_Y = N` does: declare two separate
+   *one*-dimensional arrays. Every `[City_i, City_j]` two-subscript access
+   failed with `F(160): City_j has incorrect number of subscripts`,
+   regardless of how the subscript variables were declared. Fixed by
+   flattening to a single dimension (`CityFlat = (City_i-1)*82 + City_j`,
+   arrays sized `6724` literal) instead of continuing to guess at Cube's
+   real multi-dimensional array syntax.
+
+Final design also reverted the crosswalk mechanism itself: rather than a
+`LOOKUP()`-based translation of `WFv1000_TAZ.dbf`'s `CITY_UGRC` (attempts 1
+and 2 above), the working script reads a small **TAZID → CityIdx** file
+(`inputs/city_index.csv`) as a plain `DBI` with `DELIMITER=','` — the exact
+mechanism `1_DemographicsAnalysis.s` already uses for `WFRC_SEFile`/
+`MAG_SEFile` — populated into a zone-indexed array via a `LOOP`, the same
+pattern already used for `Node_X`/`Node_Y`. This is a per-TAZ file again
+(the thing an earlier design pass deliberately avoided), but for a concrete,
+tested reason rather than a preference: `CITY_UGRC`/`CITY_FIPS` translation
+inside Cube didn't work.
+
+**Cross-validated against the trusted original script:** the new City × City
+table's grand total for `Job_Auto` (summed across all 6,724 city pairs) is
+**1,173,182,979** — within 0.002% of `3,562 × 329,361` (TAZ count times the
+existing collapsed script's own mean per-TAZ `Job_byAuto`, from the baseline
+table above). Both numbers sum the same underlying decayed-contribution
+terms, just aggregated differently, so this near-exact match is real
+evidence the new script's decay/travel-time math agrees with the original,
+not just that it compiled.
+
+Build order, updated to reflect what's actually done:
+
+1. ✅ `scripts/build_city_index.py` builds `inputs/city_index.csv`
+   (TAZID → CityIdx, 3,562 rows, 82 distinct cities) from `WFv1000_TAZ.dbf`.
+2. ✅ `scripts/access_to_opportunity_detail.s` runs successfully against
+   `city-detail` (seeded from `base` via `start_from_copy`), producing a
+   sane City × City table — cross-checked against the baseline above.
+3. ✅ `run_set.yaml`'s `outputs.include` picked up the new file automatically
+   on the successful `run-scenario` invocation — both it and the existing
+   collapsed file are curated under `runs/accessible-jobs-ato/city-detail/outputs/`.
+4. **Not yet done.** Build the app-side query layer against the new curated
+   file — this mirrors `db.js`'s `queryFlows`/`querySelfFlow` pattern in
+   `APP-WFRC-Commute-Patterns` almost unchanged (diagonal = Internal, row =
+   Outbound, column = Inbound).
+
+## Bottom line
+
+The underlying model (ATO) already exists and is already in production use —
+this wasn't new modeling work, it was exposing destination-level detail that
+the original script computes and then throws away, and it now works,
+verified against real Cube Voyager output and cross-checked against the
+trusted baseline. The two open decisions above (decay-weighted-only vs. also
+adding a hard-cutoff job count; how much sector/reverse-direction detail
+ships in v1) still have working defaults. Remaining work is the app-side
+query layer, not the TDM side.
+
+## Run history
+
+```{python}
+#| label: run-history
+#| output: asis
+print(rd.run_history_html(RUN_SET_ID))
+```
