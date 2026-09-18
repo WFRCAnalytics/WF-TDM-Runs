@@ -68,6 +68,8 @@ def validate_config(ctx, run_set_id):
                 )
                 cc.validate_overrides(baseline, run_set_overrides, f"run set '{rsid}'.overrides")
                 cc.validate_overrides(baseline, scenario_overrides, f"scenario '{sid}'.overrides")
+                cc.validate_override_paths(run_set_overrides, f"run set '{rsid}'.overrides")
+                cc.validate_override_paths(scenario_overrides, f"scenario '{sid}'.overrides")
                 cfg.resolved_output_spec(framework, run_set, scenario)
                 click.echo(f"[OK]   {rsid}/{sid}")
             except tdmrunsError as e:

@@ -104,6 +104,34 @@ def validate_overrides(baseline: dict, overrides: dict, source_label: str):
         )
 
 
+_WINDOWS_PATH_RE = re.compile(r"^(?:[A-Za-z]:\\|\\\\)")
+
+
+def validate_override_paths(overrides: dict, source_label: str):
+    """Fails fast on an override value that looks like an absolute Windows
+    filesystem path (drive-letter or UNC) but is unreachable on this machine
+    -- e.g. a drive letter left over from whoever last edited the YAML on a
+    different workstation. Doesn't require the exact path to already exist:
+    several such overrides (vizToolDir, an output folder, ...) name a
+    location the model itself creates on demand. Instead it walks up to the
+    nearest existing ancestor and only fails when none exists at all, which
+    is what actually happens when the whole drive is missing -- the failure
+    mode that otherwise only surfaces hours into a run instead of before it
+    starts."""
+    for key, value in overrides.items():
+        if not isinstance(value, str) or not _WINDOWS_PATH_RE.match(value):
+            continue
+        path = Path(value)
+        if path.exists() or any(parent.exists() for parent in path.parents):
+            continue
+        raise ControlCenterError(
+            f"{source_label} sets '{key}' to '{value}', which does not exist on this "
+            "machine and has no existing parent directory either -- likely a path left "
+            "over from a different workstation. Fix the override for this machine's "
+            "drive/folder layout before running."
+        )
+
+
 def render(
     run_set_overrides: dict,
     scenario_overrides: dict,

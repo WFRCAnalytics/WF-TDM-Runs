@@ -1,3 +1,6 @@
+import string
+from pathlib import Path
+
 import pytest
 
 from tdmruns import controlcenter as cc
@@ -13,6 +16,31 @@ def test_validate_overrides_rejects_unknown_key():
 def test_validate_overrides_allows_known_key():
     baseline = {"A": 1, "B": 2}
     cc.validate_overrides(baseline, {"A": 5}, "test")  # should not raise
+
+
+def test_validate_override_paths_rejects_unreachable_drive():
+    # Mirrors v10.0-beta.2's stale 'M:\...' vizToolDir left over from a
+    # different workstation's drive layout. Picks a drive letter not
+    # actually mapped on whichever machine runs this test, rather than
+    # hardcoding one, since that set varies by machine.
+    unused = next(
+        d for d in string.ascii_uppercase if not Path(f"{d}:\\").exists()
+    )
+    with pytest.raises(ControlCenterError):
+        cc.validate_override_paths(
+            {"vizToolDir": f"{unused}:\\GitHub\\WF-TDM-Runs\\runs\\v10.0-beta.2\\.vizTool"}, "test"
+        )
+
+
+def test_validate_override_paths_allows_reachable_but_not_yet_created_path(tmp_path):
+    # The leaf folder itself need not exist yet -- e.g. vizToolDir is
+    # created on demand by the model's own vizTool setup step -- only some
+    # ancestor needs to be reachable on this machine.
+    cc.validate_override_paths({"vizToolDir": str(tmp_path / "not_yet_created")}, "test")
+
+
+def test_validate_override_paths_ignores_non_path_values():
+    cc.validate_override_paths({"HOT_Toll_Min": 0.05, "RunDescription": "a plain string"}, "test")
 
 
 def test_render_precedence():

@@ -264,6 +264,13 @@ def run_scenario(
     cc.validate_overrides(baseline, cc_local_layer, "config/local.yaml")
     voyager_exe = cfg.resolved_voyager_exe(framework, run_set, scenario)
 
+    # --- validate that any override pointing at an absolute Windows path
+    # (e.g. vizToolDir) actually resolves to a reachable location on this
+    # machine, before hours of model execution can hit it instead ---
+    cc.validate_override_paths(run_set_overrides, f"run set '{run_set_id}'.overrides")
+    cc.validate_override_paths(scenario_overrides, f"scenario '{scenario_id}'.overrides")
+    cc.validate_override_paths(cc_local_layer, "config/local.yaml")
+
     # --- validate General Parameter overrides against the real, shared
     # GeneralParameters.block (hard failure on unknown keys, same as
     # Control Center overrides above) -- see general_parameters.py ---
@@ -271,6 +278,10 @@ def run_scenario(
         gp_baseline = gp.load_baseline(tdm_path, framework["general_parameters_path"])
         cc.validate_overrides(
             gp_baseline, general_parameter_overrides,
+            f"run set '{run_set_id}'/scenario '{scenario_id}'.general_parameter_overrides",
+        )
+        cc.validate_override_paths(
+            general_parameter_overrides,
             f"run set '{run_set_id}'/scenario '{scenario_id}'.general_parameter_overrides",
         )
 
