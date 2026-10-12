@@ -5,7 +5,9 @@ run_set_id: v10.0-beta.2
 author: "Bill Hereth"
 description: "Base Year 2023 and RTP Needs-year (2036, 2046, 2055) scenarios on the v10.0-beta.2 TDM network"
 
-tdm_ref: "runs/v10.0-beta.2"
+tdm_ref: "v10.0.0-beta.2"
+
+max_parallel_runs: 2
 
 # This TDM version's network file requires the newer Bentley CUBE 25.01.01
 voyager_exe: "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe"

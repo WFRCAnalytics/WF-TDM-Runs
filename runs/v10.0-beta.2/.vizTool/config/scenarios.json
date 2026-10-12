@@ -93,6 +93,11 @@
             "scnTrendCode": "Needs",
             "alias": "Needs",
             "displayByDefault": true
+        },
+        {
+            "scnTrendCode": "Base",
+            "alias": "Base",
+            "displayByDefault": true
         }
     ],
     "scenarios": [
@@ -103,7 +108,7 @@
             "scnCode": "v10.0-beta.2__Base__2023",
             "alias": "Base 2023",
             "scnTrendCodes": [
-                "Needs"
+                "Base"
             ]
         },
         {
