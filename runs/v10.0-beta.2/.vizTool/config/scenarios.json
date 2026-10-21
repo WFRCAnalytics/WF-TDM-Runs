@@ -95,8 +95,8 @@
             "displayByDefault": true
         },
         {
-            "scnTrendCode": "Base",
-            "alias": "Base",
+            "scnTrendCode": "BYU_EcoEdPass_Test",
+            "alias": "BYU_EcoEdPass_Test",
             "displayByDefault": true
         }
     ],
@@ -108,7 +108,17 @@
             "scnCode": "v10.0-beta.2__Base__2023",
             "alias": "Base 2023",
             "scnTrendCodes": [
-                "Base"
+                "Needs"
+            ]
+        },
+        {
+            "modVersion": "v10.0-beta.2",
+            "scnGroup": "BYU_EcoEdPass_Test",
+            "scnYear": 2023,
+            "scnCode": "v10.0-beta.2__BYU_EcoEdPass_Test__2023",
+            "alias": "BYU_EcoEdPass_Test 2023",
+            "scnTrendCodes": [
+                "BYU_EcoEdPass_Test"
             ]
         },
         {

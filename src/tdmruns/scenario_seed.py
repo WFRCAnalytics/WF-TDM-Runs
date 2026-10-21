@@ -63,6 +63,15 @@ def seed(repo_root: Path, run_set_id: str, scenario: dict, scenario_folder: Path
         )
 
     source_folder = Path(source_run["scenario_folder"])
+    if not source_folder.is_dir() and source_folder.drive.upper() != repo_root.drive.upper():
+        # Recorded as an absolute path including whatever drive letter this
+        # repo was reached through at the time of that run. A mapped/substituted
+        # drive letter can differ session to session for the same physical
+        # location -- try this session's own drive letter (from repo_root)
+        # before giving up, since the rest of the path is otherwise unchanged.
+        remapped = Path(repo_root.drive + str(source_folder)[len(source_folder.drive):])
+        if remapped.is_dir():
+            source_folder = remapped
     if not source_folder.is_dir():
         raise ScenarioSeedError(
             f"start_from_copy: '{source_scenario_id}''s recorded scenario_folder "
