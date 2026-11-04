@@ -115,6 +115,16 @@ for rs_id in run_set_ids:
         ))
         continue
 
+    if rs_id == "speed-factors":
+        description = rd.run_set_description(rs_id)
+        display(Markdown(
+            f"## speed-factors\n\n{byline_md}{description}\n\n"
+            "- [Screenline map](run_sets/speed-factors/screenlines.html)\n"
+            "- [Results](run_sets/speed-factors/results.html)\n\n"
+            + rd.run_history_html(rs_id)
+        ))
+        continue
+
     if rd.has_custom_report_pages(rs_id):
         # A run set with its own hand-written pages that isn't one of the
         # special cases above -- link to its custom directory rather than

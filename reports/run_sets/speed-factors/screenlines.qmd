@@ -1,0 +1,123 @@
+---
+title: "Speed Factor Screenlines"
+subtitle: "Facility and diversion-route crossings for the SFAC sensitivity test"
+format:
+  html:
+    toc: false
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
+---
+
+```{python}
+#| label: setup
+import os
+import sys
+
+sys.path.insert(0, os.path.join('..', '..'))
+import report_data as rd
+
+RUN_SET_ID = "speed-factors"
+SHP_PATH = os.path.join('..', '..', '..', 'run_sets', RUN_SET_ID, 'inputs', 'sfac-screenlines.shp')
+```
+
+**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Model results](results.html)
+
+```{python}
+#| echo: false
+#| output: asis
+from IPython.display import Markdown, display
+
+byline = rd.run_set_byline(RUN_SET_ID)
+if byline:
+    display(Markdown(f"*{byline}*"))
+```
+
+## Background
+
+This run set tests the effect of the network's `SFAC_BASE` speed-factor
+attribute — a per-link multiplier applied to free-flow speed on specific
+corridors — by comparing a baseline run (`sfac-base`) against a run with
+those factors removed (`sfac-removed`, `SpdFactor: SFAC_REMV`). To measure
+the effect, a dedicated set of screenlines was built covering every corridor
+that carries a nonzero `SFAC_BASE` value, plus a parallel/diversion-route
+screenline nearby for each one, so volume shifts onto alternate routes show
+up alongside the change on the corridor itself.
+
+These screenlines are not part of the TDM's own regional cordon set
+(`CVM_Screenlines_V10b.shp`, shown below in gray for context) — they're a
+purpose-built addition (`sfac-screenlines.shp`) layered on top of a copy of
+that file, applied for this run set only via the `Screenline_shp` Control
+Center override.
+
+```{python}
+#| label: load-screenlines
+import geopandas as gpd
+import json
+
+gdf = gpd.read_file(SHP_PATH).to_crs(4326)
+facility = gdf[gdf["Type"] == "Facility"]
+parallel = gdf[gdf["Type"] == "Parallel"]
+original = gdf[gdf["Type"] == "Original"]
+
+facility_json = facility[["ID2", "Label", "geometry"]].to_json()
+parallel_json = parallel[["ID2", "Label", "ParallelOf", "geometry"]].to_json()
+original_json = original[["ID2", "geometry"]].to_json()
+```
+
+## Map
+
+Click a line for its label. Red lines are screenlines on the SFAC-affected
+corridors themselves; blue lines are the paired parallel/diversion facility.
+Long corridors (US-89, Legacy Parkway and its HOV lane, SR-193, Redwood
+Road, Bangerter Highway) have several screenlines spaced every 3-4 miles
+along their length rather than just one.
+
+```{python}
+#| label: render-map
+#| output: asis
+html = f"""
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<div id="sfac-map" style="height:650px; border-radius:6px; overflow:hidden;"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function() {{
+  const facility = {facility_json};
+  const parallel = {parallel_json};
+  const original = {original_json};
+
+  const map = L.map('sfac-map').setView([40.85, -111.95], 10);
+  L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
+    attribution: '&copy; OpenStreetMap, &copy; CARTO', maxZoom: 19
+  }}).addTo(map);
+
+  L.geoJSON(original, {{style: {{color: '#999', weight: 2, dashArray: '4,4'}},
+    onEachFeature: (f, layer) => layer.bindTooltip('Regional cordon screenline ' + f.properties.ID2)
+  }}).addTo(map);
+
+  L.geoJSON(parallel, {{style: {{color: '#1A8FAA', weight: 4}},
+    onEachFeature: (f, layer) => layer.bindPopup('<b>Parallel facility</b><br>' + f.properties.Label)
+  }}).addTo(map);
+
+  L.geoJSON(facility, {{style: {{color: '#c0392b', weight: 4}},
+    onEachFeature: (f, layer) => layer.bindPopup('<b>SFAC facility</b><br>' + f.properties.Label)
+  }}).addTo(map);
+}})();
+</script>
+"""
+print(html)
+```
+
+## Screenlines in this set
+
+```{python}
+#| label: table
+import pandas as pd
+
+tbl = gdf[gdf["Type"] != "Original"][["Type", "Label", "ParallelOf"]].copy()
+tbl = tbl.rename(columns={"ParallelOf": "Parallel of"}).sort_values(["Type", "Label"])
+display(tbl.style.hide(axis="index"))
+```

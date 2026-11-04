@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "run_set_id": "speed-factors",
+  "scenario_id": "sfac-base",
+  "run_id": "20261104-225133-1fa6",
+  "status": "failed",
+  "execution_mode": "cli",
+  "started_at": "2026-11-04T22:51:33.227282+00:00",
+  "finished_at": "2026-11-04T22:52:05.757532+00:00",
+  "framework_commit": "558d8d25ccbdca73f25b2d959a18b2c0f04e192e",
+  "tdm": {
+    "requested_ref": "runs/speed-factors",
+    "resolved_commit": "d8691786eb9b18ed889d792e5ce0eeb695328ec6",
+    "resolved_tag": "runs/speed-factors",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - Base_2023.block",
+    "run_set_overrides": {
+      "UserName": "Bill Hereth",
+      "UserCompany": "WFRC",
+      "runId": "_",
+      "Run_vizTool": 1,
+      "vizToolDir": "M:\\GitHub\\WF-TDM-Runs\\runs\\speed-factors\\.vizTool",
+      "MasterPrefix": "WFv1000_MasterNet_20260430-sfac",
+      "MasterLinkShp": "GIS\\WFv1000_MasterNet_20260430-sfac_Link.shp",
+      "Screenline_shp": "..\\..\\..\\..\\run_sets\\speed-factors\\inputs\\sfac-screenlines.shp"
+    },
+    "scenario_overrides": {
+      "RunDescription": "Base Year 2023 - Original Speed Factors in Network"
+    },
+    "rendered_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\_ControlCenter.block",
+    "driver_script": "Scenarios/_default/__HailMary_1Subfolder_resumable.s"
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "M:\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\_ControlCenter.block",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base"
+    ],
+    "voyager_exe": "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe",
+    "exit_code": 2,
+    "log_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\logs\\orchestrator_invocation.log",
+    "status_source": "exit_code"
+  },
+  "outputs": {
+    "inventory_count": 22,
+    "inventory_total_bytes": 1387557,
+    "curated": []
+  },
+  "error": "No resolved model completion report in M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\_Log\\_RunTime.txt (see M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\logs\\orchestrator_invocation.log). Voyager exit code: 2.\n\nVoyager errors (TPPL0001.PRN):\nF(614): Can't find file or file conversion error: M:\\GitHub\\WF-TDM-Runs\\tdm\\1_Inputs\\3_Highway\\WFv1000_MasterNet_20260430-sfac.net\nF(614): OS reports: The system cannot find the file specified.\nF(641): Step 368, RUN MATRIX can not be run while ONRUNERRORGOTO processing. No files under M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base matched outputs.include [{'datafile': '5_AssignHwy/4_Summaries/*Summary_SEGID.csv', 'columns': ['SEGID', 'DISTANCE', 'DIRECTION', 'FUNCGROUP', 'SUBAREAID', 'CO_FIPS', 'LANES', 'LANEMILES', 'FTCLASS', 'CAP1HL', 'AM_Vol', 'MD_Vol', 'PM_Vol', 'EV_Vol', 'DY_Vol', 'FF_Spd', 'AM_Spd', 'MD_Spd', 'PM_Spd', 'EV_Spd', 'DY_Spd', 'FF_Tme', 'AM_Tme', 'MD_Tme', 'PM_Tme', 'EV_Tme', 'AM_CAP', 'MD_CAP', 'PM_CAP', 'EV_CAP', 'DY_CAP', 'AM_VC', 'MD_VC', 'PM_VC', 'EV_VC', 'MAX_VC', 'AM_VMT', 'MD_VMT', 'PM_VMT', 'EV_VMT', 'DY_VMT', 'AM_VMT_PC', 'MD_VMT_PC', 'PM_VMT_PC', 'EV_VMT_PC', 'DY_VMT_PC', 'AM_VMT_LT', 'MD_VMT_LT', 'PM_VMT_LT', 'EV_VMT_LT', 'DY_VMT_LT', 'AM_VMT_MD', 'MD_VMT_MD', 'PM_VMT_MD', 'EV_VMT_MD', 'DY_VMT_MD', 'AM_VMT_HV', 'MD_VMT_HV', 'PM_VMT_HV', 'EV_VMT_HV', 'DY_VMT_HV', 'FF_VHT', 'AM_VHT', 'MD_VHT', 'PM_VHT', 'EV_VHT', 'DY_VHT', 'AM_VHD', 'MD_VHD', 'PM_VHD', 'EV_VHD', 'DY_VHD']}, {'datafile': '5_AssignHwy/4_Summaries/*Summary_Screenline.csv'}]."
+}

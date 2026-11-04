@@ -1,0 +1,130 @@
+---
+title: "Speed Factor Sensitivity — Results"
+subtitle: "sfac-base vs. sfac-removed, by screenline"
+format:
+  html:
+    toc: false
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+jupyter: july2025
+---
+
+```{python}
+#| label: setup
+import os
+import sys
+
+sys.path.insert(0, os.path.join('..', '..'))
+import report_data as rd
+import pandas as pd
+
+RUN_SET_ID = "speed-factors"
+SHP_PATH = os.path.join('..', '..', '..', 'run_sets', RUN_SET_ID, 'inputs', 'sfac-screenlines.shp')
+SCENARIO_COLORS = {"sfac-base": "#1f77b4", "sfac-removed": "#e6550d"}
+```
+
+**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Screenline map](screenlines.html)
+
+```{python}
+#| echo: false
+#| output: asis
+from IPython.display import Markdown, display
+
+byline = rd.run_set_byline(RUN_SET_ID)
+if byline:
+    display(Markdown(f"*{byline}*"))
+```
+
+```{python}
+#| label: load-data
+runs = rd.latest_run_per_scenario(RUN_SET_ID)
+run_by_scenario = {r["scenario_id"]: r for r in runs}
+
+def screenline_csv_path(run):
+    if not run or run.get("status") != "success":
+        return None
+    for p in rd.curated_output_paths(run):
+        if "Summary_Screenline" in p:
+            return rd.REPO_ROOT / p
+    return None
+
+frames = {}
+for scenario_id in ("sfac-base", "sfac-removed"):
+    run = run_by_scenario.get(scenario_id)
+    path = screenline_csv_path(run)
+    if path and path.is_file():
+        df = pd.read_csv(path)
+        df["ScreenlineID"] = df["ScreenlineID"].astype(float).round(3)
+        frames[scenario_id] = df
+
+have_both = "sfac-base" in frames and "sfac-removed" in frames
+```
+
+```{python}
+#| label: waiting-message
+#| output: asis
+if not have_both:
+    missing = [s for s in ("sfac-base", "sfac-removed") if s not in frames]
+    display(Markdown(
+        "## Waiting on model runs\n\n"
+        f"No curated `Summary_Screenline.csv` yet for: **{', '.join(missing)}**. "
+        "This page reads each scenario's most recent successful run "
+        "(`tdmruns run-set --run-set speed-factors`, or `tdmruns status` to "
+        "check progress) and will populate automatically once both scenarios "
+        "have completed and their outputs are curated — no changes to this "
+        "page are needed.\n\n"
+        "See the [screenline map](screenlines.html) for what will be measured."
+    ))
+```
+
+```{python}
+#| label: build-comparison
+#| output: asis
+if have_both:
+    import geopandas as gpd
+    import plotly.express as px
+
+    gdf = gpd.read_file(SHP_PATH)
+    labels = gdf[gdf["Type"] != "Original"][["ID2", "Type", "Label"]].rename(columns={"ID2": "ScreenlineID"})
+    labels["ScreenlineID"] = labels["ScreenlineID"].astype(float).round(3)
+
+    base = frames["sfac-base"][["ScreenlineID", "DY_Vol"]].rename(columns={"DY_Vol": "sfac-base"})
+    removed = frames["sfac-removed"][["ScreenlineID", "DY_Vol"]].rename(columns={"DY_Vol": "sfac-removed"})
+    merged = labels.merge(base, on="ScreenlineID", how="left").merge(removed, on="ScreenlineID", how="left")
+    merged["change"] = merged["sfac-removed"] - merged["sfac-base"]
+    merged["pct_change"] = (merged["change"] / merged["sfac-base"] * 100).round(1)
+
+    display(Markdown(
+        "## Daily volume by screenline\n\n"
+        "Daily (`DY_Vol`) volume at each screenline, base run vs. the "
+        "speed-factors-removed run. **Facility** screenlines sit on the "
+        "corridors that actually carry a speed factor; **Parallel** "
+        "screenlines sit on the nearby route expected to absorb any diverted "
+        "traffic."
+    ))
+
+    for screenline_type in ("Facility", "Parallel"):
+        sub = merged[merged["Type"] == screenline_type].sort_values("Label")
+        if sub.empty:
+            continue
+        long = sub.melt(
+            id_vars=["Label"], value_vars=["sfac-base", "sfac-removed"],
+            var_name="Scenario", value_name="DY_Vol",
+        )
+        fig = px.bar(
+            long, x="DY_Vol", y="Label", color="Scenario", barmode="group",
+            orientation="h", color_discrete_map=SCENARIO_COLORS,
+            title=f"{screenline_type} screenlines — daily volume",
+            height=max(500, 26 * sub["Label"].nunique()),
+        )
+        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.0, xanchor="left", x=0),
+                           margin=dict(t=70), yaxis_title="", xaxis_title="Daily volume")
+        fig.show(config={"displayModeBar": False})
+
+    display(Markdown("## Change table"))
+    show_cols = ["Type", "Label", "sfac-base", "sfac-removed", "change", "pct_change"]
+    display(merged[show_cols].sort_values(["Type", "pct_change"], ascending=[True, False]).style.hide(axis="index"))
+```
