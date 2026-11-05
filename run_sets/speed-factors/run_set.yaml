@@ -22,8 +22,13 @@ overrides:
   runId: "_"
   Run_vizTool: 1
   vizToolDir: 'M:\GitHub\WF-TDM-Runs\runs\speed-factors\.vizTool'
-  MasterPrefix: "WFv1000_MasterNet_20260430-sfac"
-  MasterLinkShp: "GIS\\WFv1000_MasterNet_20260430-sfac_Link.shp"
+  # MasterPrefix/MasterLinkShp are read relative to tdm\1_Inputs\3_Highway\ --
+  # this network only exists under this run set's own inputs/, so it's reached
+  # with the same relative-climb trick as Screenline_shp/WFRC_SEFile (3 levels
+  # here, one shallower than Screenline_shp's 4, since 3_Highway sits one
+  # directory above 6_Segment\Screenlines)
+  MasterPrefix: '..\..\..\run_sets\speed-factors\inputs\WFv1000_MasterNet_20260430-sfac'
+  MasterLinkShp: '..\..\..\run_sets\speed-factors\inputs\GIS\WFv1000_MasterNet_20260430-sfac_Link.shp'
   Screenline_shp: '..\..\..\..\run_sets\speed-factors\inputs\sfac-screenlines.shp'
 
 

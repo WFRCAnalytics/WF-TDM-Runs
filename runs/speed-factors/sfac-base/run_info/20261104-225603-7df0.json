@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "run_set_id": "speed-factors",
+  "scenario_id": "sfac-base",
+  "run_id": "20261104-225603-7df0",
+  "status": "failed",
+  "execution_mode": "cli",
+  "started_at": "2026-11-04T22:56:03.461823+00:00",
+  "finished_at": "2026-11-04T23:35:29.784550+00:00",
+  "framework_commit": "81027600c64134cb9a651ed9c5e469a9a7155e43",
+  "tdm": {
+    "requested_ref": "runs/speed-factors",
+    "resolved_commit": "d8691786eb9b18ed889d792e5ce0eeb695328ec6",
+    "resolved_tag": "runs/speed-factors",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - Base_2023.block",
+    "run_set_overrides": {
+      "UserName": "Bill Hereth",
+      "UserCompany": "WFRC",
+      "runId": "_",
+      "Run_vizTool": 1,
+      "vizToolDir": "M:\\GitHub\\WF-TDM-Runs\\runs\\speed-factors\\.vizTool",
+      "MasterPrefix": "..\\..\\..\\run_sets\\speed-factors\\inputs\\WFv1000_MasterNet_20260430-sfac",
+      "MasterLinkShp": "..\\..\\..\\run_sets\\speed-factors\\inputs\\GIS\\WFv1000_MasterNet_20260430-sfac_Link.shp",
+      "Screenline_shp": "..\\..\\..\\..\\run_sets\\speed-factors\\inputs\\sfac-screenlines.shp"
+    },
+    "scenario_overrides": {
+      "RunDescription": "Base Year 2023 - Original Speed Factors in Network"
+    },
+    "rendered_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\_ControlCenter.block",
+    "driver_script": "Scenarios/_default/__HailMary_1Subfolder_resumable.s"
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "M:\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\_ControlCenter.block",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base"
+    ],
+    "voyager_exe": "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe",
+    "exit_code": 2,
+    "log_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\logs\\orchestrator_invocation.log",
+    "status_source": "exit_code"
+  },
+  "outputs": {
+    "inventory_count": 247,
+    "inventory_total_bytes": 3449108682,
+    "curated": []
+  },
+  "error": "No resolved model completion report in M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\_Log\\_RunTime.txt (see M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base\\logs\\orchestrator_invocation.log). Voyager exit code: 2.\n\nVoyager errors (TPPL0002.PRN):\nF(237): Return code: 2 - 85d33772-2e35-4978-8b0e-b813eab58b04 - Terminating condition noted on file TPPL0053.PRN:  F(105)\nF(237): Return code: 2 - 37aec301-0597-45c0-b586-184a67758fcc - Terminating condition noted on file TPPL0061.PRN:  F(105)\nF(237): Return code: 2 - ad9031e4-5e4f-44e8-af35-7bb46586846d - Terminating condition noted on file TPPL0058.PRN:  F(105)\nF(237): Return code: 2 - 2d224c81-342a-4d02-9ace-1e1ce95599f4 - Terminating condition noted on file TPPL0062.PRN:  F(105)\nF(237): Return code: 2 - f6f5ee45-df72-42b5-9106-8ebac56bb685 - Terminating condition noted on file TPPL0049.PRN:  F(105)\nF(237): Return code: 2 - dffdde38-28fc-485e-9e24-b6d21c8752ea - Terminating condition noted on file TPPL0052.PRN:  F(105)\nF(237): Return code: 2 - d39c8aaa-b4d3-4dfb-9214-1de29058bdba - Terminating condition noted on file TPPL0060.PRN:  F(105)\nF(237): Return code: 2 - 69fce8da-cd25-422a-b003-679108972b1e - Terminating condition noted on file TPPL0051.PRN:  F(105)\nF(237): Return code: 2 - 19b493df-67e4-4e22-a3b9-e30f82d6366f - Terminating condition noted on file TPPL0054.PRN:  F(105)\nF(237): Return code: 2 - bf1a4bfa-44ce-4bd6-b583-95ed6e67354c - Terminating condition noted on file TPPL0048.PRN:  F(105)\nF(237): Return code: 2 - 80e48248-1228-4eab-a130-51f70e088e74 - Terminating condition noted on file TPPL0050.PRN:  F(105)\nF(237): Return code: 2 - 183f4fd9-2a23-463c-9c69-350fbbd47174 - Terminating condition noted on file TPPL0057.PRN:  F(105)\nF(237): Return code: 2 - b40c41b0-1801-4a1b-86be-a63ec5ff3042 - Terminating condition noted on file TPPL0056.PRN:  F(105)\nF(237): Return code: 2 - f3c5a49d-a59f-452f-b474-16f245ad036e - Terminating condition noted on file TPPL0059.PRN:  F(105)\nF(237): Return code: 2 - b59461ea-dfe7-4473-a3d9-da2eab0b9d03 - Terminating condition noted on file TPPL0055.PRN:  F(105)\nF(641): Step 368, RUN MATRIX can not be run while ONRUNERRORGOTO processing. No files under M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\speed-factors\\sfac-base matched outputs.include [{'datafile': '5_AssignHwy/4_Summaries/*Summary_SEGID.csv', 'columns': ['SEGID', 'DISTANCE', 'DIRECTION', 'FUNCGROUP', 'SUBAREAID', 'CO_FIPS', 'LANES', 'LANEMILES', 'FTCLASS', 'CAP1HL', 'AM_Vol', 'MD_Vol', 'PM_Vol', 'EV_Vol', 'DY_Vol', 'FF_Spd', 'AM_Spd', 'MD_Spd', 'PM_Spd', 'EV_Spd', 'DY_Spd', 'FF_Tme', 'AM_Tme', 'MD_Tme', 'PM_Tme', 'EV_Tme', 'AM_CAP', 'MD_CAP', 'PM_CAP', 'EV_CAP', 'DY_CAP', 'AM_VC', 'MD_VC', 'PM_VC', 'EV_VC', 'MAX_VC', 'AM_VMT', 'MD_VMT', 'PM_VMT', 'EV_VMT', 'DY_VMT', 'AM_VMT_PC', 'MD_VMT_PC', 'PM_VMT_PC', 'EV_VMT_PC', 'DY_VMT_PC', 'AM_VMT_LT', 'MD_VMT_LT', 'PM_VMT_LT', 'EV_VMT_LT', 'DY_VMT_LT', 'AM_VMT_MD', 'MD_VMT_MD', 'PM_VMT_MD', 'EV_VMT_MD', 'DY_VMT_MD', 'AM_VMT_HV', 'MD_VMT_HV', 'PM_VMT_HV', 'EV_VMT_HV', 'DY_VMT_HV', 'FF_VHT', 'AM_VHT', 'MD_VHT', 'PM_VHT', 'EV_VHT', 'DY_VHT', 'AM_VHD', 'MD_VHD', 'PM_VHD', 'EV_VHD', 'DY_VHD']}, {'datafile': '5_AssignHwy/4_Summaries/*Summary_Screenline.csv'}]."
+}
