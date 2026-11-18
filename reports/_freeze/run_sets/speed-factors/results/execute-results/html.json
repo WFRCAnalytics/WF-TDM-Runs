@@ -1,0 +1,12 @@
+{
+  "hash": "d92110ed637a6b8c12a1edbb62e38ff4",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"Speed Factor Sensitivity — Results\"\nsubtitle: \"sfac-base vs. sfac-removed, by screenline\"\nformat:\n  html:\n    toc: false\n    embed-resources: true\nexecute:\n  echo: false\n  warning: false\n  message: false\njupyter: july2025\n---\n\n\n\n**[← All run sets](../../index.qmd)** &nbsp;|&nbsp; [Screenline map](screenlines.html)\n\n*Prepared by Bill Hereth*\n\n\n\n\n## Waiting on model runs\n\nNo curated `Summary_Screenline.csv` yet for: **sfac-base, sfac-removed**. This page reads each scenario's most recent successful run (`tdmruns run-set --run-set speed-factors`, or `tdmruns status` to check progress) and will populate automatically once both scenarios have completed and their outputs are curated — no changes to this page are needed.\n\nSee the [screenline map](screenlines.html) for what will be measured.\n\n\n\n\n",
+    "supporting": [
+      "results_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

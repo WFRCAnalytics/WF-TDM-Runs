@@ -1,0 +1,16 @@
+scenario_id: sfac-base
+description: "Base Year 2023 Run"
+use_baseline_scenario_name: true
+
+driver_script: __HailMary_1Subfolder_resumable.s
+baseline_control_center: "_ControlCenter - Base_2023.block"
+
+# Resume at STEP4_11 (11_MC_HBW_HBO_NHB_HBC.s) -- the prior attempt got this
+# far through Mode Choice (skims/detailed trip matrices already on disk) and
+# crashed here reading a calib_const seed file that only existed under its
+# "_0" name; now fixed upstream, see tdm commit 7b55dcc. No need to redo
+# STEP0-STEP3 or STEP4_01-STEP4_10.
+start_at_label: STEP4_11
+
+overrides:
+  RunDescription: "Base Year 2023 - Original Speed Factors in Network"
