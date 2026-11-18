@@ -5,7 +5,12 @@ run_set_id: tdm-2-moves-factors
 author: "Bill Hereth"
 description: "Compute TDM2MOVES VMT seasonal-factor summaries from an already-completed v10.0-beta.2 run, without re-running the model."
 
-tdm_ref: "v10.0.0-beta.2"
+
+# v10.0.0-beta.2 lacks pp_Compute_AWDT_Seasonal_Factors.py and FactorTables.csv
+# (01_Calculate_Factors_VMT.s needs both) -- this tag marks the v10x commit
+# that has them, picked deliberately over the moving v10x branch tip so this
+# run set doesn't drift under a later sync-tdm.
+tdm_ref: "runs/tdm-2-moves-factors"
 
 # This TDM version's network file requires the newer Bentley CUBE 25.01.01
 voyager_exe: "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe"

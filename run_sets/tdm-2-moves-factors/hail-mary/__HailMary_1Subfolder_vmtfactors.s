@@ -25,7 +25,15 @@
     ModelStep = 'STEP 7 - TDM2MOVES VMT Factors'
     BegTime_PP = currenttime() ;get timestamp
 
-    READ FILE = '..\..\..\..\run_sets\tdm-2-moves-factors\hail-mary\01_Calculate_Factors_VMT.s'
+    ;FILEO can't create a missing directory -- 5_TDM2MOVES_Prep isn't present
+    ;in every raw scenario folder (e.g. one seeded via start_from_copy from a
+    ;run that predates this post-processing step, or whose own STEP0 --
+    ;skipped here -- never ran ip_FolderSetup.py), so ensure it exists first.
+    *(IF NOT EXIST "7_PostProcessing\5_TDM2MOVES_Prep" MKDIR "7_PostProcessing\5_TDM2MOVES_Prep")
+
+    ;the TDM's own tracked step script (not a custom copy of ours -- see
+    ;tdm_ref above, the tag that has it)
+    READ FILE = '..\..\..\2_ModelScripts\7_PostProcessing\5_TDM2MOVES_Prep\01_Calculate_Factors_VMT.s'
 
     READ FILE = '..\..\..\2_ModelScripts\7_PostProcessing\_TimeStamp_PP.block' ;report model step run time
 

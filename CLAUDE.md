@@ -761,26 +761,47 @@ bullet above for why, not via `input_files`.
 ### `tdm-2-moves-factors`
 
 Single-scenario run set that computes TDM2MOVES VMT seasonal-factor
-summaries (`01_Calculate_Factors_VMT.s`, under
-`run_sets/tdm-2-moves-factors/hail-mary/`) from the `v10.0-beta.2` run
-set's already-completed `v10.0-beta.2-2023` base-year run, without
-re-running the model. Its one scenario (also named `v10.0-beta.2-2023`, for
-lineage) declares `start_from_copy: v10.0-beta.2/v10.0-beta.2-2023` — the
-first real use of cross-run_set `start_from_copy` (see the architecture
-decision above) — to seed its raw scenario folder with that run's full raw
-output (including `5_AssignHwy`'s already-assigned network), and a custom
-`driver_script`
-(`hail-mary/__HailMary_1Subfolder_vmtfactors.s`) that skips every model
-step except this one post-processing script, kept as a companion file in
-the same `hail-mary/` folder and referenced from the driver by relative
-path (ADR 0007). `tdm_ref`/`voyager_exe` match `v10.0-beta.2`'s own
-(`v10.0.0-beta.2` tag, CUBE 25.01.01) since it reads that version's
-network/`FactorTables.csv`. Not yet run — `start_from_copy` requires the
-source scenario to already have a successful recorded run (true here) but
-the whole mechanism is still gated on the same `RunModel.bat`/CLI-execution
-caveats as the rest of `start_from_copy` (see pending work above). Once run
-once, add `lock_down_copy: true` to the scenario YAML to stop re-copying
-`v10.0-beta.2-2023`'s raw folder (potentially tens of GB) on every retry.
+summaries from the `v10.0-beta.2` run set's already-completed
+`v10.0-beta.2-2023` base-year run, without re-running the model. **Run
+successfully end-to-end** (run `20261118-213550-a7e4`, `status: "success"`,
+a genuine `model_log` confirmation, not a misclassification) — the first
+confirmed-clean CLI-driven `run-scenario` result since the "decide status
+from the model's own log" fix, resolving the open question in pending work
+item 5 above.
+
+Its one scenario (also named `v10.0-beta.2-2023`, for lineage) declares
+`start_from_copy: v10.0-beta.2/v10.0-beta.2-2023` — the first real use of
+cross-run_set `start_from_copy` (see the architecture decision above) — to
+seed its raw scenario folder with that run's full raw output (including
+`5_AssignHwy`'s already-assigned network), now `lock_down_copy: true` since
+seeding succeeded once (2026-11-18) and the source folder is ~34 GB. A
+custom `driver_script` (`hail-mary/__HailMary_1Subfolder_vmtfactors.s`)
+skips every model step except the one post-processing step needed —
+`2_ModelScripts/7_PostProcessing/5_TDM2MOVES_Prep/01_Calculate_Factors_VMT.s`,
+**the TDM's own tracked step script**, read via the normal three-level-up
+`2_ModelScripts` relative path (ADR 0007), not a custom companion copy of
+ours. (An earlier version of this run set carried its own copy of that
+script under `scripts/` before this was caught and corrected — the file
+was byte-for-byte identical to the TDM's own tracked copy, so keeping a
+duplicate added nothing.)
+
+`tdm_ref` is the `runs/tdm-2-moves-factors` tag — deliberately **not**
+`v10.0-beta.2`'s own `v10.0.0-beta.2` tag, which lacks two files this step
+needs (`2_ModelScripts/_Python/pp_Compute_AWDT_Seasonal_Factors.py` and
+`1_Inputs/6_Segment/Factor_Geographies/FactorTables.csv` — added upstream
+in commits `89176ece`/`0700abdf`/`b7489ce4`, reachable from `v10x`/
+`calib/C72`/`calib/C73` but not yet merged into any `v10.0-beta.2` tag).
+The user created `runs/tdm-2-moves-factors` as a fixed tag at `v10x`'s tip
+(commit `725a1bea`) specifically so this run set has a pinned ref with
+those files, rather than drifting with the branch or carrying local copies
+of TDM-owned files in `run_sets/`. The real root-cause chain this session,
+in order: (1) the seeded raw folder was missing
+`7_PostProcessing/5_TDM2MOVES_Prep/` entirely (fixed with a defensive
+`*(IF NOT EXIST ... MKDIR ...)` in the custom driver script, since this
+scenario's custom driver skips the `STEP0` that would normally create it
+via `ip_FolderSetup.py`); (2) the Python step then failed for the real
+reason -- `pp_Compute_AWDT_Seasonal_Factors.py`/`FactorTables.csv` missing
+at `v10.0.0-beta.2` -- resolved by switching `tdm_ref` to the new tag.
 
 ### `toll-sensitivity-2026`
 
@@ -817,17 +838,27 @@ run for kernel/package issues that don't show up locally.
 written but still unconfirmed against the real (possibly private) TDM repo —
 if private, they'll need a deploy key or PAT to check out the submodule.
 
-**5. `bin/RunModel.bat` end-to-end is confirmed working** (see "What's
-currently mocked vs. real" above) — `bring-work-trips-closer-to-home`'s
-recorded history shows it locating and running the staged driver script,
-Cube Voyager executing for hours, and `VOYAGER_EXE` resolving correctly on a
-real workstation. What's *not* yet confirmed: a CLI-driven run that also
-comes back `status: "success"` end-to-end on the first try — every recorded
-`execution_mode: "cli"` attempt so far predates the "decide status from the
-model's own log" fix and got misclassified as failed by Voyager's exit code
-alone (see above). Worth a fresh `run-scenario` invocation against an
-already-seeded scenario to confirm the fix actually produces a clean
-`"success"` now, rather than inferring it from older records.
+**5. RESOLVED: a CLI-driven run now comes back a genuine `status: "success"`
+end-to-end.** `bin/RunModel.bat` was already confirmed working (see "What's
+currently mocked vs. real" above) via `bring-work-trips-closer-to-home`'s
+recorded history, but every `execution_mode: "cli"` attempt on record
+predated the "decide status from the model's own log" fix and got
+misclassified as failed by Voyager's exit code alone. `tdm-2-moves-factors`'s
+`v10.0-beta.2-2023` scenario (run `20261118-213910-f0e7`, 2026-11-18, the
+final attempt after this run set's own `hail-mary/`/`tdm_ref` fixes below
+were corrected; an intermediate attempt `20261118-213550-a7e4` already
+confirmed the same thing a step earlier) is the first attempt confirmed
+clean post-fix — `model_log.outcome: "success"` with a real fresh
+timestamp, both declared output files curated. (An *earlier*
+retry of that same scenario was a useful negative-case confirmation of the
+same mechanism's limits: a crash before any new `_RunTime.txt` entry was
+written got the model-log detector fooled into reading the seeded copy's
+stale old "success" entry as this attempt's — the overall run still landed
+on `"failed"` correctly, but only because output curation separately caught
+zero matching files, not because model-log itself caught the staleness. Not
+fixed this session; worth hardening model_log.py to also check whether
+`_RunTime.txt` was actually touched during the attempt's own time window,
+not just whether a recognizable entry exists somewhere in it.)
 
 **6. `start_from_copy` is now exercisable for `bring-work-trips-closer-to-home`.**
 `Closer00` (`Closer01`/`Closer02`/`Closer03` all declare `start_from_copy:

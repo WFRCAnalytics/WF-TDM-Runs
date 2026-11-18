@@ -3,9 +3,11 @@ description: >
   TDM2MOVES VMT seasonal-factor summary for the v10.0-beta.2 base year 2023
   run. Seeded (start_from_copy) from the already-completed
   v10.0-beta.2/v10.0-beta.2-2023 run's raw scenario folder -- only
-  01_Calculate_Factors_VMT.s (hail-mary/) runs against its existing
-  5_AssignHwy output; every upstream step (input processing through final
-  assignment) is reused as-is, not recomputed. See
+  2_ModelScripts/7_PostProcessing/5_TDM2MOVES_Prep/01_Calculate_Factors_VMT.s
+  (the TDM's own tracked step script, present at the runs/tdm-2-moves-factors
+  tag -- see run_set.yaml's tdm_ref) runs against its existing 5_AssignHwy
+  output; every upstream step (input processing through final assignment)
+  is reused as-is, not recomputed. See
   hail-mary/__HailMary_1Subfolder_vmtfactors.s, the custom driver script
   that runs only this one post-processing step.
 use_baseline_scenario_name: true
@@ -14,9 +16,9 @@ baseline_control_center: "_ControlCenter - Base_2023.block"
 driver_script: hail-mary/__HailMary_1Subfolder_vmtfactors.s
 
 start_from_copy: v10.0-beta.2/v10.0-beta.2-2023
-# Once this scenario has been seeded once, add lock_down_copy: true to stop
-# re-copying the source run's raw folder (potentially tens of GB) on every
-# retry -- see CLAUDE.md's start_from_copy/lock_down_copy notes.
+# Seeded once (2026-11-18, run 20261118-211602-ad43) -- locked down so
+# retries don't re-copy the source run's raw folder (~34 GB) again.
+lock_down_copy: true
 
 overrides:
   UserName: "Bill Hereth"

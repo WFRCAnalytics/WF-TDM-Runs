@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "run_set_id": "tdm-2-moves-factors",
+  "scenario_id": "v10.0-beta.2-2023",
+  "run_id": "20261118-213550-a7e4",
+  "status": "success",
+  "execution_mode": "cli",
+  "started_at": "2026-11-18T21:35:50.258185+00:00",
+  "finished_at": "2026-11-18T21:37:24.750107+00:00",
+  "framework_commit": "aeb9217682c27a95efa9b65f9125a94c5d2daebe",
+  "tdm": {
+    "requested_ref": "runs/tdm-2-moves-factors",
+    "resolved_commit": "725a1beaad4604f28c203e6e7a471d05bb54a5e3",
+    "resolved_tag": "runs/tdm-2-moves-factors",
+    "branch": null,
+    "detached_head": true,
+    "dirty": false
+  },
+  "control_center": {
+    "baseline_file": "_ControlCenter - Base_2023.block",
+    "run_set_overrides": {},
+    "scenario_overrides": {
+      "UserName": "Bill Hereth",
+      "UserCompany": "WFRC",
+      "RunDescription": "TDM2MOVES VMT factors for v10.0-beta.2 base year 2023",
+      "runId": "_"
+    },
+    "rendered_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\tdm-2-moves-factors\\v10.0-beta.2-2023\\_ControlCenter.block",
+    "driver_script": "hail-mary/__HailMary_1Subfolder_vmtfactors.s"
+  },
+  "scenario_folder": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\tdm-2-moves-factors\\v10.0-beta.2-2023",
+  "execution": {
+    "command": [
+      "cmd.exe",
+      "/c",
+      "M:\\GitHub\\WF-TDM-Runs\\bin\\RunModel.bat",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\tdm-2-moves-factors\\v10.0-beta.2-2023\\_ControlCenter.block",
+      "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\tdm-2-moves-factors\\v10.0-beta.2-2023"
+    ],
+    "voyager_exe": "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe",
+    "exit_code": 1,
+    "log_path": "M:\\GitHub\\WF-TDM-Runs\\tdm\\Scenarios\\tdm-2-moves-factors\\v10.0-beta.2-2023\\logs\\orchestrator_invocation.log",
+    "status_source": "model_log",
+    "model_log": {
+      "outcome": "success",
+      "crashed_step": null,
+      "started_at": "2026-11-18,  14:36:00",
+      "finished_at": "2026-11-18,  14:37:24",
+      "run_time": "000:01:24",
+      "exit_code_mismatch": true
+    }
+  },
+  "outputs": {
+    "inventory_count": 1057,
+    "inventory_total_bytes": 36479744407,
+    "curated": [
+      {
+        "relative_path": "7_PostProcessing/5_TDM2MOVES_prep/__Assigned_Summary.dbf",
+        "size_bytes": 56294727,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "56d8f9851cf9b532d41f04a822c34f9b3d7265a23f726fb03ce23178304db668",
+        "repo_path": "runs/tdm-2-moves-factors/v10.0-beta.2-2023/outputs/__Assigned_Summary.dbf",
+        "committed": true
+      },
+      {
+        "relative_path": "7_PostProcessing/5_TDM2MOVES_prep/_TDM_SummarywithFactors.dbf",
+        "size_bytes": 12778154,
+        "entry_type": "datafile",
+        "columns": null,
+        "sha256": "3ff87a43cc91cdbb79cdb56a2c12aaf7a8bd7e0ce169336ca0ada6e0b664d01e",
+        "repo_path": "runs/tdm-2-moves-factors/v10.0-beta.2-2023/outputs/_TDM_SummarywithFactors.dbf",
+        "committed": true
+      }
+    ]
+  },
+  "error": null
+}
