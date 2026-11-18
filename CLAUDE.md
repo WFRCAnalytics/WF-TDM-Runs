@@ -491,7 +491,14 @@ model is touched.
   already holds the seeded state it needs, to suppress that repeated copy
   without discarding the `start_from_copy` declaration (kept as the record
   of where it was seeded from); it has no effect unless `start_from_copy` is
-  also declared.
+  also declared. **Extended to cross-run_set copying** (for
+  `tdm-2-moves-factors` — see "Current run sets" below): the declared value
+  may now be `<run_set_id>/<scenario_id>`, naming a scenario in a *different*
+  run set, not only a bare `scenario_id` sibling in the same run set —
+  `scenario_seed.seed()` splits on `/` to pick which `run_set_id` to pass to
+  `metadata.latest_successful_run()`, otherwise unchanged. `seeded_from` in
+  `run_metadata.json` gained an optional `run_set_id` field, present only
+  when the source run set differs from the scenario's own.
 - **Input prep is manual, not automated** — each run_set has an optional
   `input_prep.ipynb` notebook at its root that generates input files (e.g.
   SE CSVs) into its `inputs/` folder. The framework does not run prep;
@@ -750,6 +757,30 @@ SE files are referenced in scenario YAMLs directly under `overrides:`
 (`WFRC_SEFile`/`MAG_SEFile`, relative paths like
 `'..\..\..\run_sets\non-motorized-2023\inputs\SE_S01.csv'`) — see the SE prep
 bullet above for why, not via `input_files`.
+
+### `tdm-2-moves-factors`
+
+Single-scenario run set that computes TDM2MOVES VMT seasonal-factor
+summaries (`01_Calculate_Factors_VMT.s`, under
+`run_sets/tdm-2-moves-factors/hail-mary/`) from the `v10.0-beta.2` run
+set's already-completed `v10.0-beta.2-2023` base-year run, without
+re-running the model. Its one scenario (also named `v10.0-beta.2-2023`, for
+lineage) declares `start_from_copy: v10.0-beta.2/v10.0-beta.2-2023` — the
+first real use of cross-run_set `start_from_copy` (see the architecture
+decision above) — to seed its raw scenario folder with that run's full raw
+output (including `5_AssignHwy`'s already-assigned network), and a custom
+`driver_script`
+(`hail-mary/__HailMary_1Subfolder_vmtfactors.s`) that skips every model
+step except this one post-processing script, kept as a companion file in
+the same `hail-mary/` folder and referenced from the driver by relative
+path (ADR 0007). `tdm_ref`/`voyager_exe` match `v10.0-beta.2`'s own
+(`v10.0.0-beta.2` tag, CUBE 25.01.01) since it reads that version's
+network/`FactorTables.csv`. Not yet run — `start_from_copy` requires the
+source scenario to already have a successful recorded run (true here) but
+the whole mechanism is still gated on the same `RunModel.bat`/CLI-execution
+caveats as the rest of `start_from_copy` (see pending work above). Once run
+once, add `lock_down_copy: true` to the scenario YAML to stop re-copying
+`v10.0-beta.2-2023`'s raw folder (potentially tens of GB) on every retry.
 
 ### `toll-sensitivity-2026`
 

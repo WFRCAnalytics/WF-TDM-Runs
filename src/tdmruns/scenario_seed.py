@@ -4,9 +4,11 @@ Some scenario modifications only take effect late in the model pipeline
 (e.g. a change applied at mode choice). Rerunning every upstream step from
 scratch for those wastes time reproducing output identical to an
 already-completed scenario. A scenario may declare start_from_copy: <scenario_id>
-to have its raw scenario folder seeded with a full copy of that other
-scenario's most recent successful run, before this run's own Control Center
-and driver script are written into it.
+(a sibling scenario in this same run set) or start_from_copy:
+<run_set_id>/<scenario_id> (a scenario in a *different* run set) to have its
+raw scenario folder seeded with a full copy of that other scenario's most
+recent successful run, before this run's own Control Center and driver
+script are written into it.
 
 The source is resolved via that scenario's run_metadata.json (metadata.py),
 not a declared manual_scenario_folder -- this works uniformly whether the
@@ -44,22 +46,30 @@ def seed(repo_root: Path, run_set_id: str, scenario: dict, scenario_folder: Path
 
     If start_from_copy is declared and lock_down_copy is not set, copies the
     entire raw scenario folder from the source scenario's most recent
-    successful run into scenario_folder. Returns {"scenario_id", "run_id"}
-    identifying the source for the metadata record, or None if not declared
-    or if lock_down_copy suppressed the copy.
+    successful run into scenario_folder. The declared value is either a bare
+    scenario_id (a sibling in this same run_set_id) or
+    "<run_set_id>/<scenario_id>" (a scenario in a different run set).
+    Returns {"scenario_id", "run_id"} (plus "run_set_id" when the source run
+    set differs from this one) identifying the source for the metadata
+    record, or None if not declared or if lock_down_copy suppressed the copy.
     """
-    source_scenario_id = scenario.get("start_from_copy")
-    if not source_scenario_id:
+    declared = scenario.get("start_from_copy")
+    if not declared:
         return None
     if scenario.get("lock_down_copy"):
         return None
 
-    source_run = md.latest_successful_run(repo_root, run_set_id, source_scenario_id)
+    if "/" in declared:
+        source_run_set_id, source_scenario_id = declared.split("/", 1)
+    else:
+        source_run_set_id, source_scenario_id = run_set_id, declared
+
+    source_run = md.latest_successful_run(repo_root, source_run_set_id, source_scenario_id)
     if source_run is None:
         raise ScenarioSeedError(
-            f"start_from_copy: '{source_scenario_id}' has no successful recorded run in "
-            f"run set '{run_set_id}' -- run or import it successfully before scenarios "
-            "can copy from it."
+            f"start_from_copy: '{declared}' has no successful recorded run in "
+            f"run set '{source_run_set_id}' -- run or import it successfully before "
+            "scenarios can copy from it."
         )
 
     source_folder = Path(source_run["scenario_folder"])
@@ -74,10 +84,13 @@ def seed(repo_root: Path, run_set_id: str, scenario: dict, scenario_folder: Path
             source_folder = remapped
     if not source_folder.is_dir():
         raise ScenarioSeedError(
-            f"start_from_copy: '{source_scenario_id}''s recorded scenario_folder "
+            f"start_from_copy: '{declared}''s recorded scenario_folder "
             f"{source_folder} no longer exists on disk."
         )
 
     shutil.copytree(source_folder, scenario_folder, dirs_exist_ok=True)
 
-    return {"scenario_id": source_scenario_id, "run_id": source_run["run_id"]}
+    result = {"scenario_id": source_scenario_id, "run_id": source_run["run_id"]}
+    if source_run_set_id != run_set_id:
+        result["run_set_id"] = source_run_set_id
+    return result

@@ -60,9 +60,24 @@ record of where it was seeded from). `lock_down_copy` has no effect unless
 
 `start_from_copy` is scenario-only, not available at the run_set level --
 it names a specific sibling scenario, which is never a run_set-wide default
-the way `tdm_ref` or `driver_script` can be. It is scoped to scenarios
-within the same run set; cross-run_set copying isn't supported (no known
-need for it yet).
+the way `tdm_ref` or `driver_script` can be.
+
+**Extended to cross-run_set copying** (`tdm-2-moves-factors`, added this
+session): `start_from_copy` accepts either a bare `scenario_id` (a sibling
+in this same run set, the original behavior) or `<run_set_id>/<scenario_id>`
+naming a scenario in a *different* run set. `scenario_seed.seed()` splits on
+`/` to decide which `run_set_id` to pass to
+`metadata.latest_successful_run()` -- unchanged otherwise, since that
+function already takes `run_set_id` as a parameter rather than assuming the
+caller's own. The driving need: `tdm-2-moves-factors` is a new, separate
+run set whose only job is running a single downstream post-processing step
+(`01_Calculate_Factors_VMT.s`, a custom `driver_script`) against the
+`v10.0-beta.2` run set's already-completed `v10.0-beta.2-2023` base-year
+run -- there's no reason to duplicate that whole run as a sibling scenario
+inside `v10.0-beta.2` itself just to reuse its output. `seeded_from` in
+`run_metadata.json` now carries an optional `run_set_id` field, present only
+when the source run set differs from the scenario's own (absent for the
+original same-run_set case, keeping existing records' shape unchanged).
 
 This wires into `run-scenario`/`run-set`'s existing pipeline only. There is
 no standalone CLI command for it, unlike `prep-scenario`. It therefore

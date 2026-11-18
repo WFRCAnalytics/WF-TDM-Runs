@@ -1,0 +1,18 @@
+#========================================================================================
+# run_sets/tdm-2-moves-factors/run_set.yaml
+#========================================================================================
+run_set_id: tdm-2-moves-factors
+author: "Bill Hereth"
+description: "Compute TDM2MOVES VMT seasonal-factor summaries from an already-completed v10.0-beta.2 run, without re-running the model."
+
+tdm_ref: "v10.0.0-beta.2"
+
+# This TDM version's network file requires the newer Bentley CUBE 25.01.01
+voyager_exe: "C:\\Program Files\\Bentley\\OpenPaths\\CUBE 25.01.01\\Voyager\\Voyager.exe"
+
+outputs:
+  include:
+    - datafile: "7_PostProcessing/5_TDM2MOVES_Prep/*_Assigned_Summary.dbf"
+    - datafile: "7_PostProcessing/5_TDM2MOVES_Prep/*TDM_SummarywithFactors.dbf"
+
+  max_file_size_mb: 95

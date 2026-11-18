@@ -100,8 +100,9 @@
     "seeded_from": {
       "type": "object",
       "required": ["scenario_id", "run_id"],
-      "description": "Identifies the prior run whose raw scenario folder was copied into this one before Control Center rendering, when this scenario declared start_from_copy. Absent when the scenario started from an empty folder.",
+      "description": "Identifies the prior run whose raw scenario folder was copied into this one before Control Center rendering, when this scenario declared start_from_copy. Absent when the scenario started from an empty folder. run_set_id is only present when the source scenario belongs to a different run set than this one (cross-run_set start_from_copy); absent when it's a sibling scenario in this same run set.",
       "properties": {
+        "run_set_id": { "type": "string" },
         "scenario_id": { "type": "string" },
         "run_id": { "type": "string" }
       }

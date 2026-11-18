@@ -125,3 +125,50 @@ def test_lock_down_copy_alone_without_start_from_copy_is_noop(tmp_path):
     dest = tmp_path / "dest"
     dest.mkdir()
     assert seed.seed(tmp_path, "rs", {"lock_down_copy": True}, dest) is None
+
+
+# ---------------------------------------------------------------------------
+# scenario_seed.seed -- cross-run_set start_from_copy ("<run_set_id>/<scenario_id>")
+# ---------------------------------------------------------------------------
+
+
+def test_seed_cross_run_set_copies_and_records_source_run_set_id(tmp_path):
+    source = tmp_path / "source"
+    (source / "sub").mkdir(parents=True)
+    (source / "sub" / "file.txt").write_text("payload")
+    _write_run(tmp_path, "other-rs", "Base2023", "20260101-000000-aaaa", "success", source)
+
+    dest = tmp_path / "dest"
+    dest.mkdir()
+    result = seed.seed(
+        tmp_path, "rs", {"start_from_copy": "other-rs/Base2023"}, dest
+    )
+
+    assert result == {
+        "run_set_id": "other-rs",
+        "scenario_id": "Base2023",
+        "run_id": "20260101-000000-aaaa",
+    }
+    assert (dest / "sub" / "file.txt").read_text() == "payload"
+
+
+def test_seed_cross_run_set_raises_when_no_successful_run(tmp_path):
+    dest = tmp_path / "dest"
+    dest.mkdir()
+    with pytest.raises(ScenarioSeedError, match="run set 'other-rs'"):
+        seed.seed(tmp_path, "rs", {"start_from_copy": "other-rs/Base2023"}, dest)
+
+
+def test_seed_same_run_set_id_omitted_from_result(tmp_path):
+    # Same-run_set start_from_copy (bare scenario_id, or "<same_run_set_id>/<scenario_id>")
+    # never records run_set_id -- only a genuinely different source run set does.
+    source = tmp_path / "source"
+    (source / "sub").mkdir(parents=True)
+    (source / "sub" / "file.txt").write_text("payload")
+    _write_run(tmp_path, "rs", "Closer00", "20260101-000000-aaaa", "success", source)
+
+    dest = tmp_path / "dest"
+    dest.mkdir()
+    result = seed.seed(tmp_path, "rs", {"start_from_copy": "rs/Closer00"}, dest)
+
+    assert result == {"scenario_id": "Closer00", "run_id": "20260101-000000-aaaa"}
