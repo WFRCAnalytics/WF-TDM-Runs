@@ -105,6 +105,16 @@
             "scnTrendCodes": [
                 "Base"
             ]
+        },
+        {
+            "modVersion": "v10.0-beta.2",
+            "scnGroup": "SfacRemoved",
+            "scnYear": 2023,
+            "scnCode": "v10.0-beta.2__SfacRemoved__2023",
+            "alias": "SfacRemoved 2023",
+            "scnTrendCodes": [
+                "SfacRemoved"
+            ]
         }
     ]
 }
